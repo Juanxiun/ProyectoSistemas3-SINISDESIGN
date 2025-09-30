@@ -10,10 +10,9 @@ interface res {
 // SELECT
 export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
   try {
-    const query = `SELECT id, proy, fase, detalle, inicio, est
+    const query = `SELECT id, proy, fase, detalle, inicio, estado
       FROM fases
-      WHERE proy = ?${id ? " AND id = ?" : ""}
-    `;
+      WHERE proy = ?${id ? " AND id = ?" : ""};`;
     const params = id ? [proy, id] : [proy];
 
     const [rows] = await cli.query(query, params);
@@ -53,14 +52,12 @@ export const CreateQuery = async (data: FaseModel): Promise<res> => {
 export const UpdateQuery = async (data: FaseModel): Promise<res> => {
   try {
     const query = `UPDATE fases
-      SET proy = ?, fase = ?, detalle = ?, estado = ?
+      SET fase = ?, detalle = ?
       WHERE id = ?
     `;
     const params = [
-      data.proy,
       data.fase,
       data.detalle,
-      data.estado ?? 1,
       data.id,
     ];
 

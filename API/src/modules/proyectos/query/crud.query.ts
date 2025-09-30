@@ -39,7 +39,7 @@ export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
   try {
 
     const query = `
-      INSERT INTO proyectos (arq, cli, nombre, inicio, precio, foto, est)
+      INSERT INTO proyectos (arq, cli, nombre, inicio, costo, imagen, est)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
@@ -71,7 +71,7 @@ export const UpdateQuery = async (data: ProyectoModel): Promise<res> => {
     const query = `
       UPDATE proyectos
       SET 
-        arq = ?, cli = ?, nombre = ?, inicio = ?, precio = ?, foto = ?
+        arq = ?, cli = ?, nombre = ?, inicio = ?, costo = ?, imagen = ?
       WHERE id = ?
     `;
     const params = [

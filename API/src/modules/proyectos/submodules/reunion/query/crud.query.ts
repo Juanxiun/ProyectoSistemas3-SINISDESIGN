@@ -9,10 +9,9 @@ interface res {
 // SELECT
 export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
   try {
-    const query = `SELECT id, proy, titulo, descripcion, fecha, final, est
+    const query = `SELECT id, proy, titulo, descripcion, fecha, estado
       FROM reuniones
-      WHERE proy = ?${id ? " AND id = ?" : ""}
-    `;
+      WHERE proy = ?${id ? " AND id = ?" : ""}`;
     const params = id ? [proy, id] : [proy];
 
     const [rows] = await cli.query(query, params);
@@ -29,8 +28,7 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
 export const CreateQuery = async (data: ReunionModel): Promise<res> => {
   try {
     const query = `INSERT INTO reuniones (proy, titulo, descripcion, fecha, estado)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+      VALUES (?, ?, ?, ?, ?, ?)`;
     const params = [
       data.proy,
       data.titulo,
@@ -52,15 +50,12 @@ export const CreateQuery = async (data: ReunionModel): Promise<res> => {
 export const UpdateQuery = async (data: ReunionModel): Promise<res> => {
   try {
     const query = `UPDATE reuniones
-      SET proy = ?, titulo = ?, descripcion = ?, fecha = ?, estado = ?
-      WHERE id = ?
-    `;
+      SET titulo = ?, descripcion = ?, fecha = ?
+      WHERE id = ?;`;
     const params = [
-      data.proy,
       data.titulo,
       data.descripcion,
       data.fecha,
-      data.estado ?? 1,
       data.id,
     ];
 

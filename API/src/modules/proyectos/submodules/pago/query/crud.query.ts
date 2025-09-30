@@ -11,8 +11,7 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
   try {
     const query = `SELECT id, proy, titulo, monto, fecha
       FROM pagos
-      WHERE proy = ?${id ? " AND id = ?" : ""}
-    `;
+      WHERE proy = ?${id ? " AND id = ?" : ""};`;
     const params = id ? [proy, id] : [proy];
 
     const [rows] = await cli.query(query, params);
@@ -29,8 +28,7 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
 export const CreateQuery = async (data: PagoModel): Promise<res> => {
   try {
     const query = `INSERT INTO pagos (proy, titulo, monto, fecha)
-      VALUES (?, ?, ?, ?)
-    `;
+      VALUES (?, ?, ?, ?);`;
     const params = [
       data.proy,
       data.titulo,
@@ -51,11 +49,9 @@ export const CreateQuery = async (data: PagoModel): Promise<res> => {
 export const UpdateQuery = async (data: PagoModel): Promise<res> => {
   try {
     const query = `UPDATE pagos
-      SET proy = ?, titulo = ?, monto = ?, fecha = ?
-      WHERE id = ?
-    `;
+      SET titulo = ?, monto = ?, fecha = ?
+      WHERE id = ?;`;
     const params = [
-      data.proy,
       data.titulo,
       data.monto,
       data.fecha,
