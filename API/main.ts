@@ -1,6 +1,6 @@
 import { Application } from "@oak/oak/application";
 import {oakCors} from "cors";
-import route from "./src/router/main.ts";
+import route from "./src/router/main.route.ts";
 
 const app = new Application();
 
