@@ -11,8 +11,7 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
   try {
     const query = `SELECT id, proy, pais, departamento, zona, calle, puerta
       FROM direccion_proyectos
-      WHERE proy = ?${id ? " AND id = ?" : ""}
-    `;
+      WHERE proy = ?${id ? " AND id = ?" : ""};`;
     const params = id ? [proy, id] : [proy];
 
     const [rows] = await cli.query(query, params);
@@ -29,8 +28,7 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
 export const CreateQuery = async (data: DireccionModel): Promise<res> => {
   try {
     const query = `INSERT INTO direccion_proyectos (proy, pais, departamento, zona, calle, puerta)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
+      VALUES (?, ?, ?, ?, ?, ?);`;
     const params = [
       data.proy,
       data.pais,
@@ -53,11 +51,9 @@ export const CreateQuery = async (data: DireccionModel): Promise<res> => {
 export const UpdateQuery = async (data: DireccionModel): Promise<res> => {
   try {
     const query = `UPDATE direccion_proyectos
-      SET proy = ?, pais = ?, departamento = ?, zona = ?, calle = ?, puerta = ?
-      WHERE id = ?
-    `;
+      SET pais = ?, departamento = ?, zona = ?, calle = ?, puerta = ?
+      WHERE id = ?;`;
     const params = [
-      data.proy,
       data.pais,
       data.departamento,
       data.zona,

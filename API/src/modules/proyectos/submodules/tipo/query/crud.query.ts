@@ -49,7 +49,7 @@ export const UpdateQuery = async (data: TipoModel): Promise<res> => {
   try {
     const query = 
     `UPDATE tipo_proyectos
-      SET proy = ?, tipo = ?, subtipo = ?
+      SET tipo = ?, subtipo = ?
       WHERE id = ?
     `;
     const params = [data.proy, data.tipo, data.subtipo, data.id];

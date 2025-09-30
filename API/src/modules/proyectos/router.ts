@@ -34,8 +34,8 @@ proyecto
       cli: parseInt(form.get("cli") as string),
       nombre: form.get("nombre") as string,
       inicio: form.get("inicio") as string,
-      precio: parseFloat(form.get("precio") as string),
-      foto: await file64(form.get("foto") as File),
+      costo: parseFloat(form.get("precio") as string),
+      imagen: await file64(form.get("foto") as File),
     };
     await proy.create(ctx, proyecto);
   })
@@ -48,8 +48,8 @@ proyecto
       cli: parseInt(form.get("cli") as string),
       nombre: form.get("nombre") as string,
       inicio: form.get("inicio") as string,
-      precio: parseFloat(form.get("precio") as string),
-      foto: await file64(form.get("foto") as File),
+      costo: parseFloat(form.get("precio") as string),
+      imagen: await file64(form.get("foto") as File),
     };
     await proy.update(ctx, proyecto);
   })
