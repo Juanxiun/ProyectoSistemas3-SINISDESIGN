@@ -1,1 +1,32 @@
-<p>navbar works!</p>
+<nav class="max-w-full lg:h-[15%] md:h-[17%] h-[20%] px-5 py-3
+    bg-[#283845] grid grid-cols-6 gap-3 items-center">
+
+  <section class="col-span-3 md:col-span-2 flex items-center">
+    <div class="md:w-[25%] w-[150px]">
+      <img src="/images/logoWhite.svg" alt="" class="w-[80%]">
+    </div>
+    <h1 class="text-lg md:text-3xl lg:text-4xl text-white ml-2">PROYECTOS</h1>
+  </section>
+
+
+  <section class="col-span-6 md:col-span-2 flex items-center justify-start mt-3 md:mt-0">
+    <div class="flex w-full md:w-full bg-[#f6efe5] items-center align-middle rounded-3xl py-2 pr-4 pl-2">
+      <input type="search" class="w-full md:px-5 md:py-1 focus:outline-none">
+      <div class="cursor-pointer">
+        <img src="/images/lupa.svg" alt="" class="h-[30px] ml-2">
+      </div>
+    </div>
+  </section>
+
+  
+  <section class="col-span-3 md:col-span-2 flex items-center justify-end 
+    md:relative absolute 
+    md:right-0 md:top-0 right-5 top-5">
+    <app-notification />
+    <div class="md:w-[30%] w-[40%] h-full bg-[#f6efe5] py-3 rounded-3xl ml-2 flex flex-row align-middle items-center relative cursor-pointer">
+      <h2 class="ml-3 text-center text-xl lg:text-black text-transparent">Usuario</h2>
+      <img src="/images/uguri.jpg" alt="" class="md:w-[49px] w-[90%] rounded-full absolute md:right-0 right-0.5">
+    </div>
+  </section>
+
+</nav>
