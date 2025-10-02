@@ -6,7 +6,7 @@ export default interface ProyectoModel {
   inicio: string;
   final?: string;
   costo: number;
-  imagen: string;
+  imagen: string | File;
   est?: number;
 }
 
