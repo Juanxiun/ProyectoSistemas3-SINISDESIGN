@@ -1,7 +1,7 @@
 import { Router } from "@oak/oak";
 import { CrudProyectos } from "./controller/crud.controller.ts";
 import ProyectoModel from "./model.ts";
-import { file64 } from "../../libs/conver64.ts";
+import { fileBlob } from "../../libs/converFile.ts";
 import tipo from "./submodules/tipo/router.ts";
 import reunion from "./submodules/reunion/router.ts";
 import pago from "./submodules/pago/router.ts";
@@ -35,7 +35,7 @@ proyecto
       nombre: form.get("nombre") as string,
       inicio: form.get("inicio") as string,
       costo: parseFloat(form.get("precio") as string),
-      imagen: await file64(form.get("foto") as File),
+      imagen: form.get("foto") as string,
     };
     await proy.create(ctx, proyecto);
   })
@@ -49,7 +49,7 @@ proyecto
       nombre: form.get("nombre") as string,
       inicio: form.get("inicio") as string,
       costo: parseFloat(form.get("precio") as string),
-      imagen: await file64(form.get("foto") as File),
+      imagen: form.get("foto") as File,
     };
     await proy.update(ctx, proyecto);
   })

@@ -1,7 +1,6 @@
 import { Router } from "@oak/oak";
 import { CrudDocumento } from "./controller/crud.controller.ts";
 import DocumentoModel from "./model.ts";
-import { file64 } from "../../../../libs/conver64.ts";
 
 const documento = new Router();
 const doc = new CrudDocumento();
@@ -21,7 +20,7 @@ documento
     const documento: DocumentoModel = {
       fase: parseInt(form.get("fase") as string),
       nombre: form.get("nombre") as string,
-      documento: await file64(form.get("documento") as File),
+      documento: form.get("documento") as File,
       fecha: form.get("fecha") as string,
     };
     await doc.create(ctx, documento);
@@ -33,7 +32,7 @@ documento
       id: id,
       fase: parseInt(form.get("fase") as string),
       nombre: form.get("nombre") as string,
-      documento: await file64(form.get("documento") as File),
+      documento: form.get("documento") as File,
       fecha: form.get("fecha") as string,
     };
     await doc.update(ctx, documento);

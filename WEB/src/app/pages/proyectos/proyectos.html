@@ -2,7 +2,17 @@
 <div
     class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
     <app-siderbar />
-    <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-scroll">
-        <app-card-proy/>
+    <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-scroll 
+            grid lg:grid-cols-3 md:grid-cols-2 sm:grid-cols-1 gap-4">
+
+        <ng-container *ngFor="let p of proy$ | async">
+            <app-card-proy
+                [titulo]="p.nombre"
+                [direccion]="'pro crear'"
+                [imagen]="p.imagen">
+            </app-card-proy>
+        </ng-container>
+
     </div>
+
 </div>

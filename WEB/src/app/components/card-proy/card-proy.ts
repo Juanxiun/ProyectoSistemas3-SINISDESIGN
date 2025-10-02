@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-card-proy',
@@ -7,5 +7,7 @@ import { Component } from '@angular/core';
   styles: ``
 })
 export class CardProy {
-
+  @Input() titulo: string = "";
+  @Input() direccion: string = "";
+  @Input() imagen: string = "";
 }

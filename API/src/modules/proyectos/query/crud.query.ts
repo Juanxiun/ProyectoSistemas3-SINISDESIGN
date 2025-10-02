@@ -1,6 +1,8 @@
+import { Buffer } from "node:buffer";
 import cli from "../../../database/connect.ts";
 import { datetime } from "../../../libs/datetimeFormat.ts";
 import ProyectoModel from "../model.ts";
+import { fileBlob } from "../../../libs/converFile.ts";
 
 interface res {
   data?: ProyectoModel[];
@@ -18,12 +20,26 @@ export const SelectQuery = async (arq: string, id?: number): Promise<res> => {
     `;
 
     const params = id ? [id, arq] : [arq];
-
     const [rows] = await cli.query(query, params);
+
     const proyectos = Array.isArray(rows) ? (rows as ProyectoModel[]) : [];
 
+    const proyectosConImagen = proyectos.map((p) => {
+      let imagenBase64 = "";
+      if (p.imagen) {
+        const buffer = Buffer.isBuffer(p.imagen)
+          ? p.imagen
+          : Buffer.from(p.imagen as any);
+
+        imagenBase64 = buffer.toString("base64");
+
+        imagenBase64 = `data:image/jpg;base64,${imagenBase64}`;
+      }
+      return { ...p, imagen: imagenBase64 };
+    });
+
     return {
-      data: proyectos,
+      data: proyectosConImagen,
       std: 200,
     };
   } catch (error) {
@@ -37,22 +53,21 @@ export const SelectQuery = async (arq: string, id?: number): Promise<res> => {
 
 export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
   try {
-
-    const query = `
-      INSERT INTO proyectos (arq, cli, nombre, inicio, costo, imagen, est)
+    const query = `INSERT INTO proyectos (arq, cli, nombre, inicio, costo, imagen, est)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
+
     const params = [
       data.arq,
       data.cli,
       data.nombre,
       datetime(data.inicio ?? ""),
       data.costo,
-      data.imagen,
+      typeof data.imagen === "string" ? null : await fileBlob(data.imagen),
       1,
     ];
 
-    await cli.query(query, params);
+    await cli.execute(query, params);
 
     return {
       std: 200,
@@ -67,7 +82,6 @@ export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
 
 export const UpdateQuery = async (data: ProyectoModel): Promise<res> => {
   try {
-
     const query = `
       UPDATE proyectos
       SET 
@@ -93,7 +107,6 @@ export const UpdateQuery = async (data: ProyectoModel): Promise<res> => {
   }
 };
 
-
 export const DeleteQuery = async (id: number, fecha: string): Promise<res> => {
   try {
     await cli.query(
@@ -104,7 +117,7 @@ export const DeleteQuery = async (id: number, fecha: string): Promise<res> => {
             final = ?
         WHERE
             id = ?`,
-      [datetime(fecha), id]
+      [datetime(fecha), id],
     );
     return {
       std: 200,
