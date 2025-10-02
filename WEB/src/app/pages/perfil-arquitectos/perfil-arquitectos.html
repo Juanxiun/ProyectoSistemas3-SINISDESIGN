@@ -1,0 +1,165 @@
+<app-navbar-cli />
+
+<!-- Header Principal -->
+<section class="team-hero" id="equipo">
+  <div class="team-background">
+    <div *ngFor="let slide of teamSlides; let i = index" 
+         class="team-slide" 
+         [class.active]="i === currentTeamSlide"
+         [style.background-image]="'url(' + slide.background + ')'">
+    </div>
+  </div>
+  
+  <div class="team-overlay"></div>
+  
+  <div class="container">
+    <div class="team-content">
+      <div class="team-text-content">
+        <div class="team-badge">
+          <span>ARQUITECTOS DE SINISDESIGN</span>
+        </div>
+        <h1 class="team-main-title">
+          <span class="title-line">NUESTRO EQUIPO</span>
+        </h1>
+        <p class="team-description">
+          Conoce a los arquitectos y especialistas que dan vida a cada proyecto con pasión, creatividad y excelencia
+        </p>
+        
+        <div class="divider"></div>
+      </div>
+      
+      <div class="team-indicators">
+        <span *ngFor="let slide of teamSlides; let i = index" 
+              class="indicator" 
+              [class.active]="i === currentTeamSlide"
+              (click)="changeTeamSlide(i)">
+        </span>
+      </div>
+    </div>
+  </div>
+  
+  <div class="scroll-indicator">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 5V19M12 19L19 12M12 19L5 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- Grid de Arquitectos -->
+<section class="architects-grid-section" id="equipo-grid">
+  <div class="container">
+    <div class="section-header center">
+      <h2 class="section-title">¿LISTO PARA HACER REALIDAD</h2><br>
+      <span class="section-subtitle">TUS SUEÑOS?</span>
+    </div>
+    
+    <!-- Filtros -->
+    <div class="team-filters">
+      <button 
+        class="filter-btn" 
+        [class.active]="activeFilter === 'all'"
+        (click)="filterArchitects('all')">
+        Todos
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="activeFilter === 'directivos'"
+        (click)="filterArchitects('directivos')">
+        Directivos
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="activeFilter === 'residencial'"
+        (click)="filterArchitects('residencial')">
+        Residencial
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="activeFilter === 'comercial'"
+        (click)="filterArchitects('comercial')">
+        Comercial
+      </button>
+      <button 
+        class="filter-btn" 
+        [class.active]="activeFilter === 'tecnico'"
+        (click)="filterArchitects('tecnico')">
+        Técnico
+      </button>
+    </div>
+
+    <!-- Grid de Arquitectos -->
+    <div class="architects-grid">
+      <div 
+        class="architect-card" 
+        *ngFor="let architect of filteredArchitects"
+        [attr.data-category]="architect.categories.join(' ')">
+        
+        <div class="architect-visual">
+          <div class="architect-header">
+            <img [src]="architect.image" [alt]="architect.name" class="architect-image">
+            <div class="architect-overlay">
+              <span class="architect-experience">{{architect.experience}}</span>
+              <div class="architect-social">
+                <a [href]="architect.linkedin" class="social-link" target="_blank">
+                  <i class="bi bi-linkedin"></i>
+                </a>
+                <a [href]="'mailto:' + architect.email" class="social-link">
+                  <i class="bi bi-envelope"></i>
+                </a>
+                <a [href]="architect.whatsapp" class="social-link" target="_blank">
+                  <i class="bi bi-whatsapp"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="architect-info">
+          <div class="architect-main-info">
+            <h2 class="architect-name">{{architect.name}}</h2>
+            <span class="architect-role">{{architect.role}}</span>
+            <p class="architect-specialty">{{architect.specialty}}</p>
+          </div>
+          
+          <p class="architect-bio">{{architect.bio}}</p>
+          
+          <div class="architect-skills">
+            <span class="skill-tag" *ngFor="let skill of architect.skills">
+              {{skill}}
+            </span>
+          </div>
+          
+          <div class="architect-cta">
+            <a [routerLink]="['#', architect.id]" class="btn btn-primary">
+              Ver Proyectos
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="team-stats">
+  <div class="container">
+    <div class="section-header center">
+      <h2 class="section-title">NUESTRA TRAYECTORIA</h2><br>
+      <span class="section-subtitle">En Cifras</span>
+    </div>
+    
+    <div class="stats-grid">
+      <div class="stat-item" *ngFor="let stat of stats">
+        <span class="stat-number">{{stat.value}}</span>
+        <div class="stat-label">{{stat.label}}</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<app-footer-cli />
+
+<button class="back-to-top" (click)="scrollToTop()" [class.visible]="isBackToTopVisible">
+  <i class="bi bi-chevron-up"></i>
+</button>
