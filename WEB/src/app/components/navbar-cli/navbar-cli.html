@@ -1,0 +1,28 @@
+<header [class.header-scrolled]="isHeaderScrolled">
+  <div class="container">
+    <div class="header-content">
+      <div class="header-logo-scroll" [class.visible]="isHeaderScrolled">
+        <img src="/images/logoWhite.svg" alt="SINISDESIGN" class="logo-img-scroll">
+      </div>
+      
+      <div class="mobile-menu-btn" (click)="toggleMobileMenu()" [class.active]="isMobileMenuActive">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      
+      <div class="nav-overlay" [class.active]="isMobileMenuActive" (click)="closeMobileMenu()"></div>
+      
+      <nav [class.active]="isMobileMenuActive">
+        <ul>
+          <li><a href="#inicio" (click)="closeMobileMenu()">Inicio</a></li>
+          <li><a href="#estudio" (click)="closeMobileMenu()">Sobre Nosotros</a></li>
+          <li><a href="#servicios" (click)="closeMobileMenu()">Servicios</a></li>
+          <li><a href="#proyectos" (click)="closeMobileMenu()">Proyectos</a></li>
+          <li><a href="#equipo" (click)="closeMobileMenu()">Equipo</a></li>
+          <a href="#sesion" class="btn btn-primary">Iniciar Sesion</a>
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>

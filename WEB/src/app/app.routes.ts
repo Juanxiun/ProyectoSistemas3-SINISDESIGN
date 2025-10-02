@@ -1,6 +1,9 @@
 import { Routes } from '@angular/router';
 import {Proyectos} from './pages/proyectos/proyectos';
+import {Presentation} from './pages/presentation/presentation';
 
 export const routes: Routes = [
-    {path:"proyectos/:usr", title:"Proyectos", component: Proyectos},
+    {path:"", title:"SINISDESIGN", component: Presentation},
+    {path:"proyectos", title:"Proyectos", component: Proyectos},
 ];
+
