@@ -1,45 +1,43 @@
-import { Buffer } from "node:buffer";
 import cli from "../../../database/connect.ts";
 import { datetime } from "../../../libs/datetimeFormat.ts";
 import ProyectoModel from "../model.ts";
 import { fileBlob } from "../../../libs/converFile.ts";
+import { conver64, typeFile } from "../../../libs/conver64.ts";
 
 interface res {
   data?: ProyectoModel[];
   std: number;
 }
 
-export const SelectQuery = async (arq: string, id?: number): Promise<res> => {
+export const SelectQuery = async (usr: string, id?: number): Promise<res> => {
   try {
+    const usuario = parseInt(usr) ? "cli" : "arq";
+
+    console.log("ingreso como: ", usuario);
+
     const query = `
       SELECT id, arq, cli, nombre, inicio, final, costo, imagen, est
       FROM proyectos
       WHERE est = 1
       ${id ? "AND id = ?" : ""}
-      AND arq = ?
+      AND ${usuario} = ?
     `;
 
-    const params = id ? [id, arq] : [arq];
+    const params = id ? [id, usr] : [usr];
     const [rows] = await cli.query(query, params);
 
     const proyectos = Array.isArray(rows) ? (rows as ProyectoModel[]) : [];
 
-    const proyectosConImagen = proyectos.map((p) => {
+    const initProy = proyectos.map((p) => {
       let imagenBase64 = "";
       if (p.imagen) {
-        const buffer = Buffer.isBuffer(p.imagen)
-          ? p.imagen
-          : Buffer.from(p.imagen as any);
-
-        imagenBase64 = buffer.toString("base64");
-
-        imagenBase64 = `data:image/jpg;base64,${imagenBase64}`;
+        imagenBase64 = conver64(typeFile.jpg, p.imagen);
       }
       return { ...p, imagen: imagenBase64 };
     });
 
     return {
-      data: proyectosConImagen,
+      data: initProy,
       std: 200,
     };
   } catch (error) {
@@ -53,7 +51,8 @@ export const SelectQuery = async (arq: string, id?: number): Promise<res> => {
 
 export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
   try {
-    const query = `INSERT INTO proyectos (arq, cli, nombre, inicio, costo, imagen, est)
+    const query =
+      `INSERT INTO proyectos (arq, cli, nombre, inicio, costo, imagen, est)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `;
 

@@ -11,3 +11,15 @@ export default interface ProyectoModel {
 }
 
 
+
+/* Submodelos para querys adicionales */
+
+export interface ProyectoList {
+  id?: number;
+  arq: string;
+  nombre: string;
+  costo: number;
+  imagen: string;
+  direccion: string;
+  est: number;
+}

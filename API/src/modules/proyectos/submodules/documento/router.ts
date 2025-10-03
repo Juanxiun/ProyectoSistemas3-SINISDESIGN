@@ -20,6 +20,7 @@ documento
     const documento: DocumentoModel = {
       fase: parseInt(form.get("fase") as string),
       nombre: form.get("nombre") as string,
+      tipo: form.get("tipo") as string,
       documento: form.get("documento") as File,
       fecha: form.get("fecha") as string,
     };
@@ -32,6 +33,7 @@ documento
       id: id,
       fase: parseInt(form.get("fase") as string),
       nombre: form.get("nombre") as string,
+      tipo: form.get("tipo") as string,
       documento: form.get("documento") as File,
       fecha: form.get("fecha") as string,
     };
