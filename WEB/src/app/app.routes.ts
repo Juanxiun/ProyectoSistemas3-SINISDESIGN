@@ -6,6 +6,6 @@ import {PerfilArquitectos} from './pages/perfil-arquitectos/perfil-arquitectos';
 export const routes: Routes = [
     {path:"", title:"SINISDESIGN", component: Presentation},
     {path:"equipo", title:"Equipo", component: PerfilArquitectos},
-    {path:"proyectos", title:"Proyectos", component: Proyectos},
+    {path:"proyectos/:usr", title:"Proyectos", component: Proyectos},
 ];
 

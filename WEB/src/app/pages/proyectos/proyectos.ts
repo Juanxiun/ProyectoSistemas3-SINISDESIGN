@@ -3,9 +3,9 @@ import { Navbar } from "../../components/navbar/navbar";
 import { Siderbar } from "../../components/siderbar/siderbar";
 import { CardProy } from "../../components/card-proy/card-proy";
 import { ActivatedRoute } from "@angular/router";
-import { environment } from "../../../environments/environment.development";
 import { CommonModule } from "@angular/common";
 import { from, map, Observable, of, switchMap } from "rxjs";
+import { ConnectA } from "../../../config/index";
 
 @Component({
   selector: "app-proyectos",
@@ -15,7 +15,7 @@ import { from, map, Observable, of, switchMap } from "rxjs";
 })
 export class Proyectos implements OnInit {
   usr: string | null = null;
-  url = environment.api;
+  url = ConnectA.api;
 
   constructor(private route: ActivatedRoute) {}
 
