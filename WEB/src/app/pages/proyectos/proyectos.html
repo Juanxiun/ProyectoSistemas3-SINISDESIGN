@@ -8,7 +8,7 @@
         <ng-container *ngFor="let p of proy$ | async">
             <app-card-proy
                 [titulo]="p.nombre"
-                [direccion]="'pro crear'"
+                [direccion]="p.direccion"
                 [imagen]="p.imagen">
             </app-card-proy>
         </ng-container>

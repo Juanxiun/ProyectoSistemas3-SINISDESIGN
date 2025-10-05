@@ -39,13 +39,11 @@ export class Proyectos implements OnInit {
 }
 
 export interface ProyProps {
-  id: string;
+  id?: number;
   arq: string;
-  cli: string;
   nombre: string;
-  inicio: string;
-  final: string;
-  costo: string;
+  costo: number;
   imagen: string;
-  est: string;
+  direccion: string;
+  est: number;
 }
