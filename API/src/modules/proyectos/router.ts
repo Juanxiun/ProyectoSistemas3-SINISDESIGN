@@ -3,6 +3,9 @@ import { CrudProyectos } from "./controller/crud.controller.ts";
 import ProyectoModel from "./model.ts";
 import { ListProyecto } from "./controller/list.controller.ts";
 
+//test WebSocket
+
+
 //ininicar la clase proy  / iniciar las rutas
 const proyecto = new Router();
 const proy = new CrudProyectos();

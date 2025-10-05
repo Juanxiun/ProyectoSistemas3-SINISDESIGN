@@ -8,6 +8,7 @@ import direccion from "../modules/proyectos/submodules/direccion/router.ts";
 import fase from "../modules/proyectos/submodules/fase/router.ts";
 import documento from "../modules/proyectos/submodules/documento/router.ts";
 import { notificaciones } from "../modules/notificaciones/router.ts";
+import sesion from "../modules/sesion/router.ts";
 const route = new Router();
 
 //ruta main proy
@@ -22,8 +23,10 @@ route.use("/documento", documento.routes(), documento.allowedMethods());
 //arq
 route.use("/arquitectos", arquitecto.routes(), arquitecto.allowedMethods());
 
+//login
+route.use("/sesion", sesion.routes(), sesion.allowedMethods());
 
-//turas adicionales 
+//rutas adicionales 
 route.use("/notificaciones", notificaciones.routes(), notificaciones.allowedMethods());
 
 export default route;
