@@ -6,4 +6,8 @@ const db = {
     pass: Deno.env.get("DB_PASS") ?? "",
 }
 
-export {db};
+const encrypt = {
+    rounds: 14,
+}
+
+export {db, encrypt};

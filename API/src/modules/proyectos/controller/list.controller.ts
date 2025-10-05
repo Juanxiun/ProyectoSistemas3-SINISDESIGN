@@ -4,7 +4,7 @@ import { ProyectoList } from "../model.ts";
 import { ProyecectoList } from "../query/list.query.ts";
 
 export class ListProyecto {
-  public async List(ctx: Context, usr: string) {
+  public async List(ctx: Context, usr?: string) {
     const proyectos = await ProyecectoList(usr);
     const proy: ProyectoList[] = proyectos.data ?? [];
 
