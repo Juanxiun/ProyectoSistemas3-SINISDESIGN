@@ -1,5 +1,5 @@
 import cli from "../../../database/connect.ts";
-import { datetime } from "../../../libs/datetimeFormat.ts";
+import { datetime, formatDateTime } from "../../../libs/datetimeFormat.ts";
 import ProyectoModel from "../model.ts";
 import { fileBlob } from "../../../libs/converFile.ts";
 import { conver64, typeFile } from "../../../libs/conver64.ts";
@@ -30,10 +30,19 @@ export const SelectQuery = async (usr: string, id?: number): Promise<res> => {
 
     const initProy = proyectos.map((p) => {
       let imagenBase64 = "";
+      let timeInit = "";
+      let timeEnd = "";
+
       if (p.imagen) {
         imagenBase64 = conver64(typeFile.jpg, p.imagen);
       }
-      return { ...p, imagen: imagenBase64 };
+      timeInit = formatDateTime(p.inicio);
+      
+      if(p.final){
+        timeEnd = formatDateTime(p.final ?? "");
+      }
+
+      return { ...p, imagen: imagenBase64, inicio: timeInit, final: timeEnd ?? undefined};
     });
 
     return {

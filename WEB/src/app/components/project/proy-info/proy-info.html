@@ -1,0 +1,31 @@
+<section class="w-full h-[60%] p-4">
+    @defer{
+    <ng-container
+        *ngFor="let p of proyecto$ | async">
+        <div
+            class="lg:w-[60%] w-full h-full flex md:flex-row flex-col shadow-2xl bg-[#92443a] rounded-2xl p-4 justify-evenly align-middle items-center">
+            <div class="md:h-full h-[50%] md:w-[50%] w-full">
+                <img src={{p.imagen}} alt={{p.nombre}}
+                    class="md:w-[95%] w-[100%] h-[100%] md:rounded-l-2xl md:rounded-t-none rounded-t-2xl">
+            </div>
+            <div class="md:h-full h-[50%] md:w-[50%] w-full">
+                <div class="w-full flex flex-row justify-between align-middle items-center">
+                    <h1 class="lg:text-5xl md:text-3xl text-xl font-bold text-[#f6efe5] uppercase">{{p.nombre}}</h1>
+                    <i class="bi-pencil-square text-white scale-175 cursor-pointer"></i>
+                </div>
+                <div>
+                    <p>{{p.inicio}} - {{p.final ?? "En proceso"}}</p>
+                </div>
+                <div>
+                    <p>{{p.costo}}</p>
+                </div>
+            </div>
+
+        </div>
+
+    </ng-container>
+    }
+    @loading {
+
+    }
+</section>

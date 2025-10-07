@@ -13,7 +13,7 @@ export const ProyecectoList = async (usr?: string): Promise<res> => {
 
     const query = `select 
 	    p.id, p.arq, p.nombre, p.costo, p.imagen,
-	    concat_ws(d.departamento, ' ', d.zona, ' ', d.calle, ' ', d.puerta, ' - ', d.pais) as direccion, p.est
+	    concat(UPPER(d.departamento),' - ', UPPER(d.pais)) as direccion, p.est
     FROM
 	    proyectos p 
     LEFT JOIN 
