@@ -1,0 +1,94 @@
+<app-navbar />
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+    <app-siderbar />
+    <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-auto">
+
+        <div class="mb-6 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-[#283845]">REGISTRO DE ARQUITECTOS</h1>
+            <button
+                (click)="goToCreate()"
+                class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                btn Nuevo Arquitecto
+            </button>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-[#283845] mb-4">Detalles</h2>
+
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <div class="flex flex-1 bg-white items-center align-middle rounded-lg border border-gray-300 px-3 py-2">
+                <svg class="w-5 h-5 text-gray-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="search" [(ngModel)]="searchText"
+                    class="w-full focus:outline-none text-[#283845]" placeholder="Buscar..." (input)="applyFilter()">
+            </div>
+            <button (click)="applyFilter()"
+                class="bg-[#283845] hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto">
+                buscar
+            </button>
+            <button (click)="searchText = ''; applyFilter()"
+                class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto">
+                limpiar
+            </button>
+        </div>
+
+        <div class="overflow-x-auto bg-white rounded-lg shadow-lg">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-[#283845]">
+                    <tr>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                            Código
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                            C.I.
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                            Nombre Completo
+                        </th>
+                        <th scope="col"
+                            class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                            Correo
+                        </th>
+                        <th scope="col" class="relative px-6 py-3">
+                            <span class="sr-only">Acciones</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr *ngFor="let arq of filteredArchitects()">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ arq.codigo }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ arq.ci }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ arq.nombre }} {{ arq.apellido }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ arq.correo }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                                (click)="goToDetails(arq.codigo)"
+                                class="text-[#E0A189] hover:text-[#C97D60] font-semibold py-1 px-3 rounded-lg border border-[#E0A189] hover:border-[#C97D60] transition duration-300">
+                                ver
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-8">
+            <a routerLink="/" class="text-[#283845] hover:text-[#E0A189] font-medium underline">
+                Volver
+            </a>
+        </div>
+    </div>
+</div>
