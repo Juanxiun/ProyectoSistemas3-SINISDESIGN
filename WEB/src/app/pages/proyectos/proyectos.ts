@@ -1,49 +1,41 @@
+// deno-lint-ignore-file no-sloppy-imports
 import { Component, OnInit } from "@angular/core";
 import { Navbar } from "../../components/navbar/navbar";
 import { Siderbar } from "../../components/siderbar/siderbar";
-import { CardProy } from "../../components/card-proy/card-proy";
+import { CardProy } from "../../components/project/card-proy/card-proy";
 import { ActivatedRoute } from "@angular/router";
 import { CommonModule } from "@angular/common";
-import { from, map, Observable, of, switchMap } from "rxjs";
-import { ConnectA } from "../../../config/index";
+import { Options } from "../../elements/options/options";
+import { ProyInfo } from "../../components/project/proy-info/proy-info";
 
 @Component({
   selector: "app-proyectos",
-  imports: [CommonModule, Navbar, Siderbar, CardProy],
+  imports: [CommonModule, Navbar, Siderbar, CardProy, Options, ProyInfo],
   templateUrl: "./proyectos.html",
   styleUrl: "./proyectos.css",
 })
 export class Proyectos implements OnInit {
   usr: string | null = null;
-  url = ConnectA.api;
+  idproy: number = 0;
+  information: boolean = false;
 
   constructor(private route: ActivatedRoute) {}
 
-  proy$!: Observable<ProyProps[]>;
+  InformationProy(id: number) {
+    this.idproy = id;
+
+    if (this.idproy > 0) {
+      this.information = true;
+    }
+  }
+
+  salirInformacion() {
+    this.information = false;
+  }
 
   ngOnInit() {
-    this.proy$ = this.route.paramMap.pipe(
-      switchMap((parms) => {
-        this.usr = parms.get("usr");
-        return this.usr
-          ? from(
-            fetch(this.url + "/proyectos/" + this.usr).then((res) =>
-              res.json()
-            ),
-          )
-          : of([]);
-      }),
-      map((res: any) => (res.status === 200 ? res.data.data : [])),
-    );
+    this.route.paramMap.subscribe((parms) => {
+      this.usr = parms.get("usr");
+    });
   }
-}
-
-export interface ProyProps {
-  id?: number;
-  arq: string;
-  nombre: string;
-  costo: number;
-  imagen: string;
-  direccion: string;
-  est: number;
 }

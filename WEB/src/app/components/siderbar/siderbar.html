@@ -2,26 +2,31 @@
     class="lg:w-[250px] md:w-[200px] w-[80px] border-y-4 border-[#f6efe5] h-full bg-[#283845] flex flex-col align-middle items-center ">
     <div
         class="w-full h-[80%] flex flex-col align-middle items-center justify-baseline text-white text-xl px-5">
-        <div class="options space-x-3">
-            <img class="md:w-[25%] w-[80%] cursor-pointer" src="/images/proyecto.svg" alt>
-            <h3 class="md:text-white text-transparent cursor-pointer">Proyectos</h3>
+        <div class="options ">
+            <app-options initIcon="bi-folder" hoverIcon="bi-folder-fill"
+                option="Proyectos" direction="/" />
         </div>
-        <div class="options space-x-3">
-            <img class="md:w-[25%] w-[80%] cursor-pointer" src="/images/reporte.svg" alt>
-            <h3 class="md:text-white text-transparent cursor-pointer">Proyectos</h3>
+
+        <div class="options">
+            <app-options initIcon="bi-clipboard2-data"
+                hoverIcon="bi-clipboard2-data-fill"
+                option="Reportes" direction="/" />
         </div>
-        <div class="options space-x-3">
-            <img class="md:w-[25%] w-[80%] cursor-pointer" src="/images/reunion.svg" alt>
-            <h3 class="md:text-white text-transparent cursor-pointer">Proyectos</h3>
+
+        <div class="options">
+            <app-options initIcon="bi-people" hoverIcon="bi-people-fill"
+                option="Reuniones" direction="/" />
         </div>
     </div>
     <div class="w-full h-[20%]">
         <div class="w-full h-full flex justify-center align-bottom items-end">
-            <img class="md:w-[25%] w-[50%] md:mb-5 mb-9 cursor-pointer" src="/images/salir.svg"
+            <img class="md:w-[25%] w-[50%] md:mb-5 mb-9 cursor-pointer"
+                src="/images/salir.svg"
                 alt>
         </div>
     </div>
 </aside>
+
 <style>
     .options{
         @apply

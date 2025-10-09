@@ -2,17 +2,29 @@
 <div
     class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
     <app-siderbar />
-    <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-scroll 
-            grid lg:grid-cols-4 md:grid-cols-2 sm:grid-cols-1 gap-4">
+    <div class="bg-[#f6efe5] w-full h-full ">
 
-        <ng-container *ngFor="let p of proy$ | async">
-            <app-card-proy
-                [titulo]="p.nombre"
-                [direccion]="p.direccion"
-                [imagen]="p.imagen">
-            </app-card-proy>
-        </ng-container>
+        @if(information === false){
+        <div class="w-full h-[8%] border-b-2">
+            <div class="h-full flex justify-start align-middle items-center">
+                <app-options initIcon="bi-file-plus"
+                    hoverIcon="bi-file-plus-fill" direction="/" />
+                <h1 class="cursor-default">REGISTRAR NUEVO PROYECTO</h1>
+            </div>
+        </div>
+        <app-card-proy
+            (idproy)="InformationProy($event)"
+            [usr]="usr ?? ''" />
+        }
+        @else {
 
+        <div class="w-full h-full backdrop-blur-2xl">
+            <div (click)="salirInformacion()">
+                EXIT
+            </div>
+            <app-proy-info [usr]="usr?? ''" [idproy]="idproy"/>
+        </div>
+        }
     </div>
 
 </div>
