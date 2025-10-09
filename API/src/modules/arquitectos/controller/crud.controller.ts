@@ -50,7 +50,7 @@ export class CrudArquitectos {
     };
 
 
-    if (!arquitecto.ci || !arquitecto.nombre || !arquitecto.password) {
+    if (!arquitecto.ci || !arquitecto.nombre) {
       return ResponseOak(
         ctx,
         400,
