@@ -1,9 +1,11 @@
 import { Router } from "@oak/oak";
 import { CrudPago } from "./controller/crud.controller.ts";
 import PagoModel from "./model.ts";
+import { DeudaController } from "./controller/deuda.controller.ts";
 
 const pago = new Router();
 const pag = new CrudPago();
+const deuda = new DeudaController();
 
 pago
   .get("/:proy", async (ctx) => {
@@ -40,6 +42,11 @@ pago
   .delete("/:id", async (ctx) => {
     const id = parseInt(ctx.params.id);
     await pag.delete(ctx, id);
-  });
+  })
+  //adicional rute
 
+  .get("/p/deuda/:idproy", async (ctx) => {
+    const idproy = parseInt(ctx.params.idproy);
+    await deuda.deuda(ctx, idproy);
+  });
 export default pago;
