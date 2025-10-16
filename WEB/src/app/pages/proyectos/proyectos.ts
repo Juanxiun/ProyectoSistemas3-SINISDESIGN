@@ -1,9 +1,8 @@
-// deno-lint-ignore-file no-sloppy-imports
 import { Component, OnInit } from "@angular/core";
 import { Navbar } from "../../components/navbar/navbar";
 import { Siderbar } from "../../components/siderbar/siderbar";
 import { CardProy } from "../../components/project/card-proy/card-proy";
-import { ActivatedRoute } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { Options } from "../../elements/options/options";
 import { ProyInfo } from "../../components/project/proy-info/proy-info";
@@ -12,7 +11,7 @@ import { ProyInfo } from "../../components/project/proy-info/proy-info";
   selector: "app-proyectos",
   imports: [CommonModule, Navbar, Siderbar, CardProy, Options, ProyInfo],
   templateUrl: "./proyectos.html",
-  styleUrl: "./proyectos.css",
+  styleUrls: ["./proyectos.css"],
 })
 export class Proyectos implements OnInit {
   usr: string | null = null;
@@ -21,13 +20,11 @@ export class Proyectos implements OnInit {
   searchTerm: string = '';
   noResults: boolean = false; 
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(private route: ActivatedRoute, private router: Router) {}
 
   InformationProy(id: number) {
     this.idproy = id;
-    if (this.idproy > 0) {
-      this.information = true;
-    }
+    this.information = this.idproy > 0;
   }
 
   salirInformacion() {
@@ -43,9 +40,13 @@ export class Proyectos implements OnInit {
     this.noResults = !hasResults && this.searchTerm.length > 0;
   }
 
+  goToCreate() {
+    this.router.navigate(['registro-proyectos/crear']);
+  }
+
   ngOnInit() {
-    this.route.paramMap.subscribe((parms) => {
-      this.usr = parms.get("usr");
+    this.route.paramMap.subscribe((params) => {
+      this.usr = params.get("usr");
     });
   }
 }

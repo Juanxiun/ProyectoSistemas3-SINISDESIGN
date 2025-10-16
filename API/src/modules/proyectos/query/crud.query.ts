@@ -7,6 +7,7 @@ import { conver64, typeFile } from "../../../libs/conver64.ts";
 interface res {
   data?: ProyectoModel[];
   std: number;
+  id?: number;
 }
 
 export const SelectQuery = async (usr: string, id?: number): Promise<res> => {
@@ -75,10 +76,18 @@ export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
       1,
     ];
 
-    await cli.execute(query, params);
+    const result = await cli.execute(query, params);
+    
+    console.log("=== DEBUG CreateQuery ===");
+    console.log("Resultado completo de execute:", result);
+    console.log("result[1]:", (result as any)[1]);
+    console.log("result[1].insertId:", (result as any)[1]?.insertId);
+
+    const insertId = (result as any)[1]?.insertId;
 
     return {
       std: 200,
+      id: insertId,
     };
   } catch (error) {
     console.log("Error en la query: Proyectos > Create >\n" + error);
@@ -121,7 +130,7 @@ export const DeleteQuery = async (id: number, fecha: string): Promise<res> => {
       `UPDATE
             proyectos
         SET
-            est = 0
+            est = 0,
             final = ?
         WHERE
             id = ?`,
