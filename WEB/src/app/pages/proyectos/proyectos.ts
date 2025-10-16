@@ -18,12 +18,13 @@ export class Proyectos implements OnInit {
   usr: string | null = null;
   idproy: number = 0;
   information: boolean = false;
+  searchTerm: string = '';
+  noResults: boolean = false; 
 
   constructor(private route: ActivatedRoute) {}
 
   InformationProy(id: number) {
     this.idproy = id;
-
     if (this.idproy > 0) {
       this.information = true;
     }
@@ -31,6 +32,15 @@ export class Proyectos implements OnInit {
 
   salirInformacion() {
     this.information = false;
+  }
+
+  onSearchHandler(searchTerm: string) {
+    console.log('Término de búsqueda:', searchTerm);
+    this.searchTerm = searchTerm;
+  }
+
+  onResultsChange(hasResults: boolean) {
+    this.noResults = !hasResults && this.searchTerm.length > 0;
   }
 
   ngOnInit() {

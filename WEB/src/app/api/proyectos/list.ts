@@ -5,7 +5,6 @@ export async function ListProyectos(usr: string): Promise<ListProps[]> {
     try {
         const result = await fetch(url + "/proyectos/p/list/" + usr);
         const listproy = await result.json();
-
         if (listproy.status === 200) {
             return listproy.data.data as ListProps[];
         }
