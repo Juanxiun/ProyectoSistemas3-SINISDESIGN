@@ -1,0 +1,23 @@
+<app-navbar />
+
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full flex flex-row">
+    <app-siderbar class="hidden md:block w-64 flex-shrink-0" />
+    <div class="bg-[#f6efe5] w-full h-full px-0 py-0 overflow-y-auto">
+        <main class="flex-1 overflow-y-auto p-4 md:p-8">
+            <div *ngIf="faseId; else noFase" class="container mx-auto">
+                <app-doc-info [faseId]="faseId" />
+            </div>
+            <ng-template #noFase>
+                <div class="text-center py-20">
+                    <h2 class="text-3xl font-bold text-red-600">
+                        Error: Fase no especificada
+                    </h2>
+                    <p class="text-gray-600 mt-2">
+                        Por favor, navegue desde la lista de fases para cargar
+                        documentos.
+                    </p>
+                </div>
+            </ng-template>
+        </main>
+    </div>
+</div>
