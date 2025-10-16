@@ -15,7 +15,7 @@ class Nodo {
 
       const reqRes = await ReqFasePre(idProy);
       if (reqRes.std !== 200 || !reqRes.data?.length) {
-        throw new Error("No se pudieron obtener los datos del proyecto.");
+        throw new Error("Sin proyectos");
       }
 
       const proyData: ReqProyModel = reqRes.data[0];
@@ -27,7 +27,7 @@ class Nodo {
       //Obtener proyectos del mismo tipo y subtipo
       const tipoRes = await TipoProyPre(tipo, subtipo);
       if (tipoRes.std !== 200 || !tipoRes.data) {
-        throw new Error("No se pudieron obtener los proyectos relacionados.");
+        throw new Error("Sin proyectos");
       }
       const tipoProy: TipoProyPreModel[] = tipoRes.data;
 
