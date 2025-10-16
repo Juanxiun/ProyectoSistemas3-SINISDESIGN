@@ -5,3 +5,9 @@ export default interface PagoModel{
     monto: number;
     fecha: string;
 }
+
+export interface DeudaModel{
+    costo: number;
+    pago: number;
+    deuda: number;
+}
