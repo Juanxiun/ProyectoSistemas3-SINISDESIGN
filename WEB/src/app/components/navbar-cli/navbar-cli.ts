@@ -1,9 +1,10 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-navbar-cli',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './navbar-cli.html',
   styleUrl: './navbar-cli.css'
 })

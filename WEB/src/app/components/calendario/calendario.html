@@ -1,0 +1,39 @@
+<div class="calendario-container">
+  <div class="calendario-header">
+    <div class="calendario-controls">
+      <button class="btn-control" (click)="mesAnterior()">
+        ‹
+      </button>
+      <h2 class="mes-actual">{{ mesActual | titlecase }} {{ anioActual }}</h2>
+      <button class="btn-control" (click)="mesSiguiente()">
+        ›
+      </button>
+    </div>
+    <button class="btn-hoy" (click)="irHoy()">Hoy</button>
+  </div>
+
+  <div class="calendario-grid">
+    <div class="dias-semana">
+      <div class="dia-semana">Dom</div>
+      <div class="dia-semana">Lun</div>
+      <div class="dia-semana">Mar</div>
+      <div class="dia-semana">Mié</div>
+      <div class="dia-semana">Jue</div>
+      <div class="dia-semana">Vie</div>
+      <div class="dia-semana">Sáb</div>
+    </div>
+
+    <div class="semanas">
+      <div *ngFor="let semana of semanas" class="semana">
+        <div 
+          *ngFor="let dia of semana" 
+          class="dia"
+          [class.dia-actual]="esMismoDia(dia, hoy)"
+          [class.dia-otro-mes]="!esMesActual(dia)">
+          <div class="numero-dia">{{ dia.getDate() }}</div>
+          <!-- Aquí irían las reuniones cuando las implementemos -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
