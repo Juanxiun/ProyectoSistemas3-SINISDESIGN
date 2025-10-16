@@ -2,13 +2,15 @@ import { Routes } from '@angular/router';
 import { Proyectos } from './pages/proyectos/proyectos';
 import { Presentation } from './pages/presentation/presentation';
 import { PerfilArquitectos } from './pages/perfil-arquitectos/perfil-arquitectos';
-// Importación de los nuevos componentes de Registro
+
 import { RegistroArquitectos } from './pages/registro-arquitectos/registro-arquitectos';
 import { CrearArquitecto } from './pages/registro-arquitectos/crear-arquitecto/crear-arquitecto';
 import { DetalleArquitecto } from './pages/registro-arquitectos/detalle-arquitecto/detalle-arquitecto';
-// Importar pagina para login
-import { Login } from './pages/login/login'
 
+import { Login } from './pages/login/login'
+import { DocumentosCrudPage } from './pages/documentos/documentos';
+
+import { CrearProyectos } from './pages/proyectos/crear-proyectos/crear-proyectos';
 
 
 export const routes: Routes = [
@@ -23,6 +25,14 @@ export const routes: Routes = [
 
     // RUTA DE LOGIN
     { path: "login", component: Login },
-    { path: "", redirectTo: "login", pathMatch: "full"}
+    { path: "", redirectTo: "login", pathMatch: "full"},
+    //RUTAS DE DOCUMENTO 
+
+    {
+        path: 'fases/:faseId/documentos',
+        component: DocumentosCrudPage,
+    },
+    // RUTAS DE REGISTRO DE PROYECTOS
+    { path: "registro-proyectos/crear", title: "Crear Proyecto", component: CrearProyectos },
 ];
 

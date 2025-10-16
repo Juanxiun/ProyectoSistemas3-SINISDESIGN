@@ -3,12 +3,7 @@ import {oakCors} from "cors";
 import route from "./src/router/main.route.ts";
 const app = new Application();
 
-app.use(oakCors({
-    origin: "http://localhost:4200",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-type", "Autorization"],
-    
-}));
+app.use(oakCors());
 
 app.use(route.routes());
 app.use(route.allowedMethods());

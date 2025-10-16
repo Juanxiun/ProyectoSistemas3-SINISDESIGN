@@ -4,6 +4,6 @@ export default interface ClienteModel{
     apellido: string;
     telefono: number;
     correo: string;
-    contrasena: string;
+    password: string;
     estado: number;
 }
