@@ -1,0 +1,23 @@
+<div class="bg-white rounded-lg shadow-lg overflow-hidden transition-shadow duration-300 hover:shadow-xl border-t-4 border-blue-500">
+      <div class="p-4">
+        <h3 class="text-xl font-bold text-gray-800 mb-2">{{ fase.fase }}</h3>
+        <p class="text-sm text-gray-600 mb-3">{{ fase.detalle }}</p>
+        
+        <div class="space-y-1 text-sm text-gray-700">
+          <p><strong>Inicio:</strong> {{ fase.inicio | slice:0:10 }}</p>
+          <p><strong>Fin:</strong> {{ fase.final ? (fase.final | slice:0:10) : 'Pendiente' }}</p>
+          <p><strong>Estado:</strong> 
+            <span [ngClass]="{'text-green-600': fase.estado === 1, 'text-yellow-600': fase.estado === 0 || fase.estado === 2, 'text-red-600': fase.estado === 3}">
+              {{ getEstado(fase.estado) }}
+            </span>
+          </p>
+        </div>
+        
+        <div class="mt-4 border-t pt-3">
+          <a [routerLink]="['/fases', fase.id, 'documentos']" 
+             class="block w-full text-center bg-blue-600 text-white py-2 px-4 rounded-md text-sm font-semibold hover:bg-blue-700 transition duration-150">
+            Ver Documentos
+          </a>
+        </div>
+      </div>
+    </div>

@@ -16,7 +16,7 @@ export async function ProyFase(fase: string): Promise<DocumentoProps[]> {
     }
 }
 
-export default interface DocumentoProps{
+export default interface DocumentoProps {
     id?: number;
     fase: number;
     nombre: string;
