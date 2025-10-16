@@ -1,29 +1,46 @@
 <app-navbar />
 <div
     class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
-    <app-siderbar />
+    <app-siderbar (cambiarVista)="cambiarVista($event)"/>
     <div class="bg-[#f6efe5] w-full h-full ">
 
-        @if(information === false){
-        <div class="w-full h-[8%] border-b-2">
-            <div class="h-full flex justify-start align-middle items-center">
-                <app-options initIcon="bi-file-plus"
-                    hoverIcon="bi-file-plus-fill" direction="/" />
-                <h1 class="cursor-default">REGISTRAR NUEVO PROYECTO</h1>
+        <!--Añadido el currentview para hacer la llamada al componente calendario dentro del codigo-->
+        @if(currentView === 'proyectos'){
+            @if(information === false){
+            <div class="w-full h-[8%] border-b-2">
+                <div class="h-full flex justify-start align-middle items-center">
+                    <app-options initIcon="bi-file-plus"
+                        hoverIcon="bi-file-plus-fill" direction="/" />
+                    <h1 class="cursor-default">REGISTRAR NUEVO PROYECTO</h1>
+                </div>
             </div>
-        </div>
-        <app-card-proy
-            (idproy)="InformationProy($event)"
-            [usr]="usr ?? ''" />
-        }
-        @else {
+            <app-card-proy
+                (idproy)="InformationProy($event)"
+                [usr]="usr ?? ''" />
+            }
+            @else {
 
-        <div class="w-full h-full backdrop-blur-2xl">
-            <div (click)="salirInformacion()">
-                EXIT
+            <div class="w-full h-full backdrop-blur-2xl">
+                <div (click)="salirInformacion()">
+                    EXIT
+                </div>
+                <app-proy-info [usr]="usr?? ''" [idproy]="idproy"/>
             </div>
-            <app-proy-info [usr]="usr?? ''" [idproy]="idproy"/>
-        </div>
+            }
+        }@else if (currentView === 'reuniones') {
+            <div class="w-full h-full p-4">
+                <div class="w-full h-[8%] border-b-2 mb-4 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <h1 class="cursor-default text-xl font-bold">CALENDARIO DE REUNIONES</h1>
+                    </div>
+                    <button class="btn-nueva-reunion" disabled>
+                        + Nueva Reunión
+                    </button>
+                </div>
+                <div class="w-full h-[92%]">
+                    <app-calendario></app-calendario>
+                </div>
+            </div>
         }
     </div>
 

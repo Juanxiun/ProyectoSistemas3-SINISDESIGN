@@ -7,10 +7,12 @@ import { ActivatedRoute } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { Options } from "../../elements/options/options";
 import { ProyInfo } from "../../components/project/proy-info/proy-info";
-
+import { CalendarioComponent } from "../../components/calendario/calendario";
+//añadido el import del calendario de reuniones
 @Component({
   selector: "app-proyectos",
-  imports: [CommonModule, Navbar, Siderbar, CardProy, Options, ProyInfo],
+  imports: [CommonModule, Navbar, Siderbar, CardProy, Options, ProyInfo, CalendarioComponent],
+  //añadido el import del calendario de reuniones
   templateUrl: "./proyectos.html",
   styleUrl: "./proyectos.css",
 })
@@ -18,6 +20,7 @@ export class Proyectos implements OnInit {
   usr: string | null = null;
   idproy: number = 0;
   information: boolean = false;
+  currentView: 'proyectos' | 'reuniones' = 'proyectos';//añadido la vista que se esta teniendo
 
   constructor(private route: ActivatedRoute) {}
 
@@ -37,5 +40,9 @@ export class Proyectos implements OnInit {
     this.route.paramMap.subscribe((parms) => {
       this.usr = parms.get("usr");
     });
+  }
+    //Añadido del cambio de vista al componente reuniones (calendario de reuniones)
+   cambiarVista(view: 'proyectos' | 'reuniones'): void {
+      this.currentView = view;
   }
 }
