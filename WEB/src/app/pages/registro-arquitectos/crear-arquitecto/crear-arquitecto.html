@@ -1,4 +1,4 @@
-<app-navbar />
+<app-navbar [Ubi]="'Arquitectos'"/>
 <div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
     <app-siderbar />
     <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-auto">
@@ -14,7 +14,7 @@
                 
                 <div>
                     <label for="ci" class="block text-sm font-medium text-gray-700">C.I. *</label>
-                    <input type="number" id="ci" name="ci" [(ngModel)]="newArchitect.ci" required min="1"
+                    <input type="number" id="ci" name="ci" [(ngModel)]="newArchitect.ci" required min="1" maxlength="10"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                 </div>
                 <div>
@@ -37,7 +37,7 @@
                 <div>
                     <label for="telefono" class="block text-sm font-medium text-gray-700">Teléfono</label>
                     <input type="number" id="telefono" name="telefono" [(ngModel)]="newArchitect.telefono"
-                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" min="1">
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" min="1" max="8">
                 </div>
                 <div>
                     <label for="correo" class="block text-sm font-medium text-gray-700">Correo</label>

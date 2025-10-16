@@ -1,0 +1,202 @@
+<app-navbar [Ubi]="'Proyectos'"/>
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+  <app-siderbar />
+  <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+      <div class="bg-white rounded-t-2xl p-6 shadow-sm border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div>
+              <h1 class="text-3xl font-bold text-[#92443a]">Crear Nuevo Proyecto</h1>
+              <p class="text-gray-600 mt-1 text-sm">Completa los campos para registrar un nuevo proyecto en el sistema</p>
+            </div>
+          </div>
+          <div class="hidden md:block">
+            <div class="bg-[#f8f4f0] p-3 rounded-lg border border-gray-200">
+              <i class="bi bi-building text-2xl text-[#92443a]"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-b-2xl shadow-lg p-8">
+        <form (ngSubmit)="onSubmit()" #proyectoForm="ngForm" novalidate class="space-y-8">
+          
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+              <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                <i class="bi bi-folder-plus text-[#92443a] text-lg"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Información del Proyecto</h2>
+                <p class="text-gray-500 text-sm mt-1">Detalles principales del proyecto</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="md:col-span-2">
+                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i class="bi bi-pencil-square text-[#92443a]"></i>
+                  Nombre del Proyecto <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="proyecto.nombre"
+                  name="nombre"
+                  required
+                  minlength="3"
+                  maxlength="100"
+                  placeholder="Ingrese el nombre del proyecto"
+                  class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                  [class.border-red-500]="proyectoForm.submitted && (!proyecto.nombre || proyecto.nombre.length < 3)"/>
+                <small *ngIf="proyectoForm.submitted && !proyecto.nombre" class="text-red-500 text-sm">Este campo es obligatorio</small>
+                <small *ngIf="proyectoForm.submitted && proyecto.nombre && proyecto.nombre.length < 3" class="text-red-500 text-sm">Mínimo 3 caracteres</small>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i class="bi bi-person-badge text-[#92443a]"></i>
+                  Cliente <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="proyecto.cli"
+                  name="cliente"
+                  required
+                  class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer"
+                  [class.border-red-500]="proyectoForm.submitted && (!proyecto.cli || proyecto.cli === 0)">
+                  <option value="0" disabled selected>Seleccionar cliente...</option>
+                  <option *ngFor="let cliente of clientes()" [value]="cliente.ci">
+                    {{ cliente.nombre }} {{ cliente.apellido }}
+                  </option>
+                </select>
+                <small *ngIf="proyectoForm.submitted && (!proyecto.cli || proyecto.cli === 0)" class="text-red-500 text-sm">Seleccione un cliente</small>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i class="bi bi-person-workspace text-[#92443a]"></i>
+                  Arquitecto <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="proyecto.arq"
+                  name="arquitecto"
+                  required
+                  class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer"
+                  [class.border-red-500]="proyectoForm.submitted && !proyecto.arq">
+                  <option value="" disabled selected>Seleccionar arquitecto...</option>
+                  <option *ngFor="let arq of arquitectos()" [value]="arq.codigo">
+                    {{ arq.nombre }} {{ arq.apellido }}
+                  </option>
+                </select>
+                <small *ngIf="proyectoForm.submitted && !proyecto.arq" class="text-red-500 text-sm">Seleccione un arquitecto</small>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i class="bi bi-currency-dollar text-[#92443a]"></i>
+                  Costo <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">Bs.  </span>
+                  <input
+                    type="number"
+                    [(ngModel)]="proyecto.costo"
+                    name="costo"
+                    required
+                    min="1"
+                    max="9999999"
+                    placeholder="0"
+                    class="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                    [class.border-red-500]="proyectoForm.submitted && (!proyecto.costo || proyecto.costo < 1 || proyecto.costo > 9999999)"/>
+                </div>
+                <small *ngIf="proyectoForm.submitted && (!proyecto.costo || proyecto.costo <= 0)" class="text-red-500 text-sm">Ingrese un costo válido (mayor a 0)</small>
+                <small *ngIf="proyectoForm.submitted && proyecto.costo > 9999999" class="text-red-500 text-sm">El costo no puede exceder 9,999,999 Bs.</small>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <i class="bi bi-calendar-event text-[#92443a]"></i>
+                  Fecha de Inicio <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  [(ngModel)]="proyecto.inicio"
+                  name="inicio"
+                  required
+                  [min]="fechaHoyISO()"
+                  class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer"
+                  [class.border-red-500]="proyectoForm.submitted && !proyecto.inicio"/>
+                <small *ngIf="proyectoForm.submitted && !proyecto.inicio" class="text-red-500 text-sm">Seleccione una fecha</small><br>
+                <small class="text-gray-500 text-xs">A partir de hoy en adelante</small>
+              </div>
+            </div>
+
+            <div class="mt-6 pt-6 border-t border-gray-100">
+              <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <i class="bi bi-image text-[#92443a]"></i>
+                Imagen del Proyecto <span class="text-red-500">*</span>
+              </label>
+              <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                <input
+                  type="file"
+                  #fileInput
+                  (change)="onFileSelected($event)"
+                  accept="image/*"
+                  required
+                  class="hidden"/>
+                <button
+                  type="button"
+                  (click)="fileInput.click()"
+                  class="px-6 py-3 bg-[#E0A189] hover:bg-[#C97D60] text-white rounded-lg transition-all duration-200 font-semibold flex items-center gap-2 w-fit">
+                  <i class="bi bi-cloud-arrow-up text-lg"></i>
+                  Seleccionar Imagen
+                </button>
+                <div *ngIf="nombreArchivo" class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                  <i class="bi bi-file-image text-[#92443a]"></i>
+                  <span class="text-gray-600 text-sm">{{ nombreArchivo }}</span>
+                </div>
+              </div>
+              <small *ngIf="proyectoForm.submitted && !nombreArchivo" class="text-red-500 text-sm mt-1 block">Debe seleccionar una imagen</small>
+              <small class="text-gray-500 text-xs mt-1 block">Formatos soportados: JPG, PNG, WebP (máx. 5MB)</small>
+
+              <div *ngIf="previewImagen" class="mt-4 flex justify-center">
+                <img [src]="previewImagen" alt="Vista previa" class="max-w-xs h-auto rounded-lg border-2 border-gray-200" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+            <button
+              type="submit"
+              [disabled]="isLoading()"
+              class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">
+              <span *ngIf="!isLoading()" class="flex items-center gap-2">
+                <i class="bi bi-plus-circle text-lg"></i>
+                CREAR PROYECTO
+              </span>
+              <span *ngIf="isLoading()" class="flex items-center gap-2">
+                <i class="bi bi-hourglass-split animate-spin"></i>
+                Creando Proyecto...
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="goBack()"
+              class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">
+              <i class="bi bi-x-circle text-lg"></i>
+              CANCELAR
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="mt-6 text-center">
+        <p class="text-gray-500 text-sm flex items-center justify-center gap-2">
+          <i class="bi bi-info-circle"></i>
+          Los campos marcados con <span class="text-red-500 font-bold">*</span> son obligatorios
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

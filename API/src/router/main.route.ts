@@ -1,6 +1,7 @@
 import { Router } from "@oak/oak";
 import proyecto from "../modules/proyectos/router.ts";
 import arquitecto from "../modules/arquitectos/router.ts";
+import clientes from "../modules/clientes/router.ts";
 import tipo from "../modules/proyectos/submodules/tipo/router.ts";
 import reunion from "../modules/proyectos/submodules/reunion/router.ts";
 import pago from "../modules/proyectos/submodules/pago/router.ts";
@@ -25,6 +26,9 @@ route.use("/documento", documento.routes(), documento.allowedMethods());
 //arq
 route.use("/arquitectos", arquitecto.routes(), arquitecto.allowedMethods());
 
+//clientes
+route.use("/clientes", clientes.routes(), clientes.allowedMethods());
+
 //login
 route.use("/sesion", sesion.routes(), sesion.allowedMethods());
 
@@ -37,4 +41,5 @@ route.use("/notificaciones", notificaciones.routes(), notificaciones.allowedMeth
 //aporte academico
 route.use("/prediccion", prediccion.routes(), prediccion.allowedMethods());
 
+export default route;
 export default route;
