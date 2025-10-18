@@ -26,7 +26,7 @@ export const routes: Routes = [
     {
         path: 'fases/:faseId/documentos',
         component: DocumentosCrudPage,
-    }
+    },
     // RUTAS DE REGISTRO DE PROYECTOS
     { path: "registro-proyectos/crear", title: "Crear Proyecto", component: CrearProyectos },
 
