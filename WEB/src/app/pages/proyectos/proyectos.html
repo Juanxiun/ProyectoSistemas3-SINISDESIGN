@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <app-navbar />
 <div
     class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
@@ -31,71 +30,23 @@
         }@else if (currentView === 'reuniones') {
             <div class="w-full h-full p-4">
                 <div class="w-full h-[8%] border-b-2 mb-4 flex justify-between items-center">
-                    <div class="flex items-center">
-                        <h1 class="cursor-default text-xl font-bold">CALENDARIO DE REUNIONES</h1>
-                    </div>
-                    <button class="btn-nueva-reunion" disabled>
-                        + Nueva Reunión
-                    </button>
+                <div class="flex items-center">
+                    <h1 class="cursor-default text-xl font-bold">CALENDARIO DE REUNIONES</h1>
+                </div>
+                <button 
+                    class="btn-nueva-reunion bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition"
+                    (click)="abrirNuevaReunion()">
+                    + Nueva Reunión
+                </button>
                 </div>
                 <div class="w-full h-[92%]">
-                    <app-calendario></app-calendario>
+                <app-calendario></app-calendario>
                 </div>
             </div>
-        }
+            }
+
+            @else if (currentView === 'nueva-reunion') {
+            <app-nueva-reunion></app-nueva-reunion>
+            }
     </div>
-
-=======
-<app-navbar 
-  [Ubi]="'Proyectos'" 
-  [noResults]="noResults"
-  (onSearch)="onSearchHandler($event)" />
-
-<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
-  <app-siderbar />
-  
-  <div class="bg-[rgb(246,239,229)] w-full h-full overflow-hidden flex flex-col">
-    
-    @if(information === false){
-      <div class="px-8 py-6 border-b border-[#d4c5b9] flex justify-between items-center">
-        <h1 class="text-4xl font-bold text-[#283845]">MIS PROYECTOS</h1>
-        <button
-          (click)="goToCreate()"
-          class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
-          <i class="bi bi-plus-circle-fill text-lg"></i>
-          NUEVO PROYECTO
-        </button>
-      </div>
-
-      <div class="flex-1 overflow-y-auto overflow-x-hidden px-6 py-6">
-        <app-card-proy
-          (idproy)="InformationProy($event)"
-          (resultsChange)="onResultsChange($event)"
-          [usr]="usr ?? ''"
-          [searchTerm]="searchTerm" />
-      </div>
-    }
-
-    @else {
-      <div class="w-full h-full bg-black/40 backdrop-blur-sm absolute inset-0 flex items-center justify-center z-50">
-        <div class="w-[95%] h-[95%] bg-[rgb(246,239,229)] rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-          
-          <div class="px-8 py-6 border-b border-[#d4c5b9] flex justify-between items-center">
-            <h2 class="text-2xl font-bold text-[#283845]">DETALLES DEL PROYECTO</h2>
-            <button 
-              (click)="salirInformacion()" 
-              class="flex items-center gap-2 text-[#92443a] hover:text-[#b8523e] hover:bg-[#E0A189]/20 px-4 py-2 rounded-lg transition-all duration-200 font-semibold">
-              <i class="bi bi-x-circle-fill text-xl"></i>
-              CERRAR
-            </button>
-          </div>
-
-          <div class="flex-1 overflow-y-auto px-8 py-6">
-            <app-proy-info [usr]="usr ?? ''" [idproy]="idproy"/>
-          </div>
-        </div>
-      </div>
-    }
-  </div>
->>>>>>> 6c7578ff2dde858cfdf7ffd3f202dbcbc158dab2
 </div>
