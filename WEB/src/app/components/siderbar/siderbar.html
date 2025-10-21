@@ -1,40 +1,26 @@
 <aside
     class="lg:w-[250px] md:w-[200px] w-[80px] h-full bg-[#283845] flex flex-col justify-between items-center border-y-4 border-[#f6efe5]">
 
-    <div class="w-full flex flex-col justify-center items-center gap-12 mt-12">
+    <div class="w-full flex flex-col justify-center items-center md:space-y-16 space-y-6 mt-12">
 
         <app-options initIcon="bi-folder-fill" hoverIcon="text-[#f6efe5]"
             option="Proyectos" direction="/proyectos/mffj2029126" />
 
-        <app-options initIcon="bi-clipboard2-data-fill" hoverIcon="text-[#f6efe5]"
+        <app-options initIcon="bi-clipboard2-data-fill"
+            hoverIcon="text-[#f6efe5]"
             option="Reportes" direction="/proyectos/mffj2029126" />
 
         <app-options initIcon="bi-people-fill" hoverIcon="text-[#f6efe5]"
             option="Reportes" direction="/Reuniones" />
-        
-            
 
-        <a href="/registro-arquitectos"
-            class="option flex flex-col items-center text-white cursor-pointer hover:text-[#f6efe5]">
-            <i class="bi bi-building text-5xl mb-3"></i>
-            <span class="text-lg md:text-xl font-semibold">Arquitectos</span>
-        </a>
+        <app-options initIcon="bi-building" hoverIcon="text-[#f6efe5]"
+            option="Arquitectos" direction="/registro-arquitectos" />
+
     </div>
 
     <div class="w-full flex justify-center mb-8">
-        <a href="/"
-            class="option flex flex-col items-center text-white cursor-pointer hover:text-[#f6efe5]">
-            <i class="bi bi-box-arrow-right text-5xl"></i>
-        </a>
+        <app-options initIcon="bi-box-arrow-right" hoverIcon="text-[#f6efe5]"
+            option="" direction="/registro-arquitectos" />
     </div>
 
 </aside>
-
-<style>
-.option i {
-    transition: transform 0.2s;
-}
-.option:hover i {
-    transform: scale(1.3);
-}
-</style>
