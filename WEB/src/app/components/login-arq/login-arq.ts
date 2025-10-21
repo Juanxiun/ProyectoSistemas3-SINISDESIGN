@@ -1,36 +1,52 @@
-import { Component, EventEmitter, Output, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+// deno-lint-ignore-file no-sloppy-imports
+import { Component, EventEmitter, OnInit, Output } from "@angular/core";
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
+import { CommonModule } from "@angular/common";
+import { Router } from "@angular/router";
+import { AuthService } from "../../middlewares/auth.service";
+import { HttpClientModule } from "@angular/common/http";
 
 @Component({
-  selector: 'app-login-arq',
+  selector: "app-login-arq",
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './login-arq.html',
-  styleUrls: ['./login-arq.css']
+  imports: [CommonModule, ReactiveFormsModule, HttpClientModule],
+  templateUrl: "./login-arq.html",
+  styleUrls: ["./login-arq.css"],
 })
 export class LoginArq implements OnInit {
-  @Output() navigate = new EventEmitter<'cli' | 'arq' | 'recuperar' | 'nuevo'>();
+  @Output()
+  navigate = new EventEmitter<"cli" | "arq" | "recuperar" | "nuevo">();
 
-  @Output() goRecuperar = new EventEmitter<void>(); // Para cambiar al formulario "recuperar"
+  @Output()
+  goRecuperar = new EventEmitter<void>();
 
   loginForm: FormGroup;
   submitted = false;
   showPassword = false;
+  errorMessage = "";
 
-  constructor(private formBuilder: FormBuilder) {
+  constructor(
+    private formBuilder: FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+  ) {
     this.loginForm = this.formBuilder.group({
-      codigoUsuario: ['', [
+      codigoUsuario: ["", [
         Validators.required,
         Validators.minLength(6),
         Validators.maxLength(12),
-        Validators.pattern(/^[A-Za-z0-9]+$/) // solo letras y números
+        Validators.pattern(/^[A-Za-z0-9]+$/), // solo letras y números
       ]],
-      contrasena: ['', [
+      contrasena: ["", [
         Validators.required,
         Validators.minLength(8),
-        Validators.maxLength(25)
-      ]]
+        Validators.maxLength(25),
+      ]],
     });
   }
 
@@ -40,27 +56,35 @@ export class LoginArq implements OnInit {
     return this.loginForm.controls;
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     this.submitted = true;
 
     if (this.loginForm.invalid) {
       return;
     }
 
-    console.log('Login Arquitecto:', this.loginForm.value);
-    // Aquí se podrá llamar al servicio de autenticación más adelante
+    try {
+      const user: any = await this.auth.login(
+        this.loginForm.value.codigoUsuario,
+        this.loginForm.value.contrasena,
+      );
+
+      this.router.navigate(["/proyectos/"]);
+    } catch (err) {
+      this.errorMessage = "Usuario o contraseña incorrecta";
+      console.error(err);
+    }
   }
 
   togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
 
-  // 🔹 Llama al Page Login para cambiar de vista
   onRecuperarClick(): void {
-    this.navigate.emit('recuperar');
+    this.navigate.emit("recuperar");
   }
 
-    goCliente(): void {
-    this.navigate.emit('cli');
+  goCliente(): void {
+    this.navigate.emit("cli");
   }
 }

@@ -9,16 +9,20 @@ interface res {
 
 export const SesionQuery = async (usr: string, pass: string): Promise<res> => {
   try {
+    const isCliente = !!parseInt(usr);
+
     const usuario = {
-      table: parseInt(usr) ? "clientes" : "arquitectos",
-      campos: parseInt(usr) ? "ci, " : "codigo, admin, ",
-      where: parseInt(usr) ? "ci = ?" : "codigo = ?",
+      table: isCliente ? "clientes x" : "arquitectos x",
+      campos: isCliente
+        ? "x.ci AS id, x.password"
+        : "x.codigo AS id, x.admin, x.password",
+      where: isCliente ? "x.ci = ?" : "x.codigo = ?",
     };
 
     const query = `
-      SELECT ${usuario.campos} nombre, apellido, password
+      SELECT ${usuario.campos}
       FROM ${usuario.table}
-      WHERE estado = 1 AND ${usuario.where}
+      WHERE x.estado = 1 AND ${usuario.where}
     `;
 
     const params = [usr];
@@ -44,7 +48,7 @@ export const SesionQuery = async (usr: string, pass: string): Promise<res> => {
       };
     }
 
-    delete (user as any).password;
+    delete user.password;
 
     return {
       data: [user],

@@ -3,7 +3,7 @@ import {oakCors} from "cors";
 import route from "./src/router/main.route.ts";
 const app = new Application();
 
-app.use(oakCors());
+app.use(oakCors({ credentials: true}));
 
 app.use(route.routes());
 app.use(route.allowedMethods());
