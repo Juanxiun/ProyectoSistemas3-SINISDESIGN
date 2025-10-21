@@ -1,0 +1,19 @@
+.btn-nueva-reunion {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: not-allowed;
+  font-weight: 500;
+  opacity: 0.6;
+}
+
+/* Estilos responsive adicionales */
+@media (max-width: 768px) {
+  .btn-nueva-reunion {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+}
+/* Estilo añadido para el calendario dentro de proyectos.css (Preguntar a Juandi si lo saco sino me pega xd)*/
