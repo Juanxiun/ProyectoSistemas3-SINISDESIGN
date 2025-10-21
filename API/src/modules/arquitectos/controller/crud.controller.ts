@@ -3,19 +3,14 @@ import { ResponseOak } from "../../../libs/response.ts";
 import ArquitectoModel from "../model.ts";
 import {
   CreateQuery,
+  DeleteQuery,
   SelectQuery,
   UpdateQuery,
-  DeleteQuery,
 } from "../query/crud.query.ts";
 
-
 export class CrudArquitectos {
-
-
   public async select(ctx: Context, codigo?: string) {
-
     const res = await SelectQuery(codigo);
-
 
     return ResponseOak(
       ctx,
@@ -31,11 +26,8 @@ export class CrudArquitectos {
     );
   }
 
-
   public async create(ctx: Context) {
-
     const form = await ctx.request.body.formData();
-
 
     const arquitecto: ArquitectoModel = {
       codigo: form.get("codigo") as string,
@@ -49,13 +41,12 @@ export class CrudArquitectos {
       estado: 1,
     };
 
-
     if (!arquitecto.ci || !arquitecto.nombre) {
       return ResponseOak(
         ctx,
         400,
         { msg: "Faltan campos obligatorios " },
-        { content: "Content-Type", app: "application/json" }
+        { content: "Content-Type", app: "application/json" },
       );
     }
 
@@ -76,7 +67,6 @@ export class CrudArquitectos {
     );
   }
 
-
   public async update(ctx: Context, codigo: string) {
     const form = await ctx.request.body.formData();
 
@@ -93,19 +83,18 @@ export class CrudArquitectos {
       estado: parseInt(form.get("estado") as string) ?? 1,
     };
 
-
     if (!arquitecto.codigo) {
       return ResponseOak(
         ctx,
         400,
-        { msg: "El código del arquitecto es obligatorio para la actualizacion." },
-        { content: "Content-Type", app: "application/json" }
+        {
+          msg: "El código del arquitecto es obligatorio para la actualizacion.",
+        },
+        { content: "Content-Type", app: "application/json" },
       );
     }
 
-
     const res = await UpdateQuery(arquitecto);
-
 
     return ResponseOak(
       ctx,
@@ -122,9 +111,7 @@ export class CrudArquitectos {
     );
   }
 
-
   public async delete(ctx: Context, codigo: string) {
-
     if (!codigo) {
       return ResponseOak(
         ctx,
@@ -134,9 +121,7 @@ export class CrudArquitectos {
       );
     }
 
-
     const res = await DeleteQuery(codigo);
-
 
     return ResponseOak(
       ctx,
@@ -152,4 +137,5 @@ export class CrudArquitectos {
       },
     );
   }
+
 }

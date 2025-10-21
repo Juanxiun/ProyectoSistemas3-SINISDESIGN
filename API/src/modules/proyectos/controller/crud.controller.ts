@@ -35,13 +35,9 @@ export class CrudProyectos {
 
 public async create(ctx: Context, proyectos: ProyectoModel) {
     try {
-      console.log("=== INICIANDO CREATE ===");
-      console.log("Proyecto recibido:", proyectos);
       
       const result = await CreateQuery(proyectos);
       
-      console.log("Resultado de CreateQuery:", result);
-
       if (result.std === 500) {
         return ResponseOak(ctx, 500, {
           error: "Error interno del servidor.",

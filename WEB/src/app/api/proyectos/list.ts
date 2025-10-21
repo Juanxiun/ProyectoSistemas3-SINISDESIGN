@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-sloppy-imports
 import { ConnectA } from "../../../config/index";
 
 export async function ListProyectos(usr: string): Promise<ListProps[]> {
@@ -16,6 +17,22 @@ export async function ListProyectos(usr: string): Promise<ListProps[]> {
     }
 }
 
+export async function ListProyectosView(): Promise<ProyectoViewList[]> {
+    const url = ConnectA.api;
+    try {
+        const result = await fetch(url + "/proyectos/p/list/x");
+        const listproy = await result.json();
+        if (listproy.status === 200) {
+            return listproy.data.data as ProyectoViewList[];
+        }
+
+        return [];
+    } catch (e) {
+        console.log("Error > API > listProy > \n", e);
+        return [];
+    }
+}
+
 export interface ListProps {
     id?: number;
     arq: string;
@@ -24,4 +41,13 @@ export interface ListProps {
     imagen: string;
     direccion: string;
     est: number;
+}
+
+export interface ProyectoViewList{
+  nombre: string;
+  imagen: string;
+  direccion: string;
+  est: number;
+  tipo: string;
+  subtipo: string;
 }

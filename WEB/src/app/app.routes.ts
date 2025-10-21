@@ -15,7 +15,7 @@ import { CrearProyectos } from './pages/proyectos/crear-proyectos/crear-proyecto
 
 export const routes: Routes = [
     { path: "", title: "SINISDESIGN", component: Presentation },
-    { path: "equipo", title: "Equipo", component: PerfilArquitectos },
+    { path: "equipo/:tamProy", title: "Equipo", component: PerfilArquitectos },
     { path: "proyectos/:usr", title: "Proyectos", component: Proyectos },
 
     // RUTAS DE REGISTRO DE ARQUITECTOS

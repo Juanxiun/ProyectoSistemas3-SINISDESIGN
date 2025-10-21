@@ -2,7 +2,7 @@ import cli from "../../../database/connect.ts";
 import ArquitectoModel from "../model.ts";
 
 interface res {
-  data?: ArquitectoModel[];
+  data?: ArquitectoModel[] ;
   std: number;
 }
 
@@ -16,10 +16,8 @@ export const SelectQuery = async (codigo?: string): Promise<res> => {
       ${codigo ? "AND codigo = ?" : ""}
     `;
 
-    
     const params = codigo ? [codigo] : [];
 
-    
     const [rows] = await cli.query(query, params);
     const arquitectos = Array.isArray(rows) ? (rows as ArquitectoModel[]) : [];
 
@@ -35,7 +33,6 @@ export const SelectQuery = async (codigo?: string): Promise<res> => {
     };
   }
 };
-
 
 export const CreateQuery = async (data: ArquitectoModel): Promise<res> => {
   try {
@@ -68,10 +65,8 @@ export const CreateQuery = async (data: ArquitectoModel): Promise<res> => {
   }
 };
 
-
 export const UpdateQuery = async (data: ArquitectoModel): Promise<res> => {
   try {
-
     const query = `
       UPDATE arquitectos
       SET 
@@ -106,7 +101,7 @@ export const DeleteQuery = async (codigo: string): Promise<res> => {
             estado = 0
         WHERE
             codigo = ?`,
-      [codigo]
+      [codigo],
     );
     return {
       std: 200,

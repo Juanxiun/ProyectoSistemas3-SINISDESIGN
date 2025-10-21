@@ -4,21 +4,21 @@
     <app-siderbar (cambiarVista)="cambiarVista($event)"/>
     <div class="bg-[#f6efe5] w-full h-full ">
 
-        <!--Añadido el currentview para hacer la llamada al componente calendario dentro del codigo-->
-        @if(currentView === 'proyectos'){
-            @if(information === false){
-            <div class="w-full h-[8%] border-b-2">
-                <div class="h-full flex justify-start align-middle items-center">
-                    <app-options initIcon="bi-file-plus"
-                        hoverIcon="bi-file-plus-fill" direction="/" />
-                    <h1 class="cursor-default">REGISTRAR NUEVO PROYECTO</h1>
-                </div>
-            </div>
-            <app-card-proy
-                (idproy)="InformationProy($event)"
-                [usr]="usr ?? ''" />
-            }
-            @else {
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+  <app-siderbar />
+  
+  <div class="bg-[rgb(246,239,229)] w-full h-full overflow-hidden flex flex-col">
+    
+    @if(information === false){
+      <div class="px-8 py-6 border-b border-[#d4c5b9] flex justify-between items-center">
+  
+        <button
+          (click)="goToCreate()"
+          class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
+          <i class="bi bi-plus-circle-fill text-lg"></i>
+          NUEVO PROYECTO
+        </button>
+      </div>
 
             <div class="w-full h-full backdrop-blur-2xl">
                 <div (click)="salirInformacion()">

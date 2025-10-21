@@ -42,4 +42,3 @@ route.use("/notificaciones", notificaciones.routes(), notificaciones.allowedMeth
 route.use("/prediccion", prediccion.routes(), prediccion.allowedMethods());
 
 export default route;
-export default route;
