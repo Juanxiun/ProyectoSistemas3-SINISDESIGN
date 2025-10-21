@@ -6,6 +6,8 @@ import { PerfilArquitectos } from './pages/perfil-arquitectos/perfil-arquitectos
 import { RegistroArquitectos } from './pages/registro-arquitectos/registro-arquitectos';
 import { CrearArquitecto } from './pages/registro-arquitectos/crear-arquitecto/crear-arquitecto';
 import { DetalleArquitecto } from './pages/registro-arquitectos/detalle-arquitecto/detalle-arquitecto';
+
+import { Login } from './pages/login/login'
 import { DocumentosCrudPage } from './pages/documentos/documentos';
 
 import { CrearProyectos } from './pages/proyectos/crear-proyectos/crear-proyectos';
@@ -21,6 +23,9 @@ export const routes: Routes = [
     { path: "registro-arquitectos/crear", title: "Crear Arquitecto", component: CrearArquitecto },
     { path: "registro-arquitectos/detalle/:codigo", title: "Detalle Arquitecto", component: DetalleArquitecto },
 
+    // RUTA DE LOGIN
+    { path: "login", component: Login },
+    { path: "", redirectTo: "login", pathMatch: "full"},
     //RUTAS DE DOCUMENTO 
 
     {
@@ -29,6 +34,5 @@ export const routes: Routes = [
     },
     // RUTAS DE REGISTRO DE PROYECTOS
     { path: "registro-proyectos/crear", title: "Crear Proyecto", component: CrearProyectos },
-
 ];
 

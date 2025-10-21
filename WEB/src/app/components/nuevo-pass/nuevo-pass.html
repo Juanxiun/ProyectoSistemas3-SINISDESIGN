@@ -1,0 +1,60 @@
+  <div class="nuevo-page">
+    <img src="/images/LogoSINISDESIGN.png" alt="Logo" class="logo" />
+
+    <h2>Registrar Nueva Cuenta</h2>
+    <p class="subtitle">Crea una contraseña para tu nuevo acceso</p>
+
+    <form (submit)="registrar()">
+      <label class="label-pass">Código de Usuario</label>
+      <input
+        type="text"
+        [value]="codigoUsuario"
+        readonly
+        class="input-readonly"
+      />
+
+      <label class="label-pass">Nueva Contraseña</label>
+      <div class="password-container">
+        <input
+          [type]="showPassword1 ? 'text' : 'password'"
+          [(ngModel)]="nuevaContrasena"
+          name="nuevaContrasena"
+          placeholder="Ingresa tu nueva contraseña"
+        />
+        <button
+          type="button"
+          class="toggle-password-btn"
+          (click)="togglePassword1()"
+          tabindex="-1"
+        >
+          <span *ngIf="!showPassword1">😃</span>
+          <span *ngIf="showPassword1">🙈</span>
+        </button>
+      </div>
+
+      <label class="label-pass">Confirmar Contraseña</label>
+      <div class="password-container">
+        <input
+          [type]="showPassword2 ? 'text' : 'password'"
+          [(ngModel)]="confirmarContrasena"
+          name="confirmarContrasena"
+          placeholder="Confirma tu nueva contraseña"
+        />
+        <button
+          type="button"
+          class="toggle-password-btn"
+          (click)="togglePassword2()"
+          tabindex="-1"
+        >
+          <span *ngIf="!showPassword2">😃</span>
+          <span *ngIf="showPassword2">😑</span>
+        </button>
+      </div>
+
+      <button class="btn" type="submit">Registrar</button>
+    </form>
+
+    <div class="links">
+      <a (click)="volverLogin()">← Volver al inicio de sesión</a>
+    </div>
+  </div>

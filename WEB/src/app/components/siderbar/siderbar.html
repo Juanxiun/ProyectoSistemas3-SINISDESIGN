@@ -1,20 +1,36 @@
 <aside
     class="lg:w-[250px] md:w-[200px] w-[80px] h-full bg-[#283845] flex flex-col justify-between items-center border-y-4 border-[#f6efe5]">
 
+<<<<<<< HEAD
     <div class="w-full flex flex-col justify-center items-center md:space-y-16 space-y-6 mt-12">
 
         <app-options initIcon="bi-folder-fill" hoverIcon="text-[#f6efe5]"
             option="Proyectos" direction="/proyectos/mffj2029126" />
+=======
+    <div class="w-full flex flex-col justify-center items-center gap-12 mt-12">
+        <a href="/proyectos/mffj2029126" class="option flex flex-col items-center text-white cursor-pointer hover:text-[#f6efe5]">
+            <i class="bi bi-folder-fill text-5xl mb-3"></i>
+            <span class="text-lg md:text-xl font-semibold">Proyectos</span>
+        </a>
+>>>>>>> 924a25d185a3ecb0ba2ed0476226e5e8b5321318
 
         <app-options initIcon="bi-clipboard2-data-fill"
             hoverIcon="text-[#f6efe5]"
             option="Reportes" direction="/proyectos/mffj2029126" />
 
+<<<<<<< HEAD
         <app-options initIcon="bi-people-fill" hoverIcon="text-[#f6efe5]"
             option="Reportes" direction="/Reuniones" />
 
         <app-options initIcon="bi-building" hoverIcon="text-[#f6efe5]"
             option="Arquitectos" direction="/registro-arquitectos" />
+=======
+        <a rhref="/equipo" class="option flex flex-col items-center text-white cursor-pointer hover:text-[#f6efe5]"
+        option="Reuniones" (click)="onCambiarVista('reuniones')">
+            <i option="Reuniones" (click)="onCambiarVista('reuniones')" class="bi bi-people-fill text-5xl mb-3"></i>
+            <span option="Reuniones" (click)="onCambiarVista('reuniones')" class="text-lg md:text-xl font-semibold">Reuniones</span>
+        </a>
+>>>>>>> 924a25d185a3ecb0ba2ed0476226e5e8b5321318
 
     </div>
 

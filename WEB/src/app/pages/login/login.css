@@ -1,0 +1,118 @@
+:host {
+  display: block;
+}
+
+/* Tipografía */
+body, .login-page {
+  font-family: Georgia, 'Times New Roman', Times, serif;
+}
+
+/* ================== ANIMACIONES ================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ================== ESTRUCTURA ================== */
+.login-page {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-image: url('/images/Login-Arq.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 0;
+}
+
+/* ================== CONTENEDOR ================== */
+.left {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 1100px;
+  padding: 40px 20px;
+  box-sizing: border-box;
+}
+
+.form-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 480px;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0px 6px 25px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideUp 0.6s ease-out;
+}
+
+/* ================== BOTONES DE OPCIONES ================== */
+.options {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.options button {
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: 1px solid #9c6a57;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.options button:hover {
+  background: #9c6a57;
+  transform: translateY(-2px);
+}
+
+.options button.active {
+  background: #9c6a57;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(156, 106, 87, 0.4);
+}
+
+/* ================== RESPONSIVE ================== */
+@media (max-width: 900px) {
+  .login-page {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+  }
+
+  .form-container {
+    width: 100%;
+    max-width: 360px;
+    padding: 30px 20px;
+  }
+}
