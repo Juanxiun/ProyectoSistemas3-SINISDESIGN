@@ -1,52 +1,41 @@
-<app-navbar />
+<app-navbar
+    [id]="userData.id"
+    [Ubi]="'Proyectos'"
+    [noResults]="noResults"
+    (onSearch)="onSearchHandler($event)" />
 <div
     class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
-    <app-siderbar (cambiarVista)="cambiarVista($event)"/>
-    <div class="bg-[#f6efe5] w-full h-full ">
+    <app-siderbar [admin]="userData.admin" />
+    <div class="bg-[rgb(246,239,229)] w-full h-full ">
 
-<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
-  <app-siderbar />
-  
-  <div class="bg-[rgb(246,239,229)] w-full h-full overflow-hidden flex flex-col">
-    
-    @if(information === false){
-      <div class="px-8 py-6 border-b border-[#d4c5b9] flex justify-between items-center">
-  
-        <button
-          (click)="goToCreate()"
-          class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2">
-          <i class="bi bi-plus-circle-fill text-lg"></i>
-          NUEVO PROYECTO
-        </button>
-      </div>
+        @if(information === false){
+        <div
+            class="w-full h-[8%] flex md:justify-start justify-center items-center px-4 mb-4">
+            <button
+                (click)="goToCreate(userData.id)"
+                class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
+                <i class="bi bi-plus-circle-fill mr-2 text-lg"></i>
+                NUEVO PROYECTO
+            </button>
+        </div>
 
-            <div class="w-full h-full backdrop-blur-2xl">
-                <div (click)="salirInformacion()">
-                    EXIT
-                </div>
-                <app-proy-info [usr]="usr?? ''" [idproy]="idproy"/>
-            </div>
-            }
-        }@else if (currentView === 'reuniones') {
-            <div class="w-full h-full p-4">
-                <div class="w-full h-[8%] border-b-2 mb-4 flex justify-between items-center">
-                <div class="flex items-center">
-                    <h1 class="cursor-default text-xl font-bold">CALENDARIO DE REUNIONES</h1>
-                </div>
-                <button 
-                    class="btn-nueva-reunion bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition"
-                    (click)="abrirNuevaReunion()">
-                    + Nueva Reunión
-                </button>
-                </div>
-                <div class="w-full h-[92%]">
-                <app-calendario></app-calendario>
-                </div>
-            </div>
-            }
+        <app-card-proy
+            (idproy)="InformationProy($event)"
+            (resultsChange)="onResultsChange($event)"
+            [usr]="userData.id ?? ''"
+            [searchTerm]="searchTerm" />
+        }
 
-            @else if (currentView === 'nueva-reunion') {
-            <app-nueva-reunion></app-nueva-reunion>
-            }
+        @else {
+        <div class="w-full h-full backdrop-blur-2xl">
+            <button
+                (click)="salirInformacion()"
+                class="absolute top-4 right-4 z-10 flex items-center gap-2 text-[#92443a] hover:text-[#b8523e] hover:bg-white/50 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                <i class="bi bi-x-circle-fill text-xl"></i>
+                <span class="font-semibold">CERRAR</span>
+            </button>
+            <app-proy-info [usr]="userData.id ?? ''" [idproy]="idproy" />
+        </div>
+        }
     </div>
 </div>

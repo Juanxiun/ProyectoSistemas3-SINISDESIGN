@@ -12,6 +12,7 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
   styles: ''
 })
 export class Navbar implements OnDestroy {
+  @Input() id: string = "";
   @Input() Ubi: string = "";
   @Input() noResults: boolean = false; 
   @Output() onSearch = new EventEmitter<string>();

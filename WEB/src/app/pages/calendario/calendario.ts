@@ -8,12 +8,12 @@ import { CommonModule } from '@angular/common';
   templateUrl: './calendario.html',
   styleUrls: ['./calendario.css']
 })
-export class CalendarioComponent implements OnInit {
+export class Calendario implements OnInit {
   fechaActual: Date = new Date();
   semanas: Date[][] = [];
   mesActual: string = '';
   anioActual: number = 0;
-  hoy: Date = new Date(); // Guardamos la fecha actual para usar en el template
+  hoy: Date = new Date(); 
 
   ngOnInit(): void {
     this.actualizarCalendario();
