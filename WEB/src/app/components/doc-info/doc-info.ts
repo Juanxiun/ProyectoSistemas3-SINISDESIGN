@@ -1,6 +1,11 @@
-import { Component, OnInit, inject, Input } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, inject, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { ChangeDetectorRef } from '@angular/core';
+//validators
+import { dateNotInFutureValidator } from '../../validators/dateValidator';
+import { filesValidator } from '../../validators/filesValidator';
+
 import DocumentoProps, {
   getDocumentosByFase,
   createDocumento,
@@ -16,8 +21,9 @@ import DocumentoProps, {
   templateUrl: './doc-info.html',
 
 })
-export class DocInfo implements OnInit {
+export class DocInfo implements OnInit, OnChanges {
   private fb = inject(FormBuilder);
+  private cdr = inject(ChangeDetectorRef);
 
 
   @Input({ required: true }) faseId!: string;
@@ -32,6 +38,7 @@ export class DocInfo implements OnInit {
   ngOnInit() {
     this.initForm();
     this.cargarDocumentos();
+
   }
 
   initForm(doc?: DocumentoProps) {
@@ -40,10 +47,12 @@ export class DocInfo implements OnInit {
     this.documentoForm = this.fb.group({
       id: [doc?.id || null],
       fase: [parseInt(this.faseId), Validators.required],
-      nombre: [doc?.nombre || '', Validators.required],
-      tipo: [doc?.tipo || '', Validators.required],
+      nombre: [doc?.nombre || '', [Validators.required, Validators.maxLength(50), filesValidator()]],
       documento: [doc?.documento || null, Validators.required],
-      fecha: [doc?.fecha.substring(0, 10) || defaultDate, Validators.required],
+      fecha: [
+        doc?.fecha?.substring(0, 10) || defaultDate,
+        [Validators.required, dateNotInFutureValidator()]
+      ],
     });
 
     if (this.isEditMode) {
@@ -51,7 +60,37 @@ export class DocInfo implements OnInit {
       this.documentoForm.get('documento')?.updateValueAndValidity();
     }
   }
+  getNombreErrorMessage(nomCampo: string) {
+    let nombreControl: any;
+    switch (nomCampo) {
+      case 'nombre':
 
+        nombreControl = this.documentoForm.get('nombre');
+        if (nombreControl?.hasError('required')) {
+          return 'El nombre es requerido (escriba algo).';
+        }
+        if (nombreControl?.hasError('maxlength')) {
+          return 'El nombre no puede exceder los 50 caracteres.';
+        }
+        if (nombreControl?.hasError('forbiddenChars')) {
+          return 'El nombre no puede contener los caracteres: \\ / : * ? " < > |';
+        }
+        return "el nombre no es valido";
+
+      default:
+        return "verifica el campo";
+
+
+
+    }
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['faseId'] && this.faseId) {
+
+      this.cargarDocumentos();
+    }
+  }
 
   async cargarDocumentos() {
 
@@ -60,6 +99,8 @@ export class DocInfo implements OnInit {
     this.isLoading = true;
     try {
       this.documentos = await getDocumentosByFase(this.faseId);
+
+      this.cdr.detectChanges();
     } catch (e) {
       console.error('Error al cargar documentos:', e);
 
@@ -69,6 +110,7 @@ export class DocInfo implements OnInit {
     } finally {
       this.isLoading = false;
     }
+    this.resetForm();
   }
 
   onFileSelected(event: any) {
@@ -100,7 +142,7 @@ export class DocInfo implements OnInit {
         await this.cargarDocumentos();
         alert(`Documento ${this.isEditMode ? 'actualizado' : 'creado'} exitosamente.`);
       } else {
-        alert(`Error al ${this.isEditMode ? 'actualizar' : 'crear'} el documento. Revise la consola.`);
+        alert(`Error al ${this.isEditMode ? 'actualizar' : 'crear'} el documento.`);
       }
     } catch (e) {
       console.error("Fallo general en la operación:", e);
@@ -128,7 +170,7 @@ export class DocInfo implements OnInit {
       id: formValue.id,
       fase: formValue.fase,
       nombre: formValue.nombre,
-      tipo: formValue.tipo,
+      tipo: "",
       fecha: formValue.fecha,
       documento: formValue.documento,
     };
@@ -163,5 +205,20 @@ export class DocInfo implements OnInit {
     this.isEditMode = false;
     this.selectedFile = null;
     this.initForm();
+    console.log("Formulario reiniciado.")
+  }
+
+  downloadDocument(documento: DocumentoProps) {
+    if (typeof documento.documento === 'string' && documento.documento.length > 0) {
+      const link = document.createElement('a');
+      link.href = documento.documento;
+      const fileName = documento.nombre + '.' + documento.tipo;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert('No se encontró el contenido del documento para descargar.');
+    }
   }
 }

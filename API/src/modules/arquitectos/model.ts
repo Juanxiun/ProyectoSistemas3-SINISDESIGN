@@ -1,4 +1,4 @@
-export default interface ArquitectoModel{
+export default interface ArquitectoModel {
     codigo?: string;
     ci: number;
     nombre: string;
@@ -6,6 +6,7 @@ export default interface ArquitectoModel{
     telefono: number;
     correo: string;
     admin: number;
-    password: string;
+    password?: string;
     estado: number;
+    [key: string]: string | number | undefined;
 }

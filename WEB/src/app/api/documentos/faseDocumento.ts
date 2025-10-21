@@ -10,6 +10,23 @@ export default interface DocumentoProps {
 }
 
 const API_ENDPOINT = ConnectA.api + "/documento";
+//sacar tipo
+function getDocumentTypeFromFile(file: File): string {
+
+    const fileName = file.name;
+    const parts = fileName.split('.');
+
+
+    if (parts.length > 1) {
+
+        const ext = parts.pop()?.toLowerCase() || '';
+
+
+        return ext;
+    }
+
+    return 'pdf';
+}
 //obtener
 export async function getDocumentosByFase(fase: string, id?: string): Promise<DocumentoProps[]> {
     let url = `${API_ENDPOINT}/${fase}`;
@@ -37,7 +54,7 @@ export async function createDocumento(documento: Omit<DocumentoProps, 'id' | 'do
 
     formData.append("fase", documento.fase.toString());
     formData.append("nombre", documento.nombre);
-    formData.append("tipo", documento.tipo);
+    formData.append("tipo", getDocumentTypeFromFile(file));
     formData.append("fecha", documento.fecha);
     formData.append("documento", file, documento.nombre);
 
@@ -68,6 +85,7 @@ export async function createDocumento(documento: Omit<DocumentoProps, 'id' | 'do
         console.log("ERROR > API > createDocumento >\n" + e);
         return false;
     }
+
 }
 //actualizar
 export async function updateDocumento(documento: DocumentoProps, file?: File): Promise<boolean> {
@@ -85,6 +103,8 @@ export async function updateDocumento(documento: DocumentoProps, file?: File): P
 
     if (file) {
         formData.append("documento", file, documento.nombre);
+        formData.append("tipo", getDocumentTypeFromFile(file));
+
     }
 
     try {
@@ -145,4 +165,7 @@ export async function deleteDocumento(id: number): Promise<boolean> {
     }
 }
 
+
+
 export const ProyFase = getDocumentosByFase;
+

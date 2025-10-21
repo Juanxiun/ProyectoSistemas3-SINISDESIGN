@@ -1,5 +1,6 @@
 import cli from "../../../database/connect.ts";
 import ArquitectoModel from "../model.ts";
+import pool from '../../../database/connect.ts';
 
 interface res {
   data?: ArquitectoModel[];
@@ -16,10 +17,10 @@ export const SelectQuery = async (codigo?: string): Promise<res> => {
       ${codigo ? "AND codigo = ?" : ""}
     `;
 
-    
+
     const params = codigo ? [codigo] : [];
 
-    
+
     const [rows] = await cli.query(query, params);
     const arquitectos = Array.isArray(rows) ? (rows as ArquitectoModel[]) : [];
 
@@ -69,33 +70,20 @@ export const CreateQuery = async (data: ArquitectoModel): Promise<res> => {
 };
 
 
-export const UpdateQuery = async (data: ArquitectoModel): Promise<res> => {
-  try {
+export async function UpdateQuery(codigo: string, data: Record<string, string | number>) {
+  if (!codigo) throw new Error('Código requerido');
+  const keys = Object.keys(data);
+  if (keys.length === 0) return null;
 
-    const query = `
-      UPDATE arquitectos
-      SET 
-        ci = ?, nombre = ?, apellido = ?, telefono = ?, correo = ?, admin = ?
-      WHERE codigo = ?
-    `;
-    const params = [
-      data.ci,
-      data.nombre,
-      data.apellido,
-      data.telefono,
-      data.correo,
-      data.admin,
-      data.codigo,
-    ];
+  const setClause = keys.map(k => `\`${k}\` = ?`).join(', ');
+  const values = keys.map(k => data[k]);
+  const sql = `UPDATE arquitectos SET ${setClause} WHERE codigo = ?`;
 
-    await cli.query(query, params);
+  values.push(codigo);
 
-    return { std: 200 };
-  } catch (error) {
-    console.log("Error en la query: Arquitectos > Update >\n", error);
-    return { std: 500 };
-  }
-};
+  const [result] = await pool.query(sql, values);
+  return result;
+}
 
 export const DeleteQuery = async (codigo: string): Promise<res> => {
   try {

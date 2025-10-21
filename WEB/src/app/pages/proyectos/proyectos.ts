@@ -18,9 +18,9 @@ export class Proyectos implements OnInit {
   idproy: number = 0;
   information: boolean = false;
   searchTerm: string = '';
-  noResults: boolean = false; 
+  noResults: boolean = false;
 
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(private route: ActivatedRoute, private router: Router) { }
 
   InformationProy(id: number) {
     this.idproy = id;
