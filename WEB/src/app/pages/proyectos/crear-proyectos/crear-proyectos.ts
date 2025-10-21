@@ -144,6 +144,7 @@ export class CrearProyectos implements OnInit {
           list = response;
         }
 
+        
         const arqEncontrado = list.find((a) => a.codigo === codigoArq);
 
         if (arqEncontrado) {
