@@ -5,9 +5,9 @@ import { NgClass } from "@angular/common";
   selector: "app-options",
   imports: [NgClass],
   template: `
-  <div (mouseenter)="hover = true" (mouseleave)="hover = false" class="flex flex-row w-full md:space-x-7 lg:ml-10 md:ml-5 ml-2 cursor-pointer">
+  <div (mouseenter)="hover = true" (mouseleave)="hover = false" class="flex flex-col items-center w-full cursor-pointer space-y-2.5 text-white">
       <i
-          [ngClass]="hover ? 'bi md:scale-200 scale-125 ' + hoverIcon : 'bi md:scale-200 scale-125 '+ initIcon"></i>
+          [ngClass]="hover ? 'bi text-3xl md:scale-200 scale-150 ' + initIcon : 'bi text-2xl md:scale-200 scale-125 '+ initIcon"></i>
       <h3
           class="md:text-white text-transparent text-xl">{{ option }}</h3>
   </div>

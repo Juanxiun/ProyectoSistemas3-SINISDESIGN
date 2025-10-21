@@ -78,7 +78,7 @@ export class CrudArquitectos {
 
 
   public async update(ctx: Context) {
-    // obtener código (casteo para evitar error de typings)
+
     const codigo = ((ctx as any).params as Record<string, string> | undefined)?.codigo;
     if (!codigo) {
       return ResponseOak(
@@ -89,11 +89,11 @@ export class CrudArquitectos {
       );
     }
 
-    // Intentar leer form-data (misma API que usas en create)
+
     try {
       const form = await ctx.request.body.formData();
 
-      // Si solo viene el campo estado, manejarlo de forma simple
+
       const estadoRaw = form.get("estado");
       if (estadoRaw !== null && !form.get("ci") && !form.get("nombre")) {
         const estNum = Number(estadoRaw);
@@ -103,7 +103,7 @@ export class CrudArquitectos {
         }
       }
 
-      // Si vienen más campos, procesar actualización completa
+
       const updateData: Record<string, string | number> = {};
 
       const ci = form.get("ci");
@@ -141,10 +141,10 @@ export class CrudArquitectos {
       return ResponseOak(ctx, 200, { msg: "Arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });
     } catch (e) {
       console.error("Error leyendo form-data en update:", e);
-      // fallthrough a intento JSON
+
     }
 
-    // Intentar leer JSON
+    // leer JSON
     try {
       const bodyAny = ctx.request.body as any;
       const jsonBody = await bodyAny.value as Record<string, any> | undefined;

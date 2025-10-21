@@ -23,3 +23,12 @@ export interface ProyectoList {
   direccion: string;
   est: number;
 }
+
+export interface ProyectoViewList{
+  nombre: string;
+  imagen: string;
+  direccion: string;
+  est: number;
+  tipo: string;
+  subtipo: string;
+}

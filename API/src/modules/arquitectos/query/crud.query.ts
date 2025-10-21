@@ -3,7 +3,7 @@ import ArquitectoModel from "../model.ts";
 import pool from '../../../database/connect.ts';
 
 interface res {
-  data?: ArquitectoModel[];
+  data?: ArquitectoModel[] ;
   std: number;
 }
 
@@ -36,7 +36,6 @@ export const SelectQuery = async (codigo?: string): Promise<res> => {
     };
   }
 };
-
 
 export const CreateQuery = async (data: ArquitectoModel): Promise<res> => {
   try {
@@ -94,7 +93,7 @@ export const DeleteQuery = async (codigo: string): Promise<res> => {
             estado = 0
         WHERE
             codigo = ?`,
-      [codigo]
+      [codigo],
     );
     return {
       std: 200,

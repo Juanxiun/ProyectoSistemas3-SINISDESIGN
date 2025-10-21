@@ -4,7 +4,7 @@ import { Buffer } from "node:buffer";
 export const conver64 = (type: string, data: any) => {
   const file = Buffer.isBuffer(data) ? data : Buffer.from(data as any);
   let file64 = file.toString("base64");
-  file64 = `${type}, ${file64}`;
+  file64 = `${type},${file64}`;
   return file64;
 };
 

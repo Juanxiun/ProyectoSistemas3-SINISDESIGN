@@ -1,7 +1,7 @@
 // deno-lint-ignore-file no-sloppy-imports
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from "@angular/core";
 import { LoadDisplay } from "../../../elements/load-display/load-display";
-import { from, Observable, of, BehaviorSubject, combineLatest } from "rxjs";
+import { from, Observable, BehaviorSubject, combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 import { ListProps, ListProyectos } from "../../../api/proyectos/list";
 import { AsyncPipe, NgForOf } from "@angular/common";
@@ -48,7 +48,6 @@ export class CardProy implements OnChanges {
           proyecto.direccion?.toLowerCase().includes(term)
         );
         
-        // informar al navbar si hay resultados o no
         this.resultsChange.emit(filtered.length > 0);
         return filtered;
       })
