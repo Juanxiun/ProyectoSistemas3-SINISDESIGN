@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-sloppy-imports
 import { Routes } from '@angular/router';
 import { Proyectos } from './pages/proyectos/proyectos';
 import { Presentation } from './pages/presentation/presentation';
@@ -16,10 +17,10 @@ import { CrearProyectos } from './pages/proyectos/crear-proyectos/crear-proyecto
 export const routes: Routes = [
     { path: "", title: "SINISDESIGN", component: Presentation },
     { path: "equipo/:tamProy", title: "Equipo", component: PerfilArquitectos },
-    { path: "proyectos/:usr", title: "Proyectos", component: Proyectos },
+    { path: "proyectos", title: "Proyectos", component: Proyectos },
 
     // RUTAS DE REGISTRO DE ARQUITECTOS
-    { path: "registro-arquitectos", title: "Lista Arquitectos", component: RegistroArquitectos },
+    { path: "arquitectos", title: "Lista Arquitectos", component: RegistroArquitectos },
     { path: "registro-arquitectos/crear", title: "Crear Arquitecto", component: CrearArquitecto },
     { path: "registro-arquitectos/detalle/:codigo", title: "Detalle Arquitecto", component: DetalleArquitecto },
 
@@ -33,6 +34,6 @@ export const routes: Routes = [
         component: DocumentosCrudPage,
     },
     // RUTAS DE REGISTRO DE PROYECTOS
-    { path: "registro-proyectos/crear", title: "Crear Proyecto", component: CrearProyectos },
+    { path: "registro-proyectos/crear/:arq", title: "Crear Proyecto", component: CrearProyectos },
 ];
 

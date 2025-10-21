@@ -1,14 +1,18 @@
-import { Component, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
-import { RouterModule, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Component, OnInit, signal } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import {
+  HttpClient,
+  HttpClientModule,
+  HttpErrorResponse,
+} from "@angular/common/http";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
+import { Observable } from "rxjs";
 
-import { ConnectA } from '../../../../config/index';
+import { ConnectA } from "../../../../config/index";
 
-import { Navbar } from '../../../components/navbar/navbar';
-import { Siderbar } from '../../../components/siderbar/siderbar';
+import { Navbar } from "../../../components/navbar/navbar";
+import { Siderbar } from "../../../components/siderbar/siderbar";
 
 export interface Cliente {
   ci: number;
@@ -51,7 +55,7 @@ export interface ApiResponse<T> {
 }
 
 @Component({
-  selector: 'app-crear-proyectos',
+  selector: "app-crear-proyectos",
   standalone: true,
   imports: [
     CommonModule,
@@ -61,8 +65,8 @@ export interface ApiResponse<T> {
     Navbar,
     Siderbar,
   ],
-  templateUrl: './crear-proyectos.html',
-  styleUrl: './crear-proyectos.css',
+  templateUrl: "./crear-proyectos.html",
+  styleUrl: "./crear-proyectos.css",
 })
 export class CrearProyectos implements OnInit {
   private apiUrlProyectos = `${ConnectA.api}/proyectos`;
@@ -75,35 +79,39 @@ export class CrearProyectos implements OnInit {
   isLoading = signal(false);
 
   proyecto: Proyecto = {
-    arq: '',
+    arq: "",
     cli: 0,
-    nombre: '',
-    inicio: '',
+    nombre: "",
+    inicio: "",
     costo: 0,
     est: 1,
   };
 
   imagenSeleccionada: File | null = null;
-  nombreArchivo = '';
-  previewImagen = '';
-  mensajeError = '';
-  mensajeExito = '';
+  nombreArchivo = "";
+  previewImagen = "";
+  mensajeError = "";
+  mensajeExito = "";
+  fechaActual: string = "";
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
 
   ngOnInit(): void {
+    const codigoArq = this.route.snapshot.paramMap.get("arq") ??
+      this.route.snapshot.queryParamMap.get("arq");
     this.fetchArchitects();
     this.fetchClients();
+    this.setFechaHoraActual();
   }
 
-  fechaHoyISO(): string {
-    const hoy = new Date();
-    const año = hoy.getFullYear();
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    const día = String(hoy.getDate()).padStart(2, '0');
-    const horas = String(hoy.getHours()).padStart(2, '0');
-    const minutos = String(hoy.getMinutes()).padStart(2, '0');
-    return `${año}-${mes}-${día}T${horas}:${minutos}`;
+  setFechaHoraActual(): void {
+    const ahora = new Date();
+    this.fechaActual = ahora.toISOString().slice(0, 16);
+    this.proyecto.inicio = this.fechaActual;
   }
 
   fetchArquitectosApi(): Observable<ApiResponse<Arquitecto[]>> {
@@ -115,6 +123,14 @@ export class CrearProyectos implements OnInit {
   }
 
   fetchArchitects(): void {
+    const codigoArq = this.route.snapshot.paramMap.get("arq") ??
+      this.route.snapshot.queryParamMap.get("arq");
+
+    if (!codigoArq) {
+      this.mensajeError = "No se encontró el código de arquitecto.";
+      return;
+    }
+
     this.isLoading.set(true);
     this.fetchArquitectosApi().subscribe({
       next: (response: any) => {
@@ -128,10 +144,18 @@ export class CrearProyectos implements OnInit {
           list = response;
         }
 
-        this.arquitectos.set(list);
+        const arqEncontrado = list.find((a) => a.codigo === codigoArq);
+
+        if (arqEncontrado) {
+          this.arquitectos.set([arqEncontrado]);
+          this.proyecto.arq = arqEncontrado.codigo;
+        } else {
+          this.mensajeError = "No se encontró el arquitecto correspondiente.";
+        }
       },
       error: (err: HttpErrorResponse) => {
-        this.mensajeError = 'Error al cargar los arquitectos: ' + err.statusText;
+        this.mensajeError = "Error al cargar los arquitectos: " +
+          err.statusText;
       },
       complete: () => {
         this.isLoading.set(false);
@@ -154,13 +178,14 @@ export class CrearProyectos implements OnInit {
         }
 
         if (list.length === 0) {
-          this.mensajeError = 'No hay clientes disponibles';
+          this.mensajeError = "No hay clientes disponibles";
         }
 
         this.clientes.set(list);
       },
       error: (err: HttpErrorResponse) => {
-        this.mensajeError = `Error al cargar los clientes: ${err.status} ${err.statusText}`;
+        this.mensajeError =
+          `Error al cargar los clientes: ${err.status} ${err.statusText}`;
       },
       complete: () => {
         this.isLoading.set(false);
@@ -177,25 +202,26 @@ export class CrearProyectos implements OnInit {
       const maxSizeMB = 5;
       const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
-      if (!file.type.startsWith('image/')) {
-        this.mensajeError = 'Por favor selecciona una imagen válida (JPG, PNG, WebP)';
+      if (!file.type.startsWith("image/")) {
+        this.mensajeError =
+          "Por favor selecciona una imagen válida (JPG, PNG, WebP)";
         this.imagenSeleccionada = null;
-        this.nombreArchivo = '';
-        this.previewImagen = '';
+        this.nombreArchivo = "";
+        this.previewImagen = "";
         return;
       }
 
       if (file.size > maxSizeBytes) {
         this.mensajeError = `La imagen no puede exceder ${maxSizeMB}MB`;
         this.imagenSeleccionada = null;
-        this.nombreArchivo = '';
-        this.previewImagen = '';
+        this.nombreArchivo = "";
+        this.previewImagen = "";
         return;
       }
 
       this.imagenSeleccionada = file;
       this.nombreArchivo = file.name;
-      this.mensajeError = '';
+      this.mensajeError = "";
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -208,7 +234,7 @@ export class CrearProyectos implements OnInit {
   isFormValid(): boolean {
     const cliNum = Number(this.proyecto.cli);
     const costoNum = Number(this.proyecto.costo);
-    
+
     return (
       !!this.proyecto.nombre &&
       this.proyecto.nombre.length >= 3 &&
@@ -218,51 +244,57 @@ export class CrearProyectos implements OnInit {
       !!this.proyecto.inicio &&
       cliNum !== 0 &&
       !!this.proyecto.arq &&
-      this.proyecto.arq !== '' &&
+      this.proyecto.arq !== "" &&
       this.imagenSeleccionada !== null
     );
   }
 
   onSubmit(): void {
     if (!this.isFormValid()) {
-      this.mensajeError = 'Por favor completa todos los campos correctamente y selecciona una imagen';
+      this.mensajeError =
+        "Por favor completa todos los campos correctamente y selecciona una imagen";
       return;
     }
 
     this.isLoading.set(true);
-    this.mensajeError = '';
-    this.mensajeExito = '';
+    this.mensajeError = "";
+    this.mensajeExito = "";
 
     const formData = new FormData();
-    formData.append('nombre', this.proyecto.nombre);
-    formData.append('costo', this.proyecto.costo.toString());
-    formData.append('inicio', this.proyecto.inicio);
-    formData.append('cli', this.proyecto.cli.toString());
-    formData.append('arq', this.proyecto.arq);
-    formData.append('imagen', this.imagenSeleccionada!);
+    formData.append("nombre", this.proyecto.nombre);
+    formData.append("costo", this.proyecto.costo.toString());
+    formData.append("inicio", this.proyecto.inicio);
+    formData.append("cli", this.proyecto.cli.toString());
+    formData.append("arq", this.proyecto.arq);
+    formData.append("imagen", this.imagenSeleccionada!);
+
+    console.log(formData);
 
     this.http.post<ApiResponse<any>>(this.apiUrlProyectos, formData).subscribe({
       next: (response: any) => {
-        console.log('Respuesta proyecto:', response);
-        const idProyecto = response?.data?.id || response?.data?.data?.id || null;
+        console.log("Respuesta proyecto:", response);
+        const idProyecto = response?.data?.id || response?.data?.data?.id ||
+          null;
 
         if (response.std === 200 && idProyecto) {
-          console.log('Proyecto creado con ID:', idProyecto);
+          console.log("Proyecto creado con ID:", idProyecto);
           this.goBack();
         } else {
           this.isLoading.set(false);
-          this.mensajeError = 'Error al crear el proyecto';
+          this.mensajeError = "Error al crear el proyecto";
           this.goBack();
         }
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading.set(false);
-        this.mensajeError = `Error ${err.status}: ${err.error?.msg || err.statusText}`;
+        this.mensajeError = `Error ${err.status}: ${
+          err.error?.msg || err.statusText
+        }`;
       },
     });
   }
 
   goBack(): void {
-    this.router.navigate(['/proyectos/mffj2029126']);
+    this.router.navigate(["/proyectos/"]);
   }
 }
