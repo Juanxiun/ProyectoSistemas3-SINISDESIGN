@@ -1,14 +1,14 @@
-// deno-lint-ignore-file no-explicit-any
 export default interface ArquitectoModel {
-  codigo?: string;
-  ci: number;
-  nombre: string;
-  apellido: string;
-  telefono: number;
-  correo: string;
-  admin: number;
-  password: string;
-  estado: number;
+    codigo?: string;
+    ci: number;
+    nombre: string;
+    apellido: string;
+    telefono: number;
+    correo: string;
+    admin: number;
+    password?: string;
+    estado: number;
+    [key: string]: string | number | undefined;
 }
 
 export interface ListArquitecto {

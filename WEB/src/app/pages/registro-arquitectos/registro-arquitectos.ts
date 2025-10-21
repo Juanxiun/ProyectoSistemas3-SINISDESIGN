@@ -97,7 +97,12 @@ export class RegistroArquitectos implements OnInit {
 
     goToDetails(codigo: string | undefined) {
         if (codigo) {
-            this.router.navigate(['registro-arquitectos/detalle', codigo]);
+            console.log('Navegando a detalles:', codigo);
+            this.router.navigate(['registro-arquitectos/detalle', codigo]).then(() => {
+                console.log('Navegación completada');
+            }).catch(err => {
+                console.error('Error en navegación:', err);
+            });
         } else {
             alert('No se puede ver el detalle: Código no disponible.');
         }

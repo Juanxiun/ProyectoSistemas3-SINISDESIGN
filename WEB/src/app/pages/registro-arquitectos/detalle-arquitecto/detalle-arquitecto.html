@@ -11,55 +11,54 @@
             <p class="text-[#283845] font-semibold">Cargando detalles del arquitecto ({{ arquitectoCodigo }})...</p>
         </div>
 
+        <div *ngIf="!isLoading && !arquitecto" class="text-center py-10 text-red-600">
+            No se pudo cargar la información del arquitecto.
+        </div>
+
+
         <div *ngIf="!isLoading && arquitecto" class="bg-white p-8 rounded-lg shadow-xl w-full max-w-3xl mx-auto">
-            
+
             <h2 class="text-xl font-semibold text-[#283845] mb-6 border-b pb-2">
                 {{ arquitecto.nombre }} {{ arquitecto.apellido }} ({{ arquitecto.codigo }})
             </h2>
 
             <form (ngSubmit)="saveChanges()" #detailForm="ngForm" class="grid grid-cols-2 gap-x-6 gap-y-4">
-                
+
                 <div *ngFor="let field of ['ci', 'nombre', 'apellido', 'telefono', 'correo']" class="flex flex-col">
                     <label [for]="field" class="block text-sm font-medium text-gray-700">
-                        {{ field.charAt(0).toUpperCase() + field.slice(1) }} 
+                        {{ field.charAt(0).toUpperCase() + field.slice(1) }}
                         <span *ngIf="field === 'ci' || field === 'nombre'">*</span>
                     </label>
-                    <input 
-                        [type]="field === 'ci' || field === 'telefono' ? 'number' : 'text'" 
-                        [id]="field" 
-                        [name]="field" 
-                        [(ngModel)]="arquitecto[field]"
-                        [disabled]="!isEditing"
-                        [required]="field === 'ci' || field === 'nombre'"
+                    <input [type]="field === 'ci' || field === 'telefono' ? 'number' : 'text'" [id]="field"
+                        [name]="field" [(ngModel)]="arquitecto[field]" (ngModelChange)="onFieldChange(field)"
+                        [disabled]="!isEditing" [required]="field === 'ci' || field === 'nombre'"
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                        [class.bg-gray-100]="!isEditing">
-                </div>
+                        [class.bg-gray-100]="!isEditing" [class.border-red-500]="getFieldError(field)">
 
+                    <div *ngIf="getFieldError(field)" class="text-red-600 text-sm">
+                        {{ getFieldError(field) }}
+                    </div>
+                </div>
                 <div class="col-span-1 flex items-center pt-4">
-                    <input 
-                        id="admin" 
-                        name="admin" 
-                        type="checkbox" 
-                        [checked]="arquitecto.admin === 1"
-                        (change)="arquitecto.admin = $event.target.checked ? 1 : 0"
-                        [disabled]="!isEditing"
+                    <input id="admin" name="admin" type="checkbox" [checked]="arquitecto.admin === 1"
+                        (change)="arquitecto.admin = $event.target.checked ? 1 : 0" [disabled]="!isEditing"
                         class="h-4 w-4 text-[#E0A189] border-gray-300 rounded focus:ring-[#E0A189]">
                     <label for="admin" class="ml-2 block text-sm text-gray-900">
                         Es Administrador
                     </label>
                 </div>
 
+
                 <div class="col-span-1 pt-4">
                     <label class="block text-sm font-medium text-gray-700">Estado</label>
-                    <span 
-                        class="px-3 py-1 text-sm rounded-full font-semibold"
+                    <span class="px-3 py-1 text-sm rounded-full font-semibold"
                         [ngClass]="{'bg-green-100 text-green-800': arquitecto.estado === 1, 'bg-red-100 text-red-800': arquitecto.estado === 0}">
                         {{ arquitecto.estado === 1 ? 'ACTIVO' : 'INACTIVO' }}
                     </span>
                 </div>
 
                 <div class="col-span-2 flex justify-between gap-3 mt-6 border-t pt-4">
-                    
+
                     <div *ngIf="isEditing" class="flex gap-3">
                         <button type="submit" [disabled]="!detailForm.valid || isSaving"
                             class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50">
@@ -76,7 +75,7 @@
                             class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
                             EDITAR
                         </button>
-                        <button type="button" 
+                        <button type="button"
                             class="bg-[#283845] hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
                             CONFIGURAR CONTRASEÑA
                         </button>
@@ -85,14 +84,15 @@
                     <button *ngIf="!isEditing && arquitecto.estado === 1" type="button" (click)="deleteArquitecto()"
                         [disabled]="isSaving"
                         class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50">
-                        ELIMINAR (LÓGICO)
+                        ELIMINAR
                     </button>
                 </div>
             </form>
         </div>
 
         <div class="mt-8">
-            <a [routerLink]="['/registro-arquitectos']" class="text-[#283845] hover:text-[#E0A189] font-medium underline">
+            <a [routerLink]="['/registro-arquitectos']"
+                class="text-[#283845] hover:text-[#E0A189] font-medium underline">
                 &leftarrow; Volver a la Lista
             </a>
         </div>

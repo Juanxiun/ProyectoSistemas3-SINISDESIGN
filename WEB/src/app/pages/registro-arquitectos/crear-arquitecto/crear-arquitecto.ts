@@ -53,18 +53,78 @@ export class CrearArquitecto {
     constructor(private http: HttpClient, private router: Router) { }
 
 
+    ciError: string | null = null;
+    nombreError: string | null = null;
+    apellidoError: string | null = null;
+    telefonoError: string | null = null;
+    correoError: string | null = null;
+
     validateForm(): boolean {
-        if (!this.newArchitect.ci || !this.newArchitect.nombre) {
-            alert('ERROR: C.I., Nombre  son obligatorios.');
-            return false;
+        let isValid = true;
+        this.ciError = null;
+        this.nombreError = null;
+        this.apellidoError = null;
+        this.telefonoError = null;
+        this.correoError = null;
+
+        if (!this.newArchitect.ci) {
+            this.ciError = 'C.I. es obligatorio.';
+            isValid = false;
+        } else if (this.newArchitect.ci <= 0) {
+            this.ciError = 'C.I. debe ser un número positivo.';
+            isValid = false;
         }
-        if (this.newArchitect.ci <= 0 || (this.newArchitect.telefono && this.newArchitect.telefono <= 0)) {
-            alert('ERROR: Los campos numéricos no pueden ser cero o negativos.');
-            return false;
+
+        if (!this.newArchitect.nombre) {
+            this.nombreError = 'Nombre es obligatorio.';
+            isValid = false;
         }
-        return true;
+        if (this.newArchitect.nombre && this.newArchitect.nombre.length > 20) {
+            this.nombreError = 'Nombre no puede exceder 20 caracteres.';
+            isValid = false;
+        }
+        if (!this.newArchitect.apellido) {
+            this.apellidoError = 'apellido es obligatorio.';
+            isValid = false;
+        }
+        if (this.newArchitect.apellido && this.newArchitect.apellido.length > 20) {
+            this.apellidoError = 'apellido no puede exceder 20 caracteres.';
+            isValid = false;
+        }
+
+        if (this.newArchitect.telefono && this.newArchitect.telefono <= 0) {
+            this.telefonoError = 'Teléfono debe ser un número positivo.';
+            isValid = false;
+        }
+        if (!this.newArchitect.telefono) {
+            this.telefonoError = 'telefono es obligatorio.';
+            isValid = false;
+        }
+
+        if (this.newArchitect.correo && !this.validateEmail(this.newArchitect.correo)) {
+            this.correoError = 'Correo no es válido.';
+            isValid = false;
+        }
+        if (!this.newArchitect.correo) {
+            this.correoError = 'Correo es obligatorio.';
+            isValid = false;
+        }
+
+        return isValid;
     }
 
+    validateEmail(email: string): boolean {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(email);
+    }
+
+    hacerCodigo(arquitecto: Arquitecto) {
+
+        const ranNum: number = Math.floor(Math.random() * 90) + 10;
+        const segundoApellido: string = arquitecto.apellido.split(' ')[1] || '';
+        const codigoFinal: string = arquitecto.nombre[0] + arquitecto.apellido[0] + segundoApellido[0] + arquitecto.ci + String(ranNum);
+        return codigoFinal;
+    }
     submitNewArchitect() {
         if (!this.validateForm()) return;
 
@@ -72,12 +132,13 @@ export class CrearArquitecto {
         const newArq = this.newArchitect as Arquitecto;
 
         const formData = new FormData();
-        formData.append('codigo', newArq.codigo || '');
+        formData.append('codigo', this.hacerCodigo(newArq));
         formData.append('ci', String(newArq.ci));
         formData.append('nombre', newArq.nombre);
         formData.append('apellido', newArq.apellido);
         formData.append('telefono', String(newArq.telefono || 0));
         formData.append('correo', newArq.correo || '');
+        formData.append('password', "12345678");
         formData.append('admin', String(newArq.admin));
         formData.append('estado', String(newArq.estado));
 
