@@ -19,10 +19,22 @@ export class Navbar implements OnDestroy {
 
   searchText: string = '';
   private searchSubject = new Subject<string>();
+  
+  get hasValidSearchText(): boolean {
+    if (!this.searchText) return false;
+    const normalized = this.searchText
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/gi, '')
+      .replace(/\s+/g, '')
+      .trim();
+    return normalized.length > 0;
+  }
 
   constructor() {
     this.searchSubject.pipe(
-      debounceTime(100),
+      debounceTime(300),
       distinctUntilChanged()
     ).subscribe(searchTerm => {
       this.onSearch.emit(searchTerm);

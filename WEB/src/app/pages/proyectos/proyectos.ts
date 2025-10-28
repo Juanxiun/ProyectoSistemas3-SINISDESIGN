@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-sloppy-imports
 import { Component, OnInit } from "@angular/core";
 import { Navbar } from "../../components/navbar/navbar";
 import { Siderbar } from "../../components/siderbar/siderbar";
@@ -8,7 +7,6 @@ import { CommonModule } from "@angular/common";
 import { ProyInfo } from "../../components/project/proy-info/proy-info";
 import { CookieService } from "ngx-cookie-service";
 
-//añadido el import del calendario de reuniones
 @Component({
   selector: "app-proyectos",
   standalone: true,
@@ -39,12 +37,38 @@ export class Proyectos implements OnInit {
   }
 
   onSearchHandler(searchTerm: string) {
-    console.log("Término de búsqueda:", searchTerm);
+    console.log("Término de búsqueda recibido:", searchTerm);
     this.searchTerm = searchTerm;
+    
+    const normalized = this.normalizeSearchTerm(searchTerm);
+    
+    if (!normalized) {
+      this.noResults = false;
+    }
   }
 
   onResultsChange(hasResults: boolean) {
-    this.noResults = !hasResults && this.searchTerm.length > 0;
+    const normalized = this.normalizeSearchTerm(this.searchTerm);
+    
+    if (!normalized) {
+      this.noResults = false;
+    } else {
+      this.noResults = !hasResults;
+    }
+    
+    console.log("No results:", this.noResults, "Search term:", this.searchTerm, "Has results:", hasResults);
+  }
+
+  private normalizeSearchTerm(text: string): string {
+    if (!text) return '';
+    
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/gi, '')
+      .replace(/\s+/g, '')
+      .trim();
   }
 
   goToCreate(id: string) {
@@ -52,7 +76,6 @@ export class Proyectos implements OnInit {
   }
 
   ngOnInit(): void {
-    
     if (this.cookieService.check("sesion")) {
       const cookieValue = this.cookieService.get("sesion");
       this.userData = JSON.parse(cookieValue);
@@ -61,7 +84,7 @@ export class Proyectos implements OnInit {
       this.router.navigate(["/"])
     }
   }
-  //Añadido del cambio de vista al componente reuniones (calendario de reuniones)
+
   cambiarVista(view: "proyectos" | "reuniones" | "nueva-reunion"): void {
     this.currentView = view;
   }

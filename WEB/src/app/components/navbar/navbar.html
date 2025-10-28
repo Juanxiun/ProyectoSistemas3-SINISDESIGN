@@ -8,7 +8,7 @@
     <h1 class="text-lg md:text-3xl lg:text-4xl text-white ml-2">{{Ubi.toUpperCase()}}</h1>
   </section>
 
-  <section class="col-span-6 md:col-span-2 flex items-center justify-start mt-3 md:mt-0">
+  <section class="col-span-4 md:col-span-2 flex items-center justify-start md:mt-0">
     <div *ngIf="Ubi === 'Proyectos'; else noSearch"
          class="flex w-full bg-[#f6efe5] items-center rounded-3xl py-2 pr-4 pl-2 relative">
       <input
@@ -21,8 +21,7 @@
       >
       
       <div *ngIf="searchText; else searchIcon" 
-           (click)="clearSearch()"
-           class="cursor-pointer text-gray-500 hover:text-gray-700 mr-2">
+           (click)="clearSearch()">
       </div>
       
       <ng-template #searchIcon>
@@ -31,12 +30,12 @@
         </div>
       </ng-template>
 
-      <div *ngIf="noResults && searchText"
-          class="absolute top-full left-0 mt-2 bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-lg shadow-lg z-50 max-w-[90%] w-fit break-all whitespace-normal">
+      <div *ngIf="noResults && hasValidSearchText"
+          class="absolute top-full left-0 mt-2 bg-red-100 border border-red-300 text-red-700 px-4 py-2 rounded-lg shadow-lg z-50 max-w-[90%] w-fit break-words whitespace-normal">
         <div class="flex items-start">
-          <i class="bi bi-exclamation-circle mr-2 mt-1 text-red-600"></i>
+          <i class="bi bi-exclamation-circle mr-2 mt-1 text-red-600 flex-shrink-0"></i>
           <span class="flex-1">
-            No se encontraron proyectos que coincidan con "{{searchText}}"
+            No se encontraron proyectos que coincidan con "<span class="font-semibold">{{searchText}}</span>"
           </span>
         </div>
       </div>
@@ -56,5 +55,4 @@
       <img src="/images/uguri.jpg" alt="" class="md:w-[49px] w-[90%] rounded-full absolute md:right-0 right-0.5">
     </div>
   </section>
-
 </nav>
