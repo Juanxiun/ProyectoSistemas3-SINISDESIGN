@@ -21,7 +21,7 @@ export async function Ganancias(data: props): Promise<GananciaProp[]> {
     }
 }
 
-interface props {
+export interface props {
     id: string;
     start: string;
     end: string;

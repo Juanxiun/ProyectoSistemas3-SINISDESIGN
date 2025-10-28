@@ -29,6 +29,16 @@ export class Proyectos implements OnInit {
     private cookieService: CookieService,
   ) {}
 
+  ngOnInit(): void {
+    if (this.cookieService.check("sesion")) {
+      const cookieValue = this.cookieService.get("sesion");
+      this.userData = JSON.parse(cookieValue);
+      console.log(this.userData);
+    } else {
+      this.router.navigate(["/"]);
+    }
+  }
+
   InformationProy(id: number) {
     this.idproy = id;
     this.information = this.idproy > 0;
@@ -51,16 +61,6 @@ export class Proyectos implements OnInit {
     this.router.navigate(["registro-proyectos/crear/" + id]);
   }
 
-  ngOnInit(): void {
-    
-    if (this.cookieService.check("sesion")) {
-      const cookieValue = this.cookieService.get("sesion");
-      this.userData = JSON.parse(cookieValue);
-      console.log(this.userData)
-    } else {
-      this.router.navigate(["/"])
-    }
-  }
   //Añadido del cambio de vista al componente reuniones (calendario de reuniones)
   cambiarVista(view: "proyectos" | "reuniones" | "nueva-reunion"): void {
     this.currentView = view;

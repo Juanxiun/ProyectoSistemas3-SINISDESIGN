@@ -21,7 +21,7 @@ export async function Avances(data: props): Promise<AvanceProp[]> {
     }
 }
 
-interface props {
+export interface props {
     id: string;
     start: string;
     end: string;
