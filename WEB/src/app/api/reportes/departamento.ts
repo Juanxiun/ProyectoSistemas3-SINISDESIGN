@@ -21,7 +21,7 @@ export async function Departamentos(data: props): Promise<DepartamentoProp[]> {
     }
 }
 
-interface props {
+export interface props {
     id: string;
     pais: string;
 }

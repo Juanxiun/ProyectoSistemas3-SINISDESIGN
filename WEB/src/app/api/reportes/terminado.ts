@@ -21,7 +21,7 @@ export async function Terminados(data: props): Promise<TerminadoProp[]> {
     }
 }
 
-interface props {
+export interface props {
     id: string;
     start: string;
     end: string;

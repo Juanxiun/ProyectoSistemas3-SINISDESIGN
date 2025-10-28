@@ -27,6 +27,16 @@ export class Proyectos implements OnInit {
     private cookieService: CookieService,
   ) {}
 
+  ngOnInit(): void {
+    if (this.cookieService.check("sesion")) {
+      const cookieValue = this.cookieService.get("sesion");
+      this.userData = JSON.parse(cookieValue);
+      console.log(this.userData);
+    } else {
+      this.router.navigate(["/"]);
+    }
+  }
+
   InformationProy(id: number) {
     this.idproy = id;
     this.information = this.idproy > 0;
@@ -73,16 +83,6 @@ export class Proyectos implements OnInit {
 
   goToCreate(id: string) {
     this.router.navigate(["registro-proyectos/crear/" + id]);
-  }
-
-  ngOnInit(): void {
-    if (this.cookieService.check("sesion")) {
-      const cookieValue = this.cookieService.get("sesion");
-      this.userData = JSON.parse(cookieValue);
-      console.log(this.userData)
-    } else {
-      this.router.navigate(["/"])
-    }
   }
 
   cambiarVista(view: "proyectos" | "reuniones" | "nueva-reunion"): void {
