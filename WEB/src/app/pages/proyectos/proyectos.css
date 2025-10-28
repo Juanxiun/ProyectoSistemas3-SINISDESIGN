@@ -1,13 +1,4 @@
-.btn-nueva-reunion {
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  cursor: not-allowed;
-  font-weight: 500;
-  opacity: 0.6;
-}
+
 
 /* Estilos responsive adicionales */
 @media (max-width: 768px) {

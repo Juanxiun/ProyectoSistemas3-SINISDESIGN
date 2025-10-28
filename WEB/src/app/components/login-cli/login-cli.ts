@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Output } from '@angular/core';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -27,9 +27,23 @@ export class LoginCli {
       contrasena: ['', [
         Validators.required,
         Validators.minLength(8),
-        Validators.maxLength(25)
+        Validators.maxLength(25),
+        this.noEspaciosExtremos // Validación personalizada
       ]]
     });
+  }
+
+  // ================== VALIDACIÓN PERSONALIZADA ==================
+  noEspaciosExtremos(control: AbstractControl): ValidationErrors | null {
+    const valor = control.value;
+    if (!valor) return null;
+
+    // Si tiene espacios al principio o al final, marcar error
+    if (valor.trim().length !== valor.length) {
+      return { noEspaciosExtremos: true };
+    }
+
+    return null;
   }
 
   // Getter de controles

@@ -13,8 +13,8 @@ export class CalendarioComponent implements OnInit {
   semanas: Date[][] = [];
   mesActual: string = '';
   anioActual: number = 0;
-  hoy: Date = new Date(); // Guardamos la fecha actual para usar en el template
-
+  hoy: Date = new Date();
+  
   ngOnInit(): void {
     this.actualizarCalendario();
   }

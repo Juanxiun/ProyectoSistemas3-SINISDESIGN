@@ -29,19 +29,23 @@
             }
         }@else if (currentView === 'reuniones') {
             <div class="w-full h-full p-4">
-                <div class="w-full h-[8%] border-b-2 mb-4 flex justify-between items-center">
+            <div class="w-full h-[8%] border-b-2 mb-4 flex justify-between items-center">
                 <div class="flex items-center">
-                    <h1 class="cursor-default text-xl font-bold">CALENDARIO DE REUNIONES</h1>
+                <h1 class="cursor-default text-xl font-bold">CALENDARIO DE REUNIONES</h1>
                 </div>
+
                 <button 
-                    class="btn-nueva-reunion bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition"
-                    (click)="abrirNuevaReunion()">
-                    + Nueva Reunión
+                class="btn-nueva-reunion active:bg-blue-800 hover:shadow-lg hover:-translate-y-0.5 
+                        bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold 
+                        transition-all duration-200 ease-in-out cursor-pointer"
+                (click)="abrirNuevaReunion()">
+                + Nueva Reunión
                 </button>
-                </div>
-                <div class="w-full h-[92%]">
+            </div>
+
+            <div class="w-full h-[92%]">
                 <app-calendario></app-calendario>
-                </div>
+            </div>
             </div>
             }
 

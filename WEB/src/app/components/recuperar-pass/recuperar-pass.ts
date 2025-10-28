@@ -14,7 +14,7 @@ export class RecuperarPass {
 
   recuperarForm!: FormGroup;
   submitted = false;
-  codigoGenerado: string = '123456'; // Simulación estática del código enviado
+  codigoGenerado: string = '123456'; 
 
   constructor(private fb: FormBuilder) {
     this.recuperarForm = this.fb.group({
@@ -66,7 +66,7 @@ export class RecuperarPass {
       alert('Código verificado correctamente.');
       this.navigate.emit('nuevo');
     } else {
-      alert('El código ingresado es incorrecto.');
+      alert('El código ingresado es incorrecto.');  
     }
   }
 }
