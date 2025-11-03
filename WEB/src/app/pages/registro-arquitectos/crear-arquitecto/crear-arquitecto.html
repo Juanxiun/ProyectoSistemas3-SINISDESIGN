@@ -21,7 +21,13 @@
                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
                     <div *ngIf="ciError" class="text-red-600 text-sm">{{ ciError }}</div>
                 </div>
-
+                <div>
+                    <label for="codigo" class="block text-sm font-medium text-gray-700">Codigo</label>
+                    <input type="text" id="codigo" name="codigo" [(ngModel)]="newArchitect.codigo" required
+                        (ngModelChange)="validateForm()"
+                        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
+                    <div *ngIf="codigoError" class="text-red-600 text-sm">{{ codigoError }}</div>
+                </div>
                 <div>
                     <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
                     <input type="text" id="nombre" name="nombre" [(ngModel)]="newArchitect.nombre" required
@@ -62,11 +68,11 @@
                 </div>
 
                 <div class="col-span-2 flex justify-end gap-3 mt-4">
-                    <button type="button" [routerLink]="['/registro-arquitectos']"
+                    <button type="button" [routerLink]="['/arquitectos']"
                         class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-300">
                         CANCELAR
                     </button>
-                    <button type="submit" [disabled]="!architectForm.valid || isLoading"
+                    <button type="submit" [disabled]="!isValid || isLoading"
                         class="bg-[#722C23] hover:bg-[#5a231c] text-white font-semibold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
                         {{ isLoading ? 'CREANDO...' : 'CREAR ARQUITECTO' }}
                     </button>

@@ -1,12 +1,11 @@
-<app-navbar  [Ubi]="'Arquitectos'"/>
+<app-navbar [Ubi]="'Arquitectos'" />
 <div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
     <app-siderbar />
     <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-auto">
 
         <div class="mb-6 flex justify-between items-center">
             <h1 class="text-3xl font-bold text-[#283845]">REGISTRO DE ARQUITECTOS</h1>
-            <button
-                (click)="goToCreate()"
+            <button (click)="goToCreate()"
                 class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300">
                 NUEVO ARQUITECTO
             </button>
@@ -21,16 +20,17 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
-                <input type="search" [(ngModel)]="searchText"
-                    class="w-full focus:outline-none text-[#283845]" placeholder="Buscar..." (input)="applyFilter()">
+                <input type="search" [(ngModel)]="searchText" class="w-full focus:outline-none text-[#283845]"
+                    placeholder="Buscar..." (input)="applyFilter();">
             </div>
             <button (click)="applyFilter()"
                 class="bg-[#283845] hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto">
                 buscar
             </button>
-            <button (click)="searchText = ''; applyFilter()"
-                class="bg-gray-400 hover:bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto">
-                limpiar
+            <button (click)="alternarEstado(); applyFilter()"
+                class="  text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 w-full md:w-auto"
+                [ngClass]="{'bg-green-400 hover:bg-green-600': estadoFiltro , 'bg-red-400 hover:bg-red-600': !estadoFiltro}">
+                {{estadoFiltro === 1 ? 'ACTIVOS' : 'INACTIVOS'}}
             </button>
         </div>
 
@@ -74,8 +74,7 @@
                             {{ arq.correo }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button
-                                (click)="goToDetails(arq.codigo)"
+                            <button (click)="goToDetails(arq.codigo)"
                                 class="text-[#E0A189] hover:text-[#C97D60] font-semibold py-1 px-3 rounded-lg border border-[#E0A189] hover:border-[#C97D60] transition duration-300">
                                 ver
                             </button>

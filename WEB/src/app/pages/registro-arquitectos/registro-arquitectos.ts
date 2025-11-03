@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { CookieService } from "ngx-cookie-service";
 
 
 import { ConnectA } from '../../../config/index';
@@ -11,6 +12,8 @@ import { ConnectA } from '../../../config/index';
 //components
 import { Navbar } from '../../components/navbar/navbar';
 import { Siderbar } from '../../components/siderbar/siderbar';
+import { DomSanitizer } from '@angular/platform-browser';
+import { Terminado } from '../../components/reportes/terminado/terminado';
 
 //int
 export interface Arquitecto {
@@ -41,15 +44,31 @@ export interface ApiResponse<T> {
 export class RegistroArquitectos implements OnInit {
     private apiUrl = `${ConnectA.api}/arquitectos`;
 
+
     architects = signal<Arquitecto[]>([]);
     searchText = '';
+    botonActivo = true;
     filteredArchitects = signal<Arquitecto[]>([]);
     isLoading = signal(false);
+    estadoFiltro: number;
+    userData: any = null;
 
-    constructor(private http: HttpClient, private router: Router) { }
+
+    constructor(private http: HttpClient, private router: Router, private cookieService: CookieService,) {
+        this.estadoFiltro = 1;
+    }
 
     ngOnInit(): void {
+        // verificar sesion
+        if (this.cookieService.check("sesion")) {
+            const cookieValue = this.cookieService.get("sesion");
+            this.userData = JSON.parse(cookieValue);
+            console.log(this.userData);
+        } else {
+            this.router.navigate(["/"]);
+        }
         this.fetchArchitects();
+
     }
 
     fetchArquitectosApi(): Observable<ApiResponse<Arquitecto[]>> {
@@ -75,20 +94,38 @@ export class RegistroArquitectos implements OnInit {
     }
 
     applyFilter() {
+        this.searchText = this.searchText.trim();
         if (!this.searchText) {
             this.filteredArchitects.set(this.architects());
+            const results = this.architects().filter(
+                (arq) =>
+                    this.estadoFiltro === arq.estado
+
+            );
+
+            this.filteredArchitects.set(results);
             return;
         }
+
         const lowerCaseSearch = this.searchText.toLowerCase();
         const results = this.architects().filter(
             (arq) =>
-                arq.nombre.toLowerCase().includes(lowerCaseSearch) ||
-                arq.apellido.toLowerCase().includes(lowerCaseSearch) ||
-                String(arq.ci).includes(lowerCaseSearch) ||
-                arq.correo.toLowerCase().includes(lowerCaseSearch) ||
-                arq.codigo?.toLowerCase().includes(lowerCaseSearch)
+                (arq.nombre.toLowerCase().includes(lowerCaseSearch) ||
+                    arq.apellido.toLowerCase().includes(lowerCaseSearch) ||
+                    String(arq.ci).includes(lowerCaseSearch) ||
+                    arq.correo.toLowerCase().includes(lowerCaseSearch) ||
+                    arq.codigo?.toLowerCase().includes(lowerCaseSearch)) &&
+                this.estadoFiltro === arq.estado
+
         );
+
         this.filteredArchitects.set(results);
+    }
+
+    alternarEstado() {
+        this.estadoFiltro = this.estadoFiltro === 1 ? 0 : 1;
+
+
     }
 
     goToCreate() {

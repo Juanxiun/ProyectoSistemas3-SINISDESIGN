@@ -4,7 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 
-// Componentes y Configuración existentes
+//pruebas deteccion cambios sdafljk 
+import { NgZone } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
+
+// Componentes existentess
 import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
@@ -38,6 +42,7 @@ export interface ApiResponse<T> {
 export class CrearArquitecto {
     private apiUrl = `${ConnectA.api}/arquitectos`;
     isLoading = false;
+    isValid = false;
 
     newArchitect: Partial<Arquitecto> = {
         ci: undefined,
@@ -50,7 +55,10 @@ export class CrearArquitecto {
         estado: 1
     };
 
-    constructor(private http: HttpClient, private router: Router) { }
+    constructor(private http: HttpClient,
+        private router: Router,
+        private ngZone: NgZone,
+        private cdr: ChangeDetectorRef) { }
 
 
     ciError: string | null = null;
@@ -58,6 +66,7 @@ export class CrearArquitecto {
     apellidoError: string | null = null;
     telefonoError: string | null = null;
     correoError: string | null = null;
+    codigoError: string | null = null;
 
     validateForm(): boolean {
         let isValid = true;
@@ -66,14 +75,33 @@ export class CrearArquitecto {
         this.apellidoError = null;
         this.telefonoError = null;
         this.correoError = null;
+        this.codigoError = null;
+
+
+
+        this.newArchitect.nombre = this.newArchitect.nombre?.trim() || '';
+        this.newArchitect.apellido = this.newArchitect.apellido?.trim() || '';
+        this.newArchitect.correo = this.newArchitect.correo?.trim() || '';
+        this.newArchitect.codigo = this.newArchitect.codigo?.trim() || '';
 
         if (!this.newArchitect.ci) {
             this.ciError = 'C.I. es obligatorio.';
             isValid = false;
-        } else if (this.newArchitect.ci <= 0) {
-            this.ciError = 'C.I. debe ser un número positivo.';
+        } else if (this.newArchitect.ci.toString().length < 7 || this.newArchitect.ci.toString().length > 8) {
+            this.ciError = 'La cantidad de digitos del C.I. debe ser entre 7 y 8.';
             isValid = false;
         }
+
+
+        if (!this.newArchitect.codigo) {
+            this.codigoError = 'codigo es obligatorio.';
+            isValid = false;
+        }
+        if (this.newArchitect.codigo && this.newArchitect.codigo.length > 20) {
+            this.codigoError = 'codigo no puede exceder 20 caracteres.';
+            isValid = false;
+        }
+
 
         if (!this.newArchitect.nombre) {
             this.nombreError = 'Nombre es obligatorio.';
@@ -92,12 +120,12 @@ export class CrearArquitecto {
             isValid = false;
         }
 
-        if (this.newArchitect.telefono && this.newArchitect.telefono <= 0) {
-            this.telefonoError = 'Teléfono debe ser un número positivo.';
-            isValid = false;
-        }
+
         if (!this.newArchitect.telefono) {
             this.telefonoError = 'telefono es obligatorio.';
+            isValid = false;
+        } else if (this.newArchitect.telefono && this.newArchitect.telefono.toString().length != 8) {
+            this.telefonoError = 'Teléfono debe tener 8 digitos.';
             isValid = false;
         }
 
@@ -109,7 +137,7 @@ export class CrearArquitecto {
             this.correoError = 'Correo es obligatorio.';
             isValid = false;
         }
-
+        this.isValid = isValid;
         return isValid;
     }
 
@@ -118,13 +146,13 @@ export class CrearArquitecto {
         return re.test(email);
     }
 
-    hacerCodigo(arquitecto: Arquitecto) {
+    // hacerCodigo(arquitecto: Arquitecto) {
 
-        const ranNum: number = Math.floor(Math.random() * 90) + 10;
-        const segundoApellido: string = arquitecto.apellido.split(' ')[1] || '';
-        const codigoFinal: string = arquitecto.nombre[0] + arquitecto.apellido[0] + segundoApellido[0] + arquitecto.ci + String(ranNum);
-        return codigoFinal;
-    }
+    //     const ranNum: number = Math.floor(Math.random() * 90) + 10;
+    //     const segundoApellido: string = arquitecto.apellido.split(' ')[1] || '';
+    //     const codigoFinal: string = arquitecto.nombre[0] + arquitecto.apellido[0] + segundoApellido[0] + arquitecto.ci + String(ranNum);
+    //     return codigoFinal;
+    // }
     submitNewArchitect() {
         if (!this.validateForm()) return;
 
@@ -132,7 +160,7 @@ export class CrearArquitecto {
         const newArq = this.newArchitect as Arquitecto;
 
         const formData = new FormData();
-        formData.append('codigo', this.hacerCodigo(newArq));
+        formData.append('codigo', String(newArq.codigo));
         formData.append('ci', String(newArq.ci));
         formData.append('nombre', newArq.nombre);
         formData.append('apellido', newArq.apellido);
@@ -144,15 +172,37 @@ export class CrearArquitecto {
 
         this.http.post<ApiResponse<any>>(this.apiUrl, formData).subscribe({
             next: (response: ApiResponse<any>) => {
-                alert(response.data?.msg || 'Arquitecto creado exitosamente!');
-                this.router.navigate(['/registro-arquitectos']);
+                if (response.data?.msg) {
+                    alert(response.data.msg);
+                    if (response.data.msg === 'Arquitecto creado exitosamente.') {
+                        this.router.navigate(['/arquitectos']);
+                    }
+                }
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al crear arquitecto:', err);
-                alert('Error al crear el arquitecto. Causa: ' + (err.error?.data?.msg || err.message || 'Error de conexión/servidor.'));
+                // error especifico
+                let errorMsg = 'Error al crear el arquitecto. ';
+                if (err.error?.data?.msg) {
+                    if (err.error.data.msg.includes('C.I.')) {
+                        this.ciError = err.error.data.msg;
+                    } else if (err.error.data.msg.includes('código')) {
+                        this.codigoError = err.error.data.msg;
+                    } else if (err.error.data.msg.includes('teléfono')) {
+                        this.telefonoError = err.error.data.msg;
+                    }
+                    errorMsg += err.error.data.msg;
+                } else {
+                    errorMsg += 'Error de conexión/servidor.';
+                }
+                alert(errorMsg);
+                this.isLoading = false;
+                this.cdr.detectChanges();
+
             },
             complete: () => {
-                this.isLoading = false;
+
+
             }
         });
     }
