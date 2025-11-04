@@ -1,0 +1,39 @@
+<!-- components/editar-arquitecto/editar-arquitecto.html -->
+<div class="editar-arq-container p-4 bg-white rounded-lg shadow-md max-w-xl mx-auto">
+  <h3 class="text-lg font-bold mb-2">Reasignar arquitecto - Proyecto #{{ projectId }}</h3>
+
+  <div *ngIf="loading" class="text-sm text-gray-500 mb-2">Cargando proyecto...</div>
+  <div *ngIf="mensaje" class="mb-3 text-sm text-red-600">{{ mensaje }}</div>
+
+  <div *ngIf="!loading && proyecto">
+    <div class="mb-3">
+      <label class="block text-sm text-gray-700">Nombre proyecto</label>
+      <div class="mt-1 text-gray-800 font-semibold">{{ proyecto.nombre }}</div>
+    </div>
+
+    <div class="mb-3">
+      <label class="block text-sm text-gray-700">Arquitecto actual</label>
+      <div class="mt-1 text-gray-700">
+        {{ getNombreArquitecto(proyecto.arq) || proyecto.arq }}
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Seleccionar nuevo arquitecto</label>
+      <select [(ngModel)]="nuevoArq" name="nuevoArq" class="w-full p-2 border rounded">
+        <option value="">-- Seleccionar --</option>
+        <option *ngFor="let ar of arquitectos" [value]="ar.codigo">
+          {{ ar.nombre }} {{ ar.apellido }} ({{ ar.codigo }})
+        </option>
+      </select>
+    </div>
+
+    <div class="flex gap-2 justify-end mt-4">
+      <button type="button" class="px-4 py-2 bg-gray-300 rounded" (click)="onCancelar()" [disabled]="saving">Cancelar</button>
+      <button type="button" class="px-4 py-2 bg-blue-600 text-white rounded" (click)="onGuardar()" [disabled]="saving">
+        <span *ngIf="!saving">Guardar</span>
+        <span *ngIf="saving">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
