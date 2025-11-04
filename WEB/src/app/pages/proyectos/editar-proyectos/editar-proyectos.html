@@ -1,0 +1,519 @@
+<app-navbar [Ubi]="'Editar Proyecto'" />
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+  <app-siderbar />
+  <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+      <!-- Header -->
+      <div class="bg-white rounded-t-2xl p-6 shadow-sm border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div>
+              <h1 class="text-3xl font-bold text-[#92443a]">Editar Proyecto</h1>
+              <p class="text-gray-600 mt-1 text-sm">Modifica la información del proyecto</p>
+            </div>
+          </div>
+          <div class="hidden md:block">
+            <div class="bg-[#f8f4f0] p-3 rounded-lg border border-gray-200">
+              <i class="bi bi-pencil-square text-2xl text-[#92443a]"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs de navegación -->
+        <div class="mt-6 flex gap-2 border-b border-gray-200">
+          <button
+            (click)="cambiarSeccion('basico')"
+            [class]="seccionActual === 'basico' 
+              ? 'bg-[#92443a] text-white' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+            class="px-6 py-3 rounded-t-lg font-semibold transition-all duration-200 flex items-center gap-2">
+            <i class="bi bi-info-circle"></i>
+            Información Básica
+          </button>
+          <button
+            (click)="cambiarSeccion('tipo')"
+            [class]="seccionActual === 'tipo' 
+              ? 'bg-[#92443a] text-white' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+            class="px-6 py-3 rounded-t-lg font-semibold transition-all duration-200 flex items-center gap-2">
+            <i class="bi bi-tags"></i>
+            Tipo
+            <span *ngIf="tieneTipo" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+              ✓
+            </span>
+          </button>
+          <button
+            (click)="cambiarSeccion('direccion')"
+            [class]="seccionActual === 'direccion' 
+              ? 'bg-[#92443a] text-white' 
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+            class="px-6 py-3 rounded-t-lg font-semibold transition-all duration-200 flex items-center gap-2">
+            <i class="bi bi-geo-alt"></i>
+            Dirección
+            <span *ngIf="tieneDireccion" class="bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+              ✓
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mensajes -->
+      <div *ngIf="mensajeError" class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        {{mensajeError}}
+      </div>
+      
+      <div *ngIf="mensajeExito" class="mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
+        <i class="bi bi-check-circle-fill"></i>
+        {{mensajeExito}}
+      </div>
+
+      <!-- Contenido de las secciones -->
+      <div class="bg-white rounded-b-2xl shadow-lg p-8">
+        
+        <!-- SECCIÓN: INFORMACIÓN BÁSICA -->
+        <div *ngIf="seccionActual === 'basico'">
+          <form (ngSubmit)="onSubmitBasico()" #proyectoForm="ngForm" novalidate class="space-y-8">
+            
+            <div class="bg-white p-6 rounded-xl border border-gray-200">
+              <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                  <i class="bi bi-folder-plus text-[#92443a] text-lg"></i>
+                </div>
+                <div>
+                  <h2 class="text-xl font-bold text-gray-800">Información del Proyecto</h2>
+                  <p class="text-gray-500 text-sm mt-1">Detalles principales del proyecto</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-pencil-square text-[#92443a]"></i>
+                    Nombre del Proyecto <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    [(ngModel)]="proyecto.nombre"
+                    name="nombre"
+                    required
+                    minlength="3"
+                    maxlength="50"
+                    pattern="^[a-zA-Z0-9\s\-\.\'\$\$\/:,]*$"
+                    placeholder="Ingrese el nombre del proyecto"
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                    [class.border-red-500]="proyectoForm.submitted && (!proyecto.nombre.trim() || proyecto.nombre.trim().length < 3 || proyecto.nombre.trim().length > 50 || !proyectoForm.form.controls['nombre']?.valid)" />
+                  
+                  <small *ngIf="proyectoForm.submitted && !proyecto.nombre.trim()" class="text-red-500 text-sm">
+                    Este campo es obligatorio
+                  </small>
+                  <small *ngIf="proyectoForm.submitted && proyecto.nombre.trim() && proyecto.nombre.trim().length < 3" class="text-red-500 text-sm">
+                    Mínimo 3 caracteres
+                  </small>
+                  <small *ngIf="proyectoForm.submitted && proyecto.nombre.trim().length > 50" class="text-red-500 text-sm">
+                    Máximo 50 caracteres
+                  </small>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-person-badge text-[#92443a]"></i>
+                    Cliente <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    [(ngModel)]="proyecto.cli"
+                    name="cliente"
+                    required
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer"
+                    [class.border-red-500]="proyectoForm.submitted && (!proyecto.cli || proyecto.cli === 0)">
+                    <option value="0" disabled>Seleccionar cliente...</option>
+                    <option *ngFor="let cliente of clientes()" [value]="cliente.ci">
+                      {{ cliente.nombre }} {{ cliente.apellido }}
+                    </option>
+                  </select>
+                  <small *ngIf="proyectoForm.submitted && (!proyecto.cli || proyecto.cli === 0)" class="text-red-500 text-sm">
+                    Seleccione un cliente
+                  </small>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-person-workspace text-[#92443a]"></i>
+                    Arquitecto <span class="text-red-500">*</span>
+                  </label>
+                  <select
+                    [(ngModel)]="proyecto.arq"
+                    name="arq"
+                    required
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer"
+                    [class.border-red-500]="proyectoForm.submitted && !proyecto.arq">
+                    <option value="" disabled>Seleccionar arquitecto...</option>
+                    <option *ngFor="let arquitecto of arquitectos()" [value]="arquitecto.codigo">
+                      {{ arquitecto.nombre }} {{ arquitecto.apellido }}
+                    </option>
+                  </select>
+                  <small *ngIf="proyectoForm.submitted && !proyecto.arq" class="text-red-500 text-sm">
+                    Seleccione un arquitecto
+                  </small>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-currency-dollar text-[#92443a]"></i>
+                    Costo <span class="text-red-500">*</span>
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">Bs.</span>
+                    <input
+                      type="number"
+                      [(ngModel)]="proyecto.costo"
+                      name="costo"
+                      required
+                      min="1"
+                      max="9999999"
+                      placeholder="0"
+                      class="w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                      [class.border-red-500]="proyectoForm.submitted && (!proyecto.costo || proyecto.costo < 1 || proyecto.costo > 9999999)" />
+                  </div>
+                  <small *ngIf="proyectoForm.submitted && (!proyecto.costo || proyecto.costo <= 0)" class="text-red-500 text-sm">
+                    Ingrese un costo válido (mayor a 0)
+                  </small>
+                  <small *ngIf="proyectoForm.submitted && proyecto.costo > 9999999" class="text-red-500 text-sm">
+                    El costo no puede exceder 9,999,999 Bs.
+                  </small>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-calendar-event text-[#92443a]"></i>
+                    Fecha de Inicio <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="proyecto.inicio"
+                    name="inicio"
+                    required
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer" />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-calendar-check text-[#92443a]"></i>
+                    Fecha de Finalización (Opcional)
+                  </label>
+                  <input
+                    type="datetime-local"
+                    [(ngModel)]="proyecto.final"
+                    name="final"
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer" />
+                  <small class="text-gray-500 text-xs mt-1 block">Dejar vacío si el proyecto sigue activo</small>
+                </div>
+
+                <div class="hidden">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                    <i class="bi bi-toggle-on text-[#92443a]"></i>
+                    Estado del Proyecto
+                  </label>
+                  <select
+                    [(ngModel)]="proyecto.est"
+                    name="est"
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer">
+                    <option value="1">Activo</option>
+                    <option value="0">Inactivo</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="mt-6 pt-6 border-t border-gray-100">
+                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <i class="bi bi-image text-[#92443a]"></i>
+                  Imagen del Proyecto (Opcional - dejar en blanco para mantener la actual)
+                </label>
+                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <input
+                    type="file"
+                    #fileInput
+                    (change)="onFileSelected($event)"
+                    accept="image/*"
+                    class="hidden" />
+                  <button
+                    type="button"
+                    (click)="fileInput.click()"
+                    class="px-6 py-3 bg-[#E0A189] hover:bg-[#C97D60] text-white rounded-lg transition-all duration-200 font-semibold flex items-center gap-2 w-fit">
+                    <i class="bi bi-cloud-arrow-up text-lg"></i>
+                    Cambiar Imagen
+                  </button>
+                  <div *ngIf="nombreArchivo" class="flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
+                    <i class="bi bi-file-image text-[#92443a]"></i>
+                    <span class="text-gray-600 text-sm">{{ nombreArchivo }}</span>
+                  </div>
+                </div>
+                <small class="text-gray-500 text-xs mt-1 block">Formatos soportados: JPG, PNG, WebP (máx. 5MB)</small>
+
+                <div *ngIf="previewImagen" class="mt-4 flex justify-center">
+                  <img [src]="previewImagen" alt="Vista previa" class="max-w-xs h-auto rounded-lg border-2 border-gray-200" />
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+              <button
+                type="submit"
+                [disabled]="isLoading()"
+                class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">
+                <span *ngIf="!isLoading()" class="flex items-center gap-2">
+                  <i class="bi bi-save text-lg"></i>
+                  GUARDAR CAMBIOS
+                </span>
+                <span *ngIf="isLoading()" class="flex items-center gap-2">
+                  <i class="bi bi-hourglass-split animate-spin"></i>
+                  Guardando...
+                </span>
+              </button>
+
+              <button
+                type="button"
+                (click)="goBack()"
+                class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">
+                <i class="bi bi-x-circle text-lg"></i>
+                CANCELAR
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- SECCIÓN: TIPO DE PROYECTO -->
+        <div *ngIf="seccionActual === 'tipo'">
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+              <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                <i class="bi bi-tags text-[#92443a] text-lg"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Tipo de Proyecto</h2>
+                <p class="text-gray-500 text-sm mt-1">Define la categoría y el tipo específico del proyecto</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Tipo (Categoría) -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipo (Categoría) <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="tipoProyecto.tipo"
+                  name="tipo"
+                  (change)="onTipoChange()"
+                  required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200 bg-white"
+                  [class.border-red-500]="tieneError('tipo')">
+                  <option value="">Selecciona una categoría</option>
+                  <option *ngFor="let tipo of tiposDisponibles" [value]="tipo">
+                    {{tipo}}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Selecciona la categoría principal del servicio</p>
+                <div *ngIf="tieneError('tipo')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['tipo']}}</span>
+                </div>
+              </div>
+
+              <!-- Subtipo -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Subtipo <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="tipoProyecto.subtipo"
+                  name="subtipo"
+                  [disabled]="!tipoProyecto.tipo || subtiposDisponibles.length === 0"
+                  required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  [class.border-red-500]="tieneError('subtipo')">
+                  <option value="">Selecciona un subtipo</option>
+                  <option *ngFor="let subtipo of subtiposDisponibles" [value]="subtipo">
+                    {{subtipo}}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  <span *ngIf="!tipoProyecto.tipo">Primero selecciona una categoría</span>
+                  <span *ngIf="tipoProyecto.tipo">Selecciona el tipo específico del proyecto</span>
+                </p>
+                <div *ngIf="tieneError('subtipo')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['subtipo']}}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-4 pt-6 mt-6 border-t border-gray-100">
+              <button
+                type="button"
+                (click)="guardarTipo()"
+                [disabled]="isLoading() || !isTipoFormValid()"
+                class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+                <span *ngIf="!isLoading()">
+                  <i class="bi bi-save"></i>
+                  {{ tieneTipo ? 'Actualizar Tipo' : 'Guardar Tipo' }}
+                </span>
+                <span *ngIf="isLoading()">
+                  <i class="bi bi-hourglass-split animate-spin"></i>
+                  Guardando...
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="seccionActual === 'direccion'">
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+              <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                <i class="bi bi-geo-alt text-[#92443a] text-lg"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Dirección del Proyecto</h2>
+                <p class="text-gray-500 text-sm mt-1">Ubicación física donde se ejecutará el proyecto</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- País -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  País <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.pais"
+                  name="pais"
+                  required
+                  readonly
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                <p class="text-xs text-gray-500 mt-1">País predeterminado</p>
+              </div>
+
+              <!-- Departamento -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Departamento <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.departamento"
+                  name="departamento"
+                  (input)="validarTextoSoloLetras($event, 'departamento')"
+                  (blur)="validarDepartamento()"
+                  required
+                  maxlength="50"
+                  placeholder="Ej: La Paz, Santa Cruz, Cochabamba"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('departamento')">
+                <p class="text-xs text-gray-500 mt-1">Solo letras y espacios.</p>
+                <div *ngIf="tieneError('departamento')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['departamento']}}</span>
+                </div>
+              </div>
+
+              <!-- Zona -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Zona/Barrio <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.zona"
+                  name="zona"
+                  (input)="validarTextoConNumeros($event, 'zona')"
+                  (blur)="validarZona()"
+                  required
+                  maxlength="100"
+                  placeholder="Ej: Zona Sur, Centro, Calacoto"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('zona')">
+                <p class="text-xs text-gray-500 mt-1">Letras, números y espacios</p>
+                <div *ngIf="tieneError('zona')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['zona']}}</span>
+                </div>
+              </div>
+
+              <!-- Calle -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Calle/Avenida <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.calle"
+                  name="calle"
+                  (input)="validarTextoConNumeros($event, 'calle')"
+                  (blur)="validarCalle()"
+                  required
+                  maxlength="150"
+                  placeholder="Ej: Av. Arce, Calle Jaén"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('calle')">
+                <p class="text-xs text-gray-500 mt-1">Letras, números y espacios</p>
+                <div *ngIf="tieneError('calle')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['calle']}}</span>
+                </div>
+              </div>
+
+              <!-- Número de Puerta -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Número de Puerta <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.puerta"
+                  name="puerta"
+                  (input)="validarNumeroPuerta($event)"
+                  (blur)="validarPuerta()"
+                  required
+                  maxlength="5"
+                  placeholder="Ej: 123"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('puerta')">
+                <div *ngIf="tieneError('puerta')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['puerta']}}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-4 pt-6 mt-6 border-t border-gray-100">
+              <button
+                type="button"
+                (click)="guardarDireccion()"
+                [disabled]="isLoading() || !isDireccionFormValid()"
+                class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+                <span *ngIf="!isLoading()">
+                  <i class="bi bi-save"></i>
+                  {{ tieneDireccion ? 'Actualizar Dirección' : 'Guardar Dirección' }}
+                </span>
+                <span *ngIf="isLoading()">
+                  <i class="bi bi-hourglass-split animate-spin"></i>
+                  Guardando...
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="mt-6 text-center">
+        <p class="text-gray-500 text-sm flex items-center justify-center gap-2">
+          <i class="bi bi-info-circle"></i>
+          Los campos marcados con <span class="text-red-500 font-bold">*</span> son obligatorios
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

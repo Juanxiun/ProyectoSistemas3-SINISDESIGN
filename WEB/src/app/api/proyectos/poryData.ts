@@ -14,6 +14,27 @@ export async function ProyData(usr: string, id: string): Promise<ProyProps[]> {
         return [];
     }
 }
+export async function DeleteProyecto(id: number): Promise<boolean> {
+    const url = ConnectA.api;
+    try {
+        const result = await fetch(`${url}/proyectos/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await result.json();
+        
+        if (data.status === 200) {
+            return true;
+        }
+        return false;
+    } catch (e) {
+        console.log("Error > API > DeleteProyecto >\n" + e);
+        return false;
+    }
+}
 
 export interface ProyProps {
     id?: number;
@@ -25,4 +46,9 @@ export interface ProyProps {
     costo: number;
     imagen: string | File;
     est?: number;
+    arq_nombre?: string;
+    arq_apellido?: string;
+    cli_nombre?: string;
+    cli_apellido?: string;
+    cli_ci?: number;
 }

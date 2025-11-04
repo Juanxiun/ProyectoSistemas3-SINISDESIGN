@@ -33,11 +33,10 @@ export class CrudProyectos {
     }
   }
 
-public async create(ctx: Context, proyectos: ProyectoModel) {
-    try {
-      
+  public async create(ctx: Context, proyectos: ProyectoModel) {
+    try {      
       const result = await CreateQuery(proyectos);
-      
+            
       if (result.std === 500) {
         return ResponseOak(ctx, 500, {
           error: "Error interno del servidor.",
@@ -46,14 +45,13 @@ public async create(ctx: Context, proyectos: ProyectoModel) {
           app: "application/json",
         });
       } else {
-        // Verificar si result tiene id antes de usarlo
         const responseData: any = {
+          std: 200,
           msg: "Creacion exitosa!.",
         };
         
-        // Solo agregar proyectoId si existe
-        if ((result as any).id) {
-          responseData.proyectoId = (result as any).id;
+        if (result.id) {
+          responseData.id = result.id;
         }
         
         return ResponseOak(ctx, 200, responseData, {
@@ -62,10 +60,6 @@ public async create(ctx: Context, proyectos: ProyectoModel) {
         });
       }
     } catch (error) {
-      console.error("=== ERROR EN CREATE ===");
-      console.error("Error:", error);
-      console.error("Stack:", error instanceof Error ? error.stack : "");
-      
       return ResponseOak(ctx, 500, {
         error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error)),
       }, {
@@ -76,17 +70,27 @@ public async create(ctx: Context, proyectos: ProyectoModel) {
   }
 
   public async update(ctx: Context, proyectos: ProyectoModel) {
-    const result = await UpdateQuery(proyectos);
-    if (result.std === 500) {
+    try {
+      const result = await UpdateQuery(proyectos);
+      
+      if (result.std === 500) {
+        return ResponseOak(ctx, 500, {
+          error: "Error interno del servidor al actualizar.",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      } else {
+        return ResponseOak(ctx, 200, {
+          msg: "Actualización exitosa!",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      }
+    } catch (error) {
       return ResponseOak(ctx, 500, {
-        error: "Error interno del servidor.",
-      }, {
-        content: "Content-Type",
-        app: "application/json",
-      });
-    } else {
-      return ResponseOak(ctx, 200, {
-        msg: "Actualizacion exitosa!.",
+        error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error)),
       }, {
         content: "Content-Type",
         app: "application/json",
@@ -94,22 +98,38 @@ public async create(ctx: Context, proyectos: ProyectoModel) {
     }
   }
 
-  public async delete(ctx: Context, id: number, fecha: string) {
-    const result = await DeleteQuery(id, fecha);
+  public async delete(ctx: Context, id: number) {
+  try {
+    console.log(`Intentando eliminar proyecto ID: ${id}`);
+    
+    const result = await DeleteQuery(id);
+    
     if (result.std === 500) {
+      console.error(`Error en DeleteQuery para ID: ${id}`);
       return ResponseOak(ctx, 500, {
-        error: "Error interno del servidor.",
+        error: "Error interno del servidor al eliminar.",
       }, {
         content: "Content-Type",
         app: "application/json",
       });
     } else {
+      console.log(`Proyecto ID: ${id} eliminado exitosamente`);
       return ResponseOak(ctx, 200, {
-        msg: "Eliminacion exitosa!.",
+        msg: "Eliminación exitosa!",
+        id: id 
       }, {
         content: "Content-Type",
         app: "application/json",
       });
     }
+  } catch (error) {
+    console.error(`Excepción en delete para ID ${id}:`, error);
+    return ResponseOak(ctx, 500, {
+      error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error)),
+    }, {
+      content: "Content-Type",
+      app: "application/json",
+    });
   }
+}
 }

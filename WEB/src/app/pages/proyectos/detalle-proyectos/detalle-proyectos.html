@@ -1,0 +1,291 @@
+<app-navbar [Ubi]="'Detalles del Proyecto'" />
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+  <app-siderbar />
+  <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
+    <div class="max-w-4xl mx-auto">
+      
+      <!-- Header -->
+      <div class="bg-white rounded-t-2xl p-6 shadow-sm border-b border-gray-200">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div>
+              <h1 class="text-3xl font-bold text-[#92443a]">Completar Proyecto</h1>
+              <p class="text-gray-600 mt-1 text-sm">Proyecto ID: {{proyectoId}} - Completa la información adicional</p>
+            </div>
+          </div>
+          <div class="hidden md:block">
+            <div class="bg-[#f8f4f0] p-3 rounded-lg border border-gray-200">
+              <i class="bi bi-clipboard-plus text-2xl text-[#92443a]"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="mt-6 flex items-center justify-center">
+          <div class="flex items-center">
+            <div class="flex flex-col items-center">
+              <div [class]="pasoActual === 'tipo' ? 'bg-[#92443a] text-white' : 'bg-green-500 text-white'" 
+                   class="w-10 h-10 rounded-full flex items-center justify-center font-bold">
+                1
+              </div>
+              <span class="text-sm mt-1 text-gray-600">Tipo</span>
+            </div>
+            <div [class]="pasoActual === 'tipo' ? 'bg-gray-300' : 'bg-green-500'" 
+                 class="w-20 h-1 mx-2"></div>
+            <div class="flex flex-col items-center">
+              <div [class]="pasoActual === 'direccion' ? 'bg-[#92443a] text-white' : (pasoActual === 'tipo' ? 'bg-gray-300 text-gray-600' : 'bg-green-500 text-white')" 
+                   class="w-10 h-10 rounded-full flex items-center justify-center font-bold">
+                2
+              </div>
+              <span class="text-sm mt-1 text-gray-600">Dirección</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Content -->
+      <div class="bg-white rounded-b-2xl shadow-lg p-8">
+        
+        <!-- Mensajes -->
+        <div *ngIf="mensajeError" class="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center gap-2">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>{{mensajeError}}</span>
+        </div>
+        
+        <div *ngIf="mensajeExito" class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center gap-2">
+          <i class="bi bi-check-circle-fill"></i>
+          <span>{{mensajeExito}}</span>
+        </div>
+
+        <!-- Paso 1: Tipo de Proyecto -->
+        <div *ngIf="pasoActual === 'tipo'" class="space-y-6">
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+              <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                <i class="bi bi-tags text-[#92443a] text-lg"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Tipo de Proyecto</h2>
+                <p class="text-gray-500 text-sm mt-1">Define la categoría y el tipo específico del proyecto</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Tipo (Categoría) -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Tipo (Categoría) <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="tipoProyecto.tipo"
+                  name="tipo"
+                  (change)="onTipoChange()"
+                  required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200 bg-white"
+                  [class.border-red-500]="tieneError('tipo')">
+                  <option value="">Selecciona una categoría</option>
+                  <option *ngFor="let tipo of tiposDisponibles" [value]="tipo">
+                    {{tipo}}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Selecciona la categoría principal del servicio</p>
+                <div *ngIf="tieneError('tipo')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['tipo']}}</span>
+                </div>
+              </div>
+
+              <!-- Subtipo -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Subtipo <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="tipoProyecto.subtipo"
+                  name="subtipo"
+                  [disabled]="!tipoProyecto.tipo || subtiposDisponibles.length === 0"
+                  required
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  [class.border-red-500]="tieneError('subtipo')">
+                  <option value="">Selecciona un subtipo</option>
+                  <option *ngFor="let subtipo of subtiposDisponibles" [value]="subtipo">
+                    {{subtipo}}
+                  </option>
+                </select>
+                <p class="text-xs text-gray-500 mt-1">
+                  <span *ngIf="!tipoProyecto.tipo">Primero selecciona una categoría</span>
+                  <span *ngIf="tipoProyecto.tipo">Selecciona el tipo específico del proyecto</span>
+                </p>
+                <div *ngIf="tieneError('subtipo')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['subtipo']}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4 pt-6">
+            <button
+              type="button"
+              (click)="guardarTipo()"
+              [disabled]="isLoading()"
+              class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+              <span *ngIf="!isLoading()" class="flex items-center justify-center gap-2">
+                <i class="bi bi-check-lg"></i>
+                Guardar Tipo y Continuar
+              </span>
+              <span *ngIf="isLoading()" class="flex items-center justify-center gap-2">
+                <i class="bi bi-arrow-repeat animate-spin"></i>
+                Guardando...
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="pasoActual === 'direccion'" class="space-y-6">
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+              <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                <i class="bi bi-geo-alt text-[#92443a] text-lg"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Dirección del Proyecto</h2>
+                <p class="text-gray-500 text-sm mt-1">Ubicación física donde se ejecutará el proyecto</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  País <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.pais"
+                  name="pais"
+                  required
+                  readonly
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 cursor-not-allowed">
+                <p class="text-xs text-gray-500 mt-1">País predeterminado</p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Departamento <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.departamento"
+                  name="departamento"
+                  (input)="validarTextoSoloLetras($event, 'departamento')"
+                  (blur)="validarDepartamento()"
+                  required
+                  maxlength="40"
+                  placeholder="Ej: La Paz, Santa Cruz, Cochabamba"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('departamento')">
+                <p class="text-xs text-gray-500 mt-1">Solo letras y espacios.</p>
+                <div *ngIf="tieneError('departamento')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['departamento']}}</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Zona/Barrio <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.zona"
+                  name="zona"
+                  (input)="validarTextoConNumeros($event, 'zona')"
+                  (blur)="validarZona()"
+                  required
+                  maxlength="40"
+                  placeholder="Ej: Zona Sur, Centro, Calacoto"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('zona')">
+                <p class="text-xs text-gray-500 mt-1">Letras, números y espacios.</p>
+                <div *ngIf="tieneError('zona')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['zona']}}</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Calle/Avenida <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  [(ngModel)]="direccion.calle"
+                  name="calle"
+                  (input)="validarTextoConNumeros($event, 'calle')"
+                  (blur)="validarCalle()"
+                  required
+                  maxlength="40"
+                  placeholder="Ej: Av. Arce, Calle Jaén"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('calle')">
+                <p class="text-xs text-gray-500 mt-1">Letras, números y espacios.</p>
+                <div *ngIf="tieneError('calle')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['calle']}}</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Número de Puerta <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  [(ngModel)]="direccion.puerta"
+                  name="puerta"
+                  (input)="validarNumeroPuerta($event)"
+                  (blur)="validarPuerta()"
+                  required
+                  min="1"
+                  max="9999"
+                  placeholder="Ej: 123"
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] focus:border-transparent transition-all duration-200"
+                  [class.border-red-500]="tieneError('puerta')">
+                <p class="text-xs text-gray-500 mt-1">Número positivo entre 1 y 9999</p>
+                <div *ngIf="tieneError('puerta')" class="text-red-500 text-sm mt-1 flex items-center gap-1">
+                  <i class="bi bi-exclamation-circle-fill"></i>
+                  <span>{{erroresValidacion['puerta']}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-4 pt-6">
+            <button
+              type="button"
+              (click)="guardarDireccion()"
+              [disabled]="isLoading() || !isDireccionFormValid()"
+              class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+              <span *ngIf="!isLoading()" class="flex items-center justify-center gap-2">
+                <i class="bi bi-check-circle"></i>
+                Completar Proyecto
+              </span>
+              <span *ngIf="isLoading()" class="flex items-center justify-center gap-2">
+                <i class="bi bi-arrow-repeat animate-spin"></i>
+                Guardando...
+              </span>
+            </button>
+
+            <button
+              type="button"
+              (click)="volverATipo()"
+              class="px-6 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-4 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg">
+              <i class="bi bi-arrow-left mr-2"></i>
+              Volver
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

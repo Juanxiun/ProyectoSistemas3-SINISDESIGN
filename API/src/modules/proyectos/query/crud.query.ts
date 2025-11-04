@@ -13,9 +13,6 @@ interface res {
 export const SelectQuery = async (usr: string, id?: number): Promise<res> => {
   try {
     const usuario = parseInt(usr) ? "cli" : "arq";
-
-    console.log("ingreso como: ", usuario);
-
     const query = `
       SELECT id, arq, cli, nombre, inicio, final, costo, imagen, est
       FROM proyectos
@@ -72,25 +69,29 @@ export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
       data.nombre,
       datetime(data.inicio ?? ""),
       data.costo,
-      typeof data.imagen === "string" ? null : await fileBlob(data.imagen),
+      typeof data.imagen === "string" ? null : await fileBlob(data.imagen!),
       1,
     ];
 
     const result = await cli.execute(query, params);
-    
-    console.log("=== DEBUG CreateQuery ===");
-    console.log("Resultado completo de execute:", result);
-    console.log("result[1]:", (result as any)[1]);
-    console.log("result[1].insertId:", (result as any)[1]?.insertId);
+        
+    const insertId = 
+      (result as any).insertId || 
+      (result as any)[0]?.insertId || 
+      (result as any)[1]?.insertId;
 
-    const insertId = (result as any)[1]?.insertId;
+    if (!insertId) {
+      console.error("No se pudo obtener el ID insertado");
+      return {
+        std: 500,
+      };
+    }
 
     return {
       std: 200,
       id: insertId,
     };
   } catch (error) {
-    console.log("Error en la query: Proyectos > Create >\n" + error);
     return {
       std: 500,
     };
@@ -99,48 +100,62 @@ export const CreateQuery = async (data: ProyectoModel): Promise<res> => {
 
 export const UpdateQuery = async (data: ProyectoModel): Promise<res> => {
   try {
-    const query = `
-      UPDATE proyectos
-      SET 
-        arq = ?, cli = ?, nombre = ?, inicio = ?, costo = ?, imagen = ?
-      WHERE id = ?
-    `;
-    const params = [
+    if (!data.id || data.id <= 0) {
+      throw new Error("ID de proyecto inválido");
+    }
+
+    let query = `UPDATE proyectos SET arq = ?, cli = ?, nombre = ?, inicio = ?, costo = ?, est = ?`;
+    let params: any[] = [
       data.arq,
       data.cli,
       data.nombre,
       datetime(data.inicio ?? ""),
       data.costo,
-      data.imagen,
-      data.id ?? 0,
+      data.est ?? 1
     ];
 
-    await cli.query(query, params);
+    if (data.imagen && data.imagen instanceof File && data.imagen.size > 0) {
+      try {
+        const buffer = await fileBlob(data.imagen);
+        query += `, imagen = ?`;
+        params.push(buffer);
+      } catch (error) {
+        throw new Error("Error al procesar la imagen: " + (error instanceof Error ? error.message : String(error)));
+      }
+    }
 
+    if (data.final && data.final.trim() !== "") {
+      const fechaFinalFormateada = datetime(data.final);
+      query += `, final = ?`;
+      params.push(fechaFinalFormateada);
+    }
+
+    query += ` WHERE id = ?`;
+    params.push(data.id);
+
+    const result = await cli.execute(query, params);
+    
     return { std: 200 };
+    
   } catch (error) {
-    console.log("Error en la query: Proyectos > Update >\n", error);
-    return { std: 500 };
+    console.error("Error en UpdateQuery:", error);
+    return { 
+      std: 500
+    };
   }
 };
 
-export const DeleteQuery = async (id: number, fecha: string): Promise<res> => {
+export const DeleteQuery = async (id: number): Promise<res> => {
   try {
-    await cli.query(
-      `UPDATE
-            proyectos
-        SET
-            est = 0,
-            final = ?
-        WHERE
-            id = ?`,
-      [datetime(fecha), id],
+    await cli.execute(
+      `UPDATE proyectos SET est = 0 WHERE id = ?`,
+      [id],
     );
     return {
       std: 200,
     };
   } catch (error) {
-    console.log("Error en la query: Proyectos > Delete >\n" + error);
+    console.error("Error en la query: Proyectos > Delete >", error);
     return {
       std: 500,
     };

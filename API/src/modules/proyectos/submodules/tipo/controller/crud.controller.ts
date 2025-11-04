@@ -10,22 +10,36 @@ import { ResponseOak } from "../../../../../libs/response.ts";
 
 export class CrudTipo {
   public async select(ctx: Context, proy: number, id: number) {
-    const tipos = await SelectQuery(proy, id);
-    const tipo: TipoModel[] = tipos.data ?? [];
+    try {
+      console.log(`🔍 Buscando tipo - proy: ${proy}, id: ${id}`);
+      
+      const tipos = await SelectQuery(proy, id);
+      const tipoList: TipoModel[] = tipos.data ?? [];
 
-    if (tipos.std === 500) {
+      console.log(`📊 Resultados encontrados: ${tipoList.length}`);
+
+      if (tipos.std === 500) {
+        return ResponseOak(ctx, 500, {
+          error: "Error interno del servidor al obtener tipos.",
+          data: tipoList,
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      } else {
+        const std = tipoList.length > 0 ? 200 : 404;
+        return ResponseOak(ctx, std, {
+          msg: std === 200 ? "Éxito." : "Ningún registro encontrado",
+          data: tipoList,
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      }
+    } catch (error) {
+      console.error("Error en CrudTipo.select:", error);
       return ResponseOak(ctx, 500, {
-        error: "Error interno del servidor.",
-        data: tipo,
-      }, {
-        content: "Content-Type",
-        app: "application/json",
-      });
-    } else {
-      const std = tipo.length > 0 ? 200 : 400;
-      return ResponseOak(ctx, std, {
-        msg: std === 200 ? "Exito." : "Ningun registro encontrado",
-        data: tipo,
+        error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error))
       }, {
         content: "Content-Type",
         app: "application/json",
@@ -34,18 +48,30 @@ export class CrudTipo {
   }
 
   public async create(ctx: Context, tipo: TipoModel) {
-    const result = await CreateQuery(tipo);
+    try {
+      console.log("➕ Creando tipo:", tipo);
+      
+      const result = await CreateQuery(tipo);
 
-    if (result.std === 500) {
+      if (result.std === 500) {
+        return ResponseOak(ctx, 500, {
+          error: "Error interno del servidor al crear tipo.",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      } else {
+        return ResponseOak(ctx, 200, {
+          msg: "Creación exitosa!",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      }
+    } catch (error) {
+      console.error("Error en CrudTipo.create:", error);
       return ResponseOak(ctx, 500, {
-        error: "Error interno del servidor.",
-      }, {
-        content: "Content-Type",
-        app: "application/json",
-      });
-    } else {
-      return ResponseOak(ctx, 200, {
-        msg: "Creacion exitosa!.",
+        error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error))
       }, {
         content: "Content-Type",
         app: "application/json",
@@ -54,17 +80,30 @@ export class CrudTipo {
   }
 
   public async update(ctx: Context, tipo: TipoModel) {
-    const result = await UpdateQuery(tipo);
-    if (result.std === 500) {
+    try {
+      console.log("✏️ Actualizando tipo:", tipo);
+      
+      const result = await UpdateQuery(tipo);
+      
+      if (result.std === 500) {
+        return ResponseOak(ctx, 500, {
+          error: "Error interno del servidor al actualizar tipo.",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      } else {
+        return ResponseOak(ctx, 200, {
+          msg: "Actualización exitosa!",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      }
+    } catch (error) {
+      console.error("Error en CrudTipo.update:", error);
       return ResponseOak(ctx, 500, {
-        error: "Error interno del servidor.",
-      }, {
-        content: "Content-Type",
-        app: "application/json",
-      });
-    } else {
-      return ResponseOak(ctx, 200, {
-        msg: "Actualizacion exitosa!.",
+        error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error))
       }, {
         content: "Content-Type",
         app: "application/json",
@@ -73,17 +112,30 @@ export class CrudTipo {
   }
 
   public async delete(ctx: Context, id: number) {
-    const result = await DeleteQuery(id);
-    if (result.std === 500) {
+    try {
+      console.log(`🗑️ Eliminando tipo ID: ${id}`);
+      
+      const result = await DeleteQuery(id);
+      
+      if (result.std === 500) {
+        return ResponseOak(ctx, 500, {
+          error: "Error interno del servidor al eliminar tipo.",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      } else {
+        return ResponseOak(ctx, 200, {
+          msg: "Eliminación exitosa!",
+        }, {
+          content: "Content-Type",
+          app: "application/json",
+        });
+      }
+    } catch (error) {
+      console.error("Error en CrudTipo.delete:", error);
       return ResponseOak(ctx, 500, {
-        error: "Error interno del servidor.",
-      }, {
-        content: "Content-Type",
-        app: "application/json",
-      });
-    } else {
-      return ResponseOak(ctx, 200, {
-        msg: "Eliminacion exitosa!.",
+        error: "Error en el servidor: " + (error instanceof Error ? error.message : String(error))
       }, {
         content: "Content-Type",
         app: "application/json",

@@ -6,14 +6,10 @@ export default interface ProyectoModel {
   inicio: string;
   final?: string;
   costo: number;
-  imagen: string | File;
+  imagen?: string | File;
   est?: number;
 }
-
-
-
 /* Submodelos para querys adicionales */
-
 export interface ProyectoList {
   id?: number;
   arq: string;
