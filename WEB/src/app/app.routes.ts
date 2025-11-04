@@ -16,6 +16,8 @@ import { EditarProyectos } from "./pages/proyectos/editar-proyectos/editar-proye
 import { DetalleProyectos } from "./pages/proyectos/detalle-proyectos/detalle-proyectos";
 import { Calendario } from "./pages/calendario/calendario";
 
+import { ReportesPage } from "./pages/reportes/reportes";
+
 export const routes: Routes = [
     { path: "", title: "SINISDESIGN", component: Presentation },
     { path: "equipo/:tamProy", title: "Equipo", component: PerfilArquitectos },
@@ -36,6 +38,10 @@ export const routes: Routes = [
         path: "registro-arquitectos/detalle/:codigo",
         title: "Detalle Arquitecto",
         component: DetalleArquitecto,
+    },
+
+    {
+        path:"reportes", title: "Reportes", component: ReportesPage
     },
 
     // RUTA DE LOGIN

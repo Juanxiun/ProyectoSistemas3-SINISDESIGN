@@ -1,4 +1,3 @@
-// deno-lint-ignore-file no-sloppy-imports
 import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from "@angular/core";
 import { LoadDisplay } from "../../../elements/load-display/load-display";
 import { from, Observable, BehaviorSubject, combineLatest } from "rxjs";
@@ -14,7 +13,6 @@ import { AsyncPipe, NgForOf } from "@angular/common";
   styles: ``,
 })
 export class CardProy implements OnChanges {
-  //comunicacion pa que funcione el buscador
   @Input()
   usr: string = "";
   
@@ -38,15 +36,16 @@ export class CardProy implements OnChanges {
       this.searchTerm$
     ]).pipe(
       map(([proyectos, searchTerm]) => {
-        if (!searchTerm.trim()) {
+        const normalizedSearchTerm = this.normalizeForSearch(searchTerm);
+        
+        if (!normalizedSearchTerm) {
           this.resultsChange.emit(true); 
           return proyectos;
         }
         
-        const term = searchTerm.toLowerCase();
         const filtered = proyectos.filter(proyecto =>
-          proyecto.nombre?.toLowerCase().includes(term) ||
-          proyecto.direccion?.toLowerCase().includes(term)
+          this.normalizeForSearch(proyecto.nombre).includes(normalizedSearchTerm) ||
+          this.normalizeForSearch(proyecto.direccion).includes(normalizedSearchTerm)
         );
         
         this.resultsChange.emit(filtered.length > 0);
@@ -65,21 +64,35 @@ export class CardProy implements OnChanges {
     }
   }
 
-  // cargar datos
   private cargarProyectos() {
     if (this.usr) {
       from(ListProyectos(this.usr)).subscribe({
         next: (proyectos) => {
           this.proyectos$.next(proyectos);
+          this.resultsChange.emit(true);
         },
         error: (error) => {
           console.error('Error cargando proyectos:', error);
           this.proyectos$.next([]);
+          this.resultsChange.emit(false);
         }
       });
     } else {
       this.proyectos$.next([]);
+      this.resultsChange.emit(false);
     }
+  }
+
+  private normalizeForSearch(text: string): string {
+    if (!text) return '';
+    
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') 
+      .replace(/[^a-z0-9\s]/gi, '')
+      .replace(/\s+/g, '')
+      .trim();
   }
 
   EnviarId(id: number) {

@@ -21,7 +21,7 @@ export async function Tipos(data: props): Promise<TipoProp[]> {
     }
 }
 
-interface props {
+export interface props {
     id: string;
     start: string;
     end: string;

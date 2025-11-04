@@ -223,19 +223,20 @@ export class CrearProyectos implements OnInit {
   isFormValid(): boolean {
     const cliNum = Number(this.proyecto.cli);
     const costoNum = Number(this.proyecto.costo);
-
+    const nombreTrim = this.proyecto.nombre.trim();
+    const regex = /^[a-zA-Z0-9\s\-\.\'\"\$\$\/:,]*$/;
     return (
-      !!this.proyecto.nombre &&
-      this.proyecto.nombre.length >= 3 &&
-      this.proyecto.nombre.length <= 100 &&
+      nombreTrim !== "" &&
+      nombreTrim.length >= 3 &&
+      nombreTrim.length <= 50 &&
+      regex.test(this.proyecto.nombre) &&
       costoNum > 0 &&
       costoNum <= 9999999 &&
       !!this.proyecto.inicio &&
       cliNum !== 0 &&
       !!this.proyecto.arq &&
       this.proyecto.arq !== "" &&
-      this.imagenSeleccionada !== null
-    );
+      this.imagenSeleccionada !== null);
   }
 
   onSubmit(): void {
