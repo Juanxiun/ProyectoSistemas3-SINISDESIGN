@@ -41,6 +41,12 @@ export class CrudInformaciones {
                 descripcion: form.get("descripcion") as string,
             };
 
+            //eliminar registro previo si existe
+            const existing = await SelectQuery(data.arq);
+            if (existing.data && existing.data.length > 0) {
+                await DeleteQuery(existing.data[0].id, data.arq);
+            }
+
             const result = await CreateQuery(data);
 
             if (result.std === 500) {

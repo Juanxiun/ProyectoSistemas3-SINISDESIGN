@@ -95,6 +95,15 @@
                     </button>
                 </div>
             </form>
+            <br>
+
+            <app-informacion-profesional [arquitectoCodigo]="arquitecto.codigo!" [isEditing]="isEditing"
+                [isLoading]="isLoading">
+            </app-informacion-profesional>
+
+            <app-especializaciones [arquitectoCodigo]="arquitecto.codigo!" [isEditing]="isEditing"
+                [isLoading]="isLoading">
+            </app-especializaciones>
         </div>
 
         <div class="mt-8">

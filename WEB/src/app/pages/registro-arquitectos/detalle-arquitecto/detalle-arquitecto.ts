@@ -11,7 +11,10 @@ import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
 
+import { InformacionProfesional } from '../../../components/arquitecto/informacion-profesional/informacion-profesional';
+import { EspecializacionesComponent } from '../../../components/arquitecto/especializaciones/especializaciones';
 
+import { ViewChild } from '@angular/core';
 
 export interface Arquitecto {
     codigo?: string;
@@ -37,11 +40,12 @@ export interface ApiResponse<T> {
 @Component({
     selector: 'app-detalle-arquitecto',
     standalone: true,
-    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule],
+    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesional, EspecializacionesComponent],
     templateUrl: './detalle-arquitecto.html',
     styleUrl: './detalle-arquitecto.css',
 })
 export class DetalleArquitecto implements OnInit {
+    @ViewChild(InformacionProfesional) infoProfesionalComponent!: InformacionProfesional;
     private cdr = inject(ChangeDetectorRef);
     private originalData: Arquitecto | undefined;
     private apiUrl = `${ConnectA.api}/arquitectos`;
@@ -51,6 +55,8 @@ export class DetalleArquitecto implements OnInit {
     isSaving = false;
     isEditing = false;
     isValid = true;
+
+
 
     constructor(
         private http: HttpClient,
@@ -90,7 +96,7 @@ export class DetalleArquitecto implements OnInit {
 
                         if (this.isArquitecto(arquitectoData)) {
                             this.arquitecto = arquitectoData;
-                            // Guardar copia de los datos originales
+
                             this.originalData = { ...arquitectoData };
                             console.log('Arquitecto cargado:', this.arquitecto);
                         }
@@ -119,8 +125,9 @@ export class DetalleArquitecto implements OnInit {
     }
     toggleEdit() {
         if (this.isEditing) {
-
             this.resetForm();
+
+            this.infoProfesionalComponent.resetForm();
         }
         this.isEditing = !this.isEditing;
     }
@@ -136,11 +143,16 @@ export class DetalleArquitecto implements OnInit {
         this.correoError = null;
         this.codigoError = null;
     }
+
+
+
+
     saveChanges() {
         if (!this.arquitecto || !this.arquitectoCodigo) return;
-
-        if (!this.validateForm()) return;
-
+        if (!this.validateForm() || !this.infoProfesionalComponent.validateForm()) {
+            alert('Por favor, corrija los errores en la información del arquitecto y/o profesional.');
+            return;
+        }
         this.isSaving = true;
 
 
@@ -163,24 +175,30 @@ export class DetalleArquitecto implements OnInit {
 
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
+
                 alert(response.data?.msg || 'Arquitecto actualizado exitosamente!');
-                this.isEditing = false;
+
+
+
+                this.infoProfesionalComponent.saveInformacion().subscribe({
+                    next: () => {
+
+                        this.isEditing = false;
+                        this.isSaving = false;
+                        this.cdr.detectChanges();
+                    },
+                    error: (infoErr) => {
+                        console.error('Error al guardar info profesional (hijo):', infoErr);
+                        alert('Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message));
+                        this.isSaving = false;
+                        this.cdr.detectChanges();
+                    }
+                });
+
             },
             error: (err: HttpErrorResponse) => {
-                console.error('Error al guardar cambios:', err);
+                console.error('Error al guardar cambios (padre):', err);
                 alert('Error al actualizar: ' + (err.error?.data?.msg || err.message));
-                const serverMsg = err.error?.data?.msg;
-                if (serverMsg.includes('C.I.')) {
-                    this.ciError = serverMsg;
-                } else if (serverMsg.includes('código')) {
-                    this.codigoError = serverMsg;
-                } else if (serverMsg.includes('teléfono')) {
-                    this.telefonoError = serverMsg;
-                }
-                this.isSaving = false;
-                this.cdr.detectChanges();
-            },
-            complete: () => {
                 this.isSaving = false;
                 this.cdr.detectChanges();
             }
@@ -237,7 +255,7 @@ export class DetalleArquitecto implements OnInit {
         });
     }
 
-    //validaciones
+
 
     ciError: string | null = null;
     nombreError: string | null = null;
@@ -247,9 +265,9 @@ export class DetalleArquitecto implements OnInit {
     codigoError: string | null = null;
 
     onFieldChange(field: string) {
-        // Ejecuta la validación completa en cada cambio para actualizar this.isValid y los errores.
+
         this.validateForm();
-        return this.isValid; // Aunque validateForm es más completo, esta función solo se usa para actualizar errores.
+        return this.isValid;
     }
 
 
@@ -268,16 +286,16 @@ export class DetalleArquitecto implements OnInit {
             return false;
         }
 
-        // 1. Limpieza de strings (igual que en crear-arquitecto.ts)
+
         this.arquitecto.nombre = String(this.arquitecto.nombre)?.trim();
         this.arquitecto.apellido = String(this.arquitecto.apellido)?.trim();
         this.arquitecto.correo = String(this.arquitecto.correo)?.trim();
         this.arquitecto.codigo = String(this.arquitecto.codigo)?.trim();
 
 
-        // 2. Validaciones
 
-        // C.I.
+
+
         if (!this.arquitecto.ci) {
             this.ciError = 'C.I. es obligatorio.';
             isValid = false;
@@ -286,7 +304,7 @@ export class DetalleArquitecto implements OnInit {
             isValid = false;
         }
 
-        // Código
+
         if (!this.arquitecto.codigo) {
             this.codigoError = 'codigo es obligatorio.';
             isValid = false;
@@ -296,7 +314,7 @@ export class DetalleArquitecto implements OnInit {
             isValid = false;
         }
 
-        // Nombre
+
         if (!this.arquitecto.nombre) {
             this.nombreError = 'Nombre es obligatorio.';
             isValid = false;
@@ -306,7 +324,7 @@ export class DetalleArquitecto implements OnInit {
             isValid = false;
         }
 
-        // Apellido
+
         if (!this.arquitecto.apellido) {
             this.apellidoError = 'apellido es obligatorio.';
             isValid = false;
@@ -316,7 +334,7 @@ export class DetalleArquitecto implements OnInit {
             isValid = false;
         }
 
-        // Teléfono
+
         if (!this.arquitecto.telefono) {
             this.telefonoError = 'telefono es obligatorio.';
             isValid = false;
@@ -325,7 +343,7 @@ export class DetalleArquitecto implements OnInit {
             isValid = false;
         }
 
-        // Correo
+
         if (!this.arquitecto.correo) {
             this.correoError = 'Correo es obligatorio.';
             isValid = false;

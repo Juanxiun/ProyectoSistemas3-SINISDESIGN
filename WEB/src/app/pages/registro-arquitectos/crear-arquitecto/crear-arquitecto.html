@@ -77,7 +77,25 @@
                         {{ isLoading ? 'CREANDO...' : 'CREAR ARQUITECTO' }}
                     </button>
                 </div>
+                <div class="col-span-2 mt-8">
+                    <h2 class="text-xl font-semibold text-[#283845] mb-4 border-b pb-2">
+                        Información Profesional y Especializaciones
+                    </h2>
+                </div>
+
+                <div class="col-span-2">
+                    <app-informacion-profesional-create [isLoading]="false"
+                        (infoDataChange)="onInfoProfesionalChange($event)">
+                    </app-informacion-profesional-create>
+                </div>
+
+                <div class="col-span-2">
+                    <app-especializaciones-create [isEditing]="true" [isLoading]="false"
+                        (especializacionesChange)="onEspecializacionesChange($event)">
+                    </app-especializaciones-create>
+                </div>
             </form>
+
         </div>
     </div>
 </div>

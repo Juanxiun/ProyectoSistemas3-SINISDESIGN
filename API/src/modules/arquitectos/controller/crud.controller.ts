@@ -50,23 +50,43 @@ export class CrudArquitectos {
     };
 
 
-    if (!arquitecto.ci || !arquitecto.nombre) {
+    const infoData = {
+      universidad: form.get("universidad") as string,
+      titulacion: form.get("titulacion") as string,
+      descripcion: form.get("descripcion") as string,
+      fotoFile: form.get("foto") as File | null,
+    };
+
+
+    const especializacionesRaw = form.get("especializaciones") as string;
+    let especializaciones: string[] = [];
+    try {
+
+      especializaciones = JSON.parse(especializacionesRaw || '[]');
+    } catch (e) {
+      console.error("Error al parsear especializaciones JSON:", e);
+    }
+
+
+    if (!arquitecto.ci || !arquitecto.nombre || !infoData.universidad || !infoData.titulacion || !infoData.descripcion) {
       return ResponseOak(
         ctx,
         400,
-        { msg: "Faltan campos obligatorios " },
+        { msg: "Faltan campos obligatorios para Arquitecto y/o Información Profesional." },
         { content: "Content-Type", app: "application/json" }
       );
     }
 
-    const res = await CreateQuery(arquitecto);
+
+
+    const res = await CreateQuery(arquitecto, infoData, especializaciones);
 
     return ResponseOak(
       ctx,
       res.std,
       {
         msg: res.std === 200
-          ? "Arquitecto creado exitosamente."
+          ? "Arquitecto y su información profesional creados exitosamente."
           : res.error || "Error al crear el arquitecto.",
       },
       {
@@ -116,7 +136,7 @@ export class CrudArquitectos {
       const form = await ctx.request.body.formData();
 
       const estadoRaw = form.get("estado");
-      // (Eliminación lógica/Activación)
+
       if (estadoRaw !== null && !form.get("ci") && !form.get("nombre") && !form.get("codigo") && !form.get("telefono")) {
         const estNum = Number(estadoRaw);
         if (!Number.isNaN(estNum)) {

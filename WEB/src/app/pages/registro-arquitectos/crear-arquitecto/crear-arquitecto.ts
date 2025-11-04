@@ -1,18 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 
-//pruebas deteccion cambios sdafljk 
+
 import { NgZone } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 
-// Componentes existentess
+
 import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
 
+
+import { InformacionProfesionalCreateComponent, InfoProfesionalOutput, Informacion } from '../../../components/arquitecto/informacion-profesional-create/informacion-profesional-create';
+import { EspecializacionesCreateComponent, Especializacion } from '../../../components/arquitecto/especializaciones-create/especializaciones-create';
 
 export interface Arquitecto {
     codigo?: string;
@@ -35,11 +38,10 @@ export interface ApiResponse<T> {
 @Component({
     selector: 'app-crear-arquitecto',
     standalone: true,
-    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule],
-    templateUrl: './crear-arquitecto.html',
+    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesionalCreateComponent, EspecializacionesCreateComponent], templateUrl: './crear-arquitecto.html',
     styleUrl: './crear-arquitecto.css',
 })
-export class CrearArquitecto {
+export class CrearArquitecto implements OnInit {
     private apiUrl = `${ConnectA.api}/arquitectos`;
     isLoading = false;
     isValid = false;
@@ -55,10 +57,31 @@ export class CrearArquitecto {
         estado: 1
     };
 
-    constructor(private http: HttpClient,
+    constructor(
+        private http: HttpClient,
         private router: Router,
-        private ngZone: NgZone,
-        private cdr: ChangeDetectorRef) { }
+        private cdr: ChangeDetectorRef
+    ) { }
+
+    infoProfesionalData: Partial<Informacion> = {};
+    infoProfesionalFile: File | null = null;
+    isInfoProfesionalValid: boolean = false;
+    especializaciones: Especializacion[] = [];
+    ngOnInit(): void {
+
+        this.validateForm();
+        this.cdr.detectChanges();
+    }
+    onInfoProfesionalChange(event: InfoProfesionalOutput) {
+        this.infoProfesionalData = event.info;
+        this.infoProfesionalFile = event.file;
+        this.isInfoProfesionalValid = event.isValid;
+        this.validateForm();
+    }
+
+    onEspecializacionesChange(event: Especializacion[]) {
+        this.especializaciones = event;
+    }
 
 
     ciError: string | null = null;
@@ -84,7 +107,9 @@ export class CrearArquitecto {
         this.newArchitect.correo = this.newArchitect.correo?.trim() || '';
         this.newArchitect.codigo = this.newArchitect.codigo?.trim() || '';
 
-        if (!this.newArchitect.ci) {
+
+
+        if (!this.newArchitect.ci || isNaN(Number(this.newArchitect.ci))) {
             this.ciError = 'C.I. es obligatorio.';
             isValid = false;
         } else if (this.newArchitect.ci.toString().length < 7 || this.newArchitect.ci.toString().length > 8) {
@@ -137,6 +162,11 @@ export class CrearArquitecto {
             this.correoError = 'Correo es obligatorio.';
             isValid = false;
         }
+
+        if (!this.isInfoProfesionalValid) {
+            isValid = false;
+        }
+
         this.isValid = isValid;
         return isValid;
     }
@@ -146,13 +176,13 @@ export class CrearArquitecto {
         return re.test(email);
     }
 
-    // hacerCodigo(arquitecto: Arquitecto) {
 
-    //     const ranNum: number = Math.floor(Math.random() * 90) + 10;
-    //     const segundoApellido: string = arquitecto.apellido.split(' ')[1] || '';
-    //     const codigoFinal: string = arquitecto.nombre[0] + arquitecto.apellido[0] + segundoApellido[0] + arquitecto.ci + String(ranNum);
-    //     return codigoFinal;
-    // }
+
+
+
+
+
+
     submitNewArchitect() {
         if (!this.validateForm()) return;
 
@@ -170,6 +200,18 @@ export class CrearArquitecto {
         formData.append('admin', String(newArq.admin));
         formData.append('estado', String(newArq.estado));
 
+
+        if (this.infoProfesionalData.universidad) formData.append('universidad', this.infoProfesionalData.universidad);
+        if (this.infoProfesionalData.titulacion) formData.append('titulacion', this.infoProfesionalData.titulacion);
+        if (this.infoProfesionalData.descripcion) formData.append('descripcion', this.infoProfesionalData.descripcion);
+        if (this.infoProfesionalFile) {
+            formData.append('foto', this.infoProfesionalFile);
+        }
+
+
+        formData.append('especializaciones', JSON.stringify(this.especializaciones.map(e => e.especialidad)));
+
+
         this.http.post<ApiResponse<any>>(this.apiUrl, formData).subscribe({
             next: (response: ApiResponse<any>) => {
                 if (response.data?.msg) {
@@ -181,7 +223,7 @@ export class CrearArquitecto {
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al crear arquitecto:', err);
-                // error especifico
+
                 let errorMsg = 'Error al crear el arquitecto. ';
                 if (err.error?.data?.msg) {
                     if (err.error.data.msg.includes('C.I.')) {
@@ -202,7 +244,9 @@ export class CrearArquitecto {
             },
             complete: () => {
 
-
+                this.isLoading = false;
+                this.cdr.detectChanges();
+                this.router.navigate(['/arquitectos']);
             }
         });
     }
