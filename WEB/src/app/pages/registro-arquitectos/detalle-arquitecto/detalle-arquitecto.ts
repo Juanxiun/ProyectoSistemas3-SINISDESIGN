@@ -11,7 +11,10 @@ import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
 
+import { InformacionProfesional } from '../../../components/arquitecto/informacion-profesional/informacion-profesional';
+import { EspecializacionesComponent } from '../../../components/arquitecto/especializaciones/especializaciones';
 
+import { ViewChild } from '@angular/core';
 
 export interface Arquitecto {
     codigo?: string;
@@ -37,11 +40,12 @@ export interface ApiResponse<T> {
 @Component({
     selector: 'app-detalle-arquitecto',
     standalone: true,
-    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule],
+    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesional, EspecializacionesComponent],
     templateUrl: './detalle-arquitecto.html',
     styleUrl: './detalle-arquitecto.css',
 })
 export class DetalleArquitecto implements OnInit {
+    @ViewChild(InformacionProfesional) infoProfesionalComponent!: InformacionProfesional;
     private cdr = inject(ChangeDetectorRef);
     private originalData: Arquitecto | undefined;
     private apiUrl = `${ConnectA.api}/arquitectos`;
@@ -50,6 +54,9 @@ export class DetalleArquitecto implements OnInit {
     isLoading = true;
     isSaving = false;
     isEditing = false;
+    isValid = true;
+
+
 
     constructor(
         private http: HttpClient,
@@ -89,7 +96,7 @@ export class DetalleArquitecto implements OnInit {
 
                         if (this.isArquitecto(arquitectoData)) {
                             this.arquitecto = arquitectoData;
-                            // Guardar copia de los datos originales
+
                             this.originalData = { ...arquitectoData };
                             console.log('Arquitecto cargado:', this.arquitecto);
                         }
@@ -118,8 +125,9 @@ export class DetalleArquitecto implements OnInit {
     }
     toggleEdit() {
         if (this.isEditing) {
-
             this.resetForm();
+
+            this.infoProfesionalComponent.resetForm();
         }
         this.isEditing = !this.isEditing;
     }
@@ -133,16 +141,30 @@ export class DetalleArquitecto implements OnInit {
         this.apellidoError = null;
         this.telefonoError = null;
         this.correoError = null;
+        this.codigoError = null;
     }
+
+
+
+
     saveChanges() {
         if (!this.arquitecto || !this.arquitectoCodigo) return;
-
-        if (!this.validateForm()) return;
-
+        if (!this.validateForm() || !this.infoProfesionalComponent.validateForm()) {
+            alert('Por favor, corrija los errores en la información del arquitecto y/o profesional.');
+            return;
+        }
         this.isSaving = true;
+
+
+        this.arquitecto.nombre = String(this.arquitecto.nombre)?.trim();
+        this.arquitecto.apellido = String(this.arquitecto.apellido)?.trim();
+        this.arquitecto.correo = String(this.arquitecto.correo)?.trim();
+        this.arquitecto.codigo = String(this.arquitecto.codigo)?.trim();
+
 
         const fd = new FormData();
         fd.append('ci', String(this.arquitecto.ci));
+        fd.append('codigo', String(this.arquitecto.codigo));
         fd.append('nombre', String(this.arquitecto.nombre));
         fd.append('apellido', String(this.arquitecto.apellido || ''));
         fd.append('telefono', String(this.arquitecto.telefono || '0'));
@@ -150,17 +172,33 @@ export class DetalleArquitecto implements OnInit {
         fd.append('admin', String(this.arquitecto.admin || 0));
         fd.append('estado', String(this.arquitecto.estado || 1));
 
-        // NO poner headers Content-Type: el navegador lo asigna con boundary
+
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
+
                 alert(response.data?.msg || 'Arquitecto actualizado exitosamente!');
-                this.isEditing = false;
+
+
+
+                this.infoProfesionalComponent.saveInformacion().subscribe({
+                    next: () => {
+
+                        this.isEditing = false;
+                        this.isSaving = false;
+                        this.cdr.detectChanges();
+                    },
+                    error: (infoErr) => {
+                        console.error('Error al guardar info profesional (hijo):', infoErr);
+                        alert('Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message));
+                        this.isSaving = false;
+                        this.cdr.detectChanges();
+                    }
+                });
+
             },
             error: (err: HttpErrorResponse) => {
-                console.error('Error al guardar cambios:', err);
+                console.error('Error al guardar cambios (padre):', err);
                 alert('Error al actualizar: ' + (err.error?.data?.msg || err.message));
-            },
-            complete: () => {
                 this.isSaving = false;
                 this.cdr.detectChanges();
             }
@@ -169,7 +207,7 @@ export class DetalleArquitecto implements OnInit {
 
     deleteArquitecto() {
         if (!this.arquitecto || !this.arquitectoCodigo) return;
-        if (!confirm('¿Estás seguro de eliminar este arquitecto?')) return;
+        if (!confirm('¿Estás seguro de actualizar como inactivo a este arquitecto?')) return;
 
         this.isSaving = true;
 
@@ -179,7 +217,7 @@ export class DetalleArquitecto implements OnInit {
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
                 alert(response.data?.msg || 'Arquitecto eliminado lógicamente.');
-                this.router.navigate(['/registro-arquitectos']);
+                this.router.navigate(['/arquitectos']);
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al eliminar:', err);
@@ -192,63 +230,47 @@ export class DetalleArquitecto implements OnInit {
         });
     }
 
-    //validaciones
+    activarArquitecto() {
+        if (!this.arquitecto || !this.arquitectoCodigo) return;
+        if (!confirm('¿Estás seguro de activar a este arquitecto?')) return;
+
+        this.isSaving = true;
+
+        const fd = new FormData();
+        fd.append('estado', '1');
+
+        this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
+            next: (response) => {
+                alert(response.data?.msg || 'Arquitecto activado.');
+                this.router.navigate(['/arquitectos']);
+            },
+            error: (err: HttpErrorResponse) => {
+                console.error('Error al eliminar:', err);
+                alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+            },
+            complete: () => {
+                this.isSaving = false;
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+
 
     ciError: string | null = null;
     nombreError: string | null = null;
     apellidoError: string | null = null;
     telefonoError: string | null = null;
     correoError: string | null = null;
+    codigoError: string | null = null;
+
     onFieldChange(field: string) {
-        if (!this.arquitecto) return;
 
-        switch (field) {
-            case 'ci':
-                this.ciError = null;
-                if (!this.arquitecto.ci) {
-                    this.ciError = 'C.I. es obligatorio.';
-                } else if (this.arquitecto.ci <= 0) {
-                    this.ciError = 'C.I. debe ser un número positivo.';
-                }
-                break;
-
-            case 'nombre':
-                this.nombreError = null;
-                if (!this.arquitecto.nombre) {
-                    this.nombreError = 'Nombre es obligatorio.';
-                } else if (this.arquitecto.nombre.length > 20) {
-                    this.nombreError = 'Nombre no puede exceder 20 caracteres.';
-                }
-                break;
-
-            case 'apellido':
-                this.apellidoError = null;
-                if (!this.arquitecto.apellido) {
-                    this.apellidoError = 'Apellido es obligatorio.';
-                } else if (this.arquitecto.apellido.length > 20) {
-                    this.apellidoError = 'Apellido no puede exceder 20 caracteres.';
-                }
-                break;
-
-            case 'telefono':
-                this.telefonoError = null;
-                if (!this.arquitecto.telefono) {
-                    this.telefonoError = 'Teléfono es obligatorio.';
-                } else if (this.arquitecto.telefono <= 0) {
-                    this.telefonoError = 'Teléfono debe ser un número positivo.';
-                }
-                break;
-
-            case 'correo':
-                this.correoError = null;
-                if (!this.arquitecto.correo) {
-                    this.correoError = 'Correo es obligatorio.';
-                } else if (!this.validateEmail(this.arquitecto.correo)) {
-                    this.correoError = 'Correo no es válido.';
-                }
-                break;
-        }
+        this.validateForm();
+        return this.isValid;
     }
+
+
     validateForm(): boolean {
         let isValid = true;
         this.ciError = null;
@@ -256,18 +278,42 @@ export class DetalleArquitecto implements OnInit {
         this.apellidoError = null;
         this.telefonoError = null;
         this.correoError = null;
+        this.codigoError = null;
+
         if (!this.arquitecto) {
             console.log('No hay arquitecto para validar');
+            this.isValid = false;
             return false;
         }
+
+
+        this.arquitecto.nombre = String(this.arquitecto.nombre)?.trim();
+        this.arquitecto.apellido = String(this.arquitecto.apellido)?.trim();
+        this.arquitecto.correo = String(this.arquitecto.correo)?.trim();
+        this.arquitecto.codigo = String(this.arquitecto.codigo)?.trim();
+
+
+
+
 
         if (!this.arquitecto.ci) {
             this.ciError = 'C.I. es obligatorio.';
             isValid = false;
-        } else if (this.arquitecto.ci <= 0) {
-            this.ciError = 'C.I. debe ser un número positivo.';
+        } else if (this.arquitecto.ci.toString().length < 7 || this.arquitecto.ci.toString().length > 8) {
+            this.ciError = 'La cantidad de digitos del C.I. debe ser entre 7 y 8.';
             isValid = false;
         }
+
+
+        if (!this.arquitecto.codigo) {
+            this.codigoError = 'codigo es obligatorio.';
+            isValid = false;
+        }
+        if (this.arquitecto.codigo && this.arquitecto.codigo.length > 20) {
+            this.codigoError = 'codigo no puede exceder 20 caracteres.';
+            isValid = false;
+        }
+
 
         if (!this.arquitecto.nombre) {
             this.nombreError = 'Nombre es obligatorio.';
@@ -277,6 +323,8 @@ export class DetalleArquitecto implements OnInit {
             this.nombreError = 'Nombre no puede exceder 20 caracteres.';
             isValid = false;
         }
+
+
         if (!this.arquitecto.apellido) {
             this.apellidoError = 'apellido es obligatorio.';
             isValid = false;
@@ -286,25 +334,25 @@ export class DetalleArquitecto implements OnInit {
             isValid = false;
         }
 
-        if (this.arquitecto.telefono && this.arquitecto.telefono <= 0) {
-            this.telefonoError = 'Teléfono debe ser un número positivo.';
-            isValid = false;
-        }
+
         if (!this.arquitecto.telefono) {
             this.telefonoError = 'telefono es obligatorio.';
             isValid = false;
-        }
-
-
-        if (this.arquitecto.correo && !this.validateEmail(this.arquitecto.correo)) {
-            this.correoError = 'Correo no es válido.';
+        } else if (this.arquitecto.telefono && this.arquitecto.telefono.toString().length != 8) {
+            this.telefonoError = 'Teléfono debe tener 8 digitos.';
             isValid = false;
         }
+
+
         if (!this.arquitecto.correo) {
             this.correoError = 'Correo es obligatorio.';
             isValid = false;
+        } else if (this.arquitecto.correo && !this.validateEmail(this.arquitecto.correo)) {
+            this.correoError = 'Correo no es válido.';
+            isValid = false;
         }
 
+        this.isValid = isValid;
         return isValid;
     }
 
@@ -317,6 +365,8 @@ export class DetalleArquitecto implements OnInit {
         switch (field) {
             case 'ci':
                 return this.ciError;
+            case 'codigo':
+                return this.codigoError;
             case 'nombre':
                 return this.nombreError;
             case 'apellido':

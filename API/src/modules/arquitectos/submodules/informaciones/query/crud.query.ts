@@ -1,7 +1,7 @@
 import cli from "../../../../../database/connect.ts";
 import InformacionModel from "../model.ts";
 import { fileBlob } from "../../../../../libs/converFile.ts";
-
+import { conver64, typeFile } from "../../../../../libs/conver64.ts";
 interface res {
     data?: InformacionModel[];
     std: number;
@@ -19,7 +19,12 @@ export const SelectQuery = async (arq: string, id?: number): Promise<res> => {
         const params = id ? [arq, id] : [arq];
 
         const [rows] = await cli.query(query, params);
-        const data = Array.isArray(rows) ? (rows as InformacionModel[]) : [];
+        const data = Array.isArray(rows)
+            ? (rows as any[]).map(row => ({
+                ...row,
+                foto: row.foto ? conver64(typeFile.jpg, row.foto) : null,
+            })) as InformacionModel[]
+            : [];
 
         return {
             data: data,
@@ -37,6 +42,8 @@ export const SelectQuery = async (arq: string, id?: number): Promise<res> => {
 
 export const CreateQuery = async (data: InformacionModel): Promise<res> => {
     try {
+
+
         const query = `
       INSERT INTO informaciones (arq, foto, universidad, titulacion, descripcion)
       VALUES (?, ?, ?, ?, ?)
@@ -104,7 +111,7 @@ export const UpdateQuery = async (data: InformacionModel): Promise<res> => {
     }
 };
 
-export const DeleteQuery = async (id: number, arq: string): Promise<res> => {
+export const DeleteQuery = async (id: number | undefined, arq: string): Promise<res> => {
     try {
         await cli.query(
             `DELETE FROM informaciones WHERE id = ? AND arq = ?`,

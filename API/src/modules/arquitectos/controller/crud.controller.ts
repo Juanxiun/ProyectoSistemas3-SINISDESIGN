@@ -50,24 +50,44 @@ export class CrudArquitectos {
     };
 
 
-    if (!arquitecto.ci || !arquitecto.nombre) {
+    const infoData = {
+      universidad: form.get("universidad") as string,
+      titulacion: form.get("titulacion") as string,
+      descripcion: form.get("descripcion") as string,
+      fotoFile: form.get("foto") as File | null,
+    };
+
+
+    const especializacionesRaw = form.get("especializaciones") as string;
+    let especializaciones: string[] = [];
+    try {
+
+      especializaciones = JSON.parse(especializacionesRaw || '[]');
+    } catch (e) {
+      console.error("Error al parsear especializaciones JSON:", e);
+    }
+
+
+    if (!arquitecto.ci || !arquitecto.nombre || !infoData.universidad || !infoData.titulacion || !infoData.descripcion) {
       return ResponseOak(
         ctx,
         400,
-        { msg: "Faltan campos obligatorios " },
+        { msg: "Faltan campos obligatorios para Arquitecto y/o Información Profesional." },
         { content: "Content-Type", app: "application/json" }
       );
     }
 
-    const res = await CreateQuery(arquitecto);
+
+
+    const res = await CreateQuery(arquitecto, infoData, especializaciones);
 
     return ResponseOak(
       ctx,
       res.std,
       {
         msg: res.std === 200
-          ? "Arquitecto creado exitosamente."
-          : "Error al crear el arquitecto.",
+          ? "Arquitecto y su información profesional creados exitosamente."
+          : res.error || "Error al crear el arquitecto.",
       },
       {
         content: "Content-Type",
@@ -89,17 +109,39 @@ export class CrudArquitectos {
       );
     }
 
+    const updateBody = async (data: Record<string, string | number>) => {
+
+      if (!data.ci || !data.nombre) {
+        return ResponseOak(
+          ctx,
+          400,
+          { msg: "Faltan campos obligatorios" },
+          { content: "Content-Type", app: "application/json" }
+        );
+      }
+
+      const res = await UpdateQuery(codigo, data);
+
+      if (res.std !== 200) {
+
+        return ResponseOak(ctx, res.std, { msg: res.error || "Error al actualizar el arquitecto." }, { content: "Content-Type", app: "application/json" });
+      }
+
+      return ResponseOak(ctx, 200, { msg: "Arquitecto actualizado exitosamente.", data: res.data }, { content: "Content-Type", app: "application/json" });
+    }
+
+
 
     try {
       const form = await ctx.request.body.formData();
 
-
       const estadoRaw = form.get("estado");
-      if (estadoRaw !== null && !form.get("ci") && !form.get("nombre")) {
+
+      if (estadoRaw !== null && !form.get("ci") && !form.get("nombre") && !form.get("codigo") && !form.get("telefono")) {
         const estNum = Number(estadoRaw);
         if (!Number.isNaN(estNum)) {
           const res = await UpdateQuery(codigo, { estado: estNum });
-          return ResponseOak(ctx, 200, { msg: "Arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });
+          return ResponseOak(ctx, 200, { msg: "Estado de arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });
         }
       }
 
@@ -127,24 +169,17 @@ export class CrudArquitectos {
       const estado = form.get("estado");
       if (estado) updateData.estado = parseInt(estado as string);
 
-      // Validar campos obligatorios
-      if (!updateData.ci || !updateData.nombre) {
-        return ResponseOak(
-          ctx,
-          400,
-          { msg: "Faltan campos obligatorios" },
-          { content: "Content-Type", app: "application/json" }
-        );
-      }
+      const newCodigo = form.get("codigo");
+      if (newCodigo && newCodigo !== codigo) updateData.codigo = newCodigo as string;
 
-      const res = await UpdateQuery(codigo, updateData);
-      return ResponseOak(ctx, 200, { msg: "Arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });
+
+      return await updateBody(updateData);
+
+
     } catch (e) {
       console.error("Error leyendo form-data en update:", e);
-
     }
 
-    // leer JSON
     try {
       const bodyAny = ctx.request.body as any;
       const jsonBody = await bodyAny.value as Record<string, any> | undefined;
@@ -159,18 +194,8 @@ export class CrudArquitectos {
         if (jsonBody.admin !== undefined) updateData.admin = Number(jsonBody.admin);
         if (jsonBody.estado !== undefined) updateData.estado = Number(jsonBody.estado);
 
-        // Validar campos obligatorios
-        if (!updateData.ci || !updateData.nombre) {
-          return ResponseOak(
-            ctx,
-            400,
-            { msg: "Faltan campos obligatorios" },
-            { content: "Content-Type", app: "application/json" }
-          );
-        }
+        return await updateBody(updateData);
 
-        const res = await UpdateQuery(codigo, updateData);
-        return ResponseOak(ctx, 200, { msg: "Arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });
       }
     } catch (e) {
       console.error("Error parseando JSON en update:", e);

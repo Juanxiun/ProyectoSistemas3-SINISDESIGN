@@ -1,14 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 
-// Componentes y Configuración existentes
+
+import { NgZone } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
+
+
 import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
 
+
+import { InformacionProfesionalCreateComponent, InfoProfesionalOutput, Informacion } from '../../../components/arquitecto/informacion-profesional-create/informacion-profesional-create';
+import { EspecializacionesCreateComponent, Especializacion } from '../../../components/arquitecto/especializaciones-create/especializaciones-create';
 
 export interface Arquitecto {
     codigo?: string;
@@ -31,13 +38,13 @@ export interface ApiResponse<T> {
 @Component({
     selector: 'app-crear-arquitecto',
     standalone: true,
-    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule],
-    templateUrl: './crear-arquitecto.html',
+    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesionalCreateComponent, EspecializacionesCreateComponent], templateUrl: './crear-arquitecto.html',
     styleUrl: './crear-arquitecto.css',
 })
-export class CrearArquitecto {
+export class CrearArquitecto implements OnInit {
     private apiUrl = `${ConnectA.api}/arquitectos`;
     isLoading = false;
+    isValid = false;
 
     newArchitect: Partial<Arquitecto> = {
         ci: undefined,
@@ -50,7 +57,31 @@ export class CrearArquitecto {
         estado: 1
     };
 
-    constructor(private http: HttpClient, private router: Router) { }
+    constructor(
+        private http: HttpClient,
+        private router: Router,
+        private cdr: ChangeDetectorRef
+    ) { }
+
+    infoProfesionalData: Partial<Informacion> = {};
+    infoProfesionalFile: File | null = null;
+    isInfoProfesionalValid: boolean = false;
+    especializaciones: Especializacion[] = [];
+    ngOnInit(): void {
+
+        this.validateForm();
+        this.cdr.detectChanges();
+    }
+    onInfoProfesionalChange(event: InfoProfesionalOutput) {
+        this.infoProfesionalData = event.info;
+        this.infoProfesionalFile = event.file;
+        this.isInfoProfesionalValid = event.isValid;
+        this.validateForm();
+    }
+
+    onEspecializacionesChange(event: Especializacion[]) {
+        this.especializaciones = event;
+    }
 
 
     ciError: string | null = null;
@@ -58,6 +89,7 @@ export class CrearArquitecto {
     apellidoError: string | null = null;
     telefonoError: string | null = null;
     correoError: string | null = null;
+    codigoError: string | null = null;
 
     validateForm(): boolean {
         let isValid = true;
@@ -66,14 +98,35 @@ export class CrearArquitecto {
         this.apellidoError = null;
         this.telefonoError = null;
         this.correoError = null;
+        this.codigoError = null;
 
-        if (!this.newArchitect.ci) {
+
+
+        this.newArchitect.nombre = this.newArchitect.nombre?.trim() || '';
+        this.newArchitect.apellido = this.newArchitect.apellido?.trim() || '';
+        this.newArchitect.correo = this.newArchitect.correo?.trim() || '';
+        this.newArchitect.codigo = this.newArchitect.codigo?.trim() || '';
+
+
+
+        if (!this.newArchitect.ci || isNaN(Number(this.newArchitect.ci))) {
             this.ciError = 'C.I. es obligatorio.';
             isValid = false;
-        } else if (this.newArchitect.ci <= 0) {
-            this.ciError = 'C.I. debe ser un número positivo.';
+        } else if (this.newArchitect.ci.toString().length < 7 || this.newArchitect.ci.toString().length > 8) {
+            this.ciError = 'La cantidad de digitos del C.I. debe ser entre 7 y 8.';
             isValid = false;
         }
+
+
+        if (!this.newArchitect.codigo) {
+            this.codigoError = 'codigo es obligatorio.';
+            isValid = false;
+        }
+        if (this.newArchitect.codigo && this.newArchitect.codigo.length > 20) {
+            this.codigoError = 'codigo no puede exceder 20 caracteres.';
+            isValid = false;
+        }
+
 
         if (!this.newArchitect.nombre) {
             this.nombreError = 'Nombre es obligatorio.';
@@ -92,12 +145,12 @@ export class CrearArquitecto {
             isValid = false;
         }
 
-        if (this.newArchitect.telefono && this.newArchitect.telefono <= 0) {
-            this.telefonoError = 'Teléfono debe ser un número positivo.';
-            isValid = false;
-        }
+
         if (!this.newArchitect.telefono) {
             this.telefonoError = 'telefono es obligatorio.';
+            isValid = false;
+        } else if (this.newArchitect.telefono && this.newArchitect.telefono.toString().length != 8) {
+            this.telefonoError = 'Teléfono debe tener 8 digitos.';
             isValid = false;
         }
 
@@ -110,6 +163,11 @@ export class CrearArquitecto {
             isValid = false;
         }
 
+        if (!this.isInfoProfesionalValid) {
+            isValid = false;
+        }
+
+        this.isValid = isValid;
         return isValid;
     }
 
@@ -118,13 +176,13 @@ export class CrearArquitecto {
         return re.test(email);
     }
 
-    hacerCodigo(arquitecto: Arquitecto) {
 
-        const ranNum: number = Math.floor(Math.random() * 90) + 10;
-        const segundoApellido: string = arquitecto.apellido.split(' ')[1] || '';
-        const codigoFinal: string = arquitecto.nombre[0] + arquitecto.apellido[0] + segundoApellido[0] + arquitecto.ci + String(ranNum);
-        return codigoFinal;
-    }
+
+
+
+
+
+
     submitNewArchitect() {
         if (!this.validateForm()) return;
 
@@ -132,7 +190,7 @@ export class CrearArquitecto {
         const newArq = this.newArchitect as Arquitecto;
 
         const formData = new FormData();
-        formData.append('codigo', this.hacerCodigo(newArq));
+        formData.append('codigo', String(newArq.codigo));
         formData.append('ci', String(newArq.ci));
         formData.append('nombre', newArq.nombre);
         formData.append('apellido', newArq.apellido);
@@ -142,17 +200,53 @@ export class CrearArquitecto {
         formData.append('admin', String(newArq.admin));
         formData.append('estado', String(newArq.estado));
 
+
+        if (this.infoProfesionalData.universidad) formData.append('universidad', this.infoProfesionalData.universidad);
+        if (this.infoProfesionalData.titulacion) formData.append('titulacion', this.infoProfesionalData.titulacion);
+        if (this.infoProfesionalData.descripcion) formData.append('descripcion', this.infoProfesionalData.descripcion);
+        if (this.infoProfesionalFile) {
+            formData.append('foto', this.infoProfesionalFile);
+        }
+
+
+        formData.append('especializaciones', JSON.stringify(this.especializaciones.map(e => e.especialidad)));
+
+
         this.http.post<ApiResponse<any>>(this.apiUrl, formData).subscribe({
             next: (response: ApiResponse<any>) => {
-                alert(response.data?.msg || 'Arquitecto creado exitosamente!');
-                this.router.navigate(['/registro-arquitectos']);
+                if (response.data?.msg) {
+                    alert(response.data.msg);
+                    if (response.data.msg === 'Arquitecto creado exitosamente.') {
+                        this.router.navigate(['/arquitectos']);
+                    }
+                }
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al crear arquitecto:', err);
-                alert('Error al crear el arquitecto. Causa: ' + (err.error?.data?.msg || err.message || 'Error de conexión/servidor.'));
+
+                let errorMsg = 'Error al crear el arquitecto. ';
+                if (err.error?.data?.msg) {
+                    if (err.error.data.msg.includes('C.I.')) {
+                        this.ciError = err.error.data.msg;
+                    } else if (err.error.data.msg.includes('código')) {
+                        this.codigoError = err.error.data.msg;
+                    } else if (err.error.data.msg.includes('teléfono')) {
+                        this.telefonoError = err.error.data.msg;
+                    }
+                    errorMsg += err.error.data.msg;
+                } else {
+                    errorMsg += 'Error de conexión/servidor.';
+                }
+                alert(errorMsg);
+                this.isLoading = false;
+                this.cdr.detectChanges();
+
             },
             complete: () => {
+
                 this.isLoading = false;
+                this.cdr.detectChanges();
+                this.router.navigate(['/arquitectos']);
             }
         });
     }
