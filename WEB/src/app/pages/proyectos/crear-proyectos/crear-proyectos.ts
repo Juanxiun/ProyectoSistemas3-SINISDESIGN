@@ -37,21 +37,12 @@ export interface Proyecto {
   est: number;
 }
 
-export interface Direccion {
-  id?: number;
-  proy?: number;
-  pais: string;
-  departamento: string;
-  zona: string;
-  calle: string;
-  puerta: number;
-}
-
 export interface ApiResponse<T> {
   data?: { data?: T; msg?: string; id?: number } | T;
   status?: number;
   std?: number;
   msg?: string;
+  id?: number;
 }
 
 @Component({
@@ -66,13 +57,11 @@ export interface ApiResponse<T> {
     Siderbar,
   ],
   templateUrl: "./crear-proyectos.html",
-  styleUrl: "./crear-proyectos.css",
 })
 export class CrearProyectos implements OnInit {
   private apiUrlProyectos = `${ConnectA.api}/proyectos`;
   private apiUrlClientes = `${ConnectA.api}/clientes`;
   private apiUrlArquitectos = `${ConnectA.api}/arquitectos`;
-  private apiUrlDireccion = `${ConnectA.api}/direccion`;
 
   clientes = signal<Cliente[]>([]);
   arquitectos = signal<Arquitecto[]>([]);
@@ -144,7 +133,6 @@ export class CrearProyectos implements OnInit {
           list = response;
         }
 
-        
         const arqEncontrado = list.find((a) => a.codigo === codigoArq);
 
         if (arqEncontrado) {
@@ -269,24 +257,58 @@ export class CrearProyectos implements OnInit {
     formData.append("arq", this.proyecto.arq);
     formData.append("imagen", this.imagenSeleccionada!);
 
-    console.log(formData);
 
     this.http.post<ApiResponse<any>>(this.apiUrlProyectos, formData).subscribe({
-      next: (response: any) => {
-        console.log("Respuesta proyecto:", response);
-        const idProyecto = response?.data?.id || response?.data?.data?.id ||
-          null;
+      next: (response: any) => {        
+        let idProyecto = null;
+        
+        if (response.id) {
+          idProyecto = response.id;
+        }
+        else if (response.proyectoId) {
+          idProyecto = response.proyectoId;
+        }
+        else if (response.data?.id) {
+          idProyecto = response.data.id;
+        }
+        else if (response.data?.proyectoId) {
+          idProyecto = response.data.proyectoId;
+        }
+        else if (response.data?.data?.id) {
+          idProyecto = response.data.data.id;
+        }
 
-        if (response.std === 200 && idProyecto) {
-          console.log("Proyecto creado con ID:", idProyecto);
-          this.goBack();
-        } else {
+        const exitoso = response.std === 200 || response.status === 200;
+        
+        if (exitoso && idProyecto) {
+          this.mensajeExito = "Proyecto creado exitosamente. Redirigiendo a completar detalles...";
+          
+          setTimeout(() => {
+            this.router.navigate(['/detalle-proyectos', idProyecto], {
+              queryParams: { 
+                nuevo: 'true',
+                arq: this.proyecto.arq 
+              }
+            });
+          }, 1500);
+        } else if (exitoso && !idProyecto) {
+          // Proyecto creado pero sin ID
+          console.warn("⚠ Proyecto creado pero no se obtuvo el ID");
           this.isLoading.set(false);
-          this.mensajeError = "Error al crear el proyecto";
-          this.goBack();
+          this.mensajeError = "Proyecto creado pero no se pudo obtener el ID. Verifica en la lista de proyectos.";
+          
+          setTimeout(() => {
+            this.goBack();
+          }, 3000);
+        } else {
+          // Error en la creación
+          console.error("✗ Error al crear el proyecto");
+          this.isLoading.set(false);
+          this.mensajeError = response?.msg || "Error al crear el proyecto";
         }
       },
       error: (err: HttpErrorResponse) => {
+        console.error("=== FRONTEND: Error HTTP ===", err);
         this.isLoading.set(false);
         this.mensajeError = `Error ${err.status}: ${
           err.error?.msg || err.statusText

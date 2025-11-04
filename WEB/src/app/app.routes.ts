@@ -12,6 +12,8 @@ import { Login } from "./pages/login/login";
 import { DocumentosCrudPage } from "./pages/documentos/documentos";
 
 import { CrearProyectos } from "./pages/proyectos/crear-proyectos/crear-proyectos";
+import { EditarProyectos } from "./pages/proyectos/editar-proyectos/editar-proyectos";
+import { DetalleProyectos } from "./pages/proyectos/detalle-proyectos/detalle-proyectos";
 import { Calendario } from "./pages/calendario/calendario";
 
 export const routes: Routes = [
@@ -39,17 +41,24 @@ export const routes: Routes = [
     // RUTA DE LOGIN
     { path: "login", component: Login },
     { path: "", redirectTo: "login", pathMatch: "full" },
+    
     //RUTAS DE DOCUMENTO
-
     {
         path: "fases/:faseId/documentos",
         component: DocumentosCrudPage,
     },
+    
     // RUTAS DE REGISTRO DE PROYECTOS
     {
         path: "registro-proyectos/crear/:arq",
         title: "Crear Proyecto",
         component: CrearProyectos,
     },
+    {
+        path: "detalle-proyectos/:id",
+        title: "Completar Proyecto",
+        component: DetalleProyectos,
+    },
+    { path: 'editar-proyecto/:id', component: EditarProyectos },
     { path: "agenda", title: "Agenda", component: Calendario },
 ];

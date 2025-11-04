@@ -4,6 +4,7 @@ import { LoadDisplay } from "../../../elements/load-display/load-display";
 import { from, Observable, BehaviorSubject, combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 import { ListProps, ListProyectos } from "../../../api/proyectos/list";
+import { DeleteProyecto } from "../../../api/proyectos/poryData";
 import { AsyncPipe, NgForOf } from "@angular/common";
 
 @Component({
@@ -83,5 +84,31 @@ export class CardProy implements OnChanges {
 
   EnviarId(id: number) {
     this.idproy.emit(id);
+  }
+
+  async eliminarProyecto(event: Event, id: number) {
+    event.stopPropagation();
+    
+    const confirmar = confirm('¿Está seguro que desea eliminar este proyecto?');
+    if (!confirmar) return;
+
+    try {
+      const success = await DeleteProyecto(id);
+
+      if (success) {
+        console.log('Proyecto eliminado exitosamente');
+        
+        // Actualizar la lista de proyectos después de eliminar
+        this.cargarProyectos();
+        
+        alert('Proyecto eliminado exitosamente');
+      } else {
+        console.error('Error al eliminar el proyecto');
+        alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
+      }
+    } catch (error) {
+      console.error('Error en la solicitud de eliminación:', error);
+      alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
+    }
   }
 }

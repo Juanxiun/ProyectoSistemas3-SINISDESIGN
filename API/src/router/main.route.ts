@@ -12,16 +12,18 @@ import { notificaciones } from "../modules/notificaciones/router.ts";
 import sesion from "../modules/sesion/router.ts";
 import reportes from "../modules/reportes/router.ts";
 import prediccion from "../modules/prediccion/router.ts";
+
 const route = new Router();
 
 //ruta main proy
 route.use("/proyectos", proyecto.routes(), proyecto.allowedMethods());
-route.use("/tipo", tipo.routes(), tipo.allowedMethods());
-route.use("/reunion", reunion.routes(), reunion.allowedMethods());
-route.use("/pago", pago.routes(), pago.allowedMethods());
-route.use("/direccion", direccion.routes(), direccion.allowedMethods());
-route.use("/fase", fase.routes(), fase.allowedMethods());
-route.use("/documento", documento.routes(), documento.allowedMethods());
+
+route.use("/tipo-proyectos", tipo.routes(), tipo.allowedMethods());
+route.use("/reunion-proyectos", reunion.routes(), reunion.allowedMethods());
+route.use("/pago-proyectos", pago.routes(), pago.allowedMethods());
+route.use("/direccion-proyectos", direccion.routes(), direccion.allowedMethods());
+route.use("/fase-proyectos", fase.routes(), fase.allowedMethods());
+route.use("/documento-proyectos", documento.routes(), documento.allowedMethods());
 
 //arq
 route.use("/arquitectos", arquitecto.routes(), arquitecto.allowedMethods());

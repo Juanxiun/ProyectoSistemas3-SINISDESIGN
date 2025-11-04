@@ -28,13 +28,12 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
 
 // CREATE
 export const CreateQuery = async (data: TipoModel): Promise<res> => {
-  try {
+  try {    
     const query = 
     `INSERT INTO tipo_proyectos (proy, tipo, subtipo)
       VALUES (?, ?, ?)
     `;
     const params = [data.proy, data.tipo, data.subtipo];
-
     await cli.query(query, params);
 
     return { std: 200 };
@@ -52,8 +51,8 @@ export const UpdateQuery = async (data: TipoModel): Promise<res> => {
       SET tipo = ?, subtipo = ?
       WHERE id = ?
     `;
-    const params = [data.proy, data.tipo, data.subtipo, data.id];
 
+    const params = [data.tipo, data.subtipo, data.id];
     await cli.query(query, params);
 
     return { std: 200 };
@@ -65,8 +64,9 @@ export const UpdateQuery = async (data: TipoModel): Promise<res> => {
 
 // DELETE
 export const DeleteQuery = async (id: number): Promise<res> => {
-  try {
+  try {    
     await cli.query(`DELETE FROM tipo_proyectos WHERE id = ?`, [id]);
+    
     return { std: 200 };
   } catch (error) {
     console.error("Error en la query: Tipo_Proy > Delete >", error);

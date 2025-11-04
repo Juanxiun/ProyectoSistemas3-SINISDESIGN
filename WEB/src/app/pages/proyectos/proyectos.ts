@@ -69,4 +69,5 @@ export class Proyectos implements OnInit {
   abrirNuevaReunion(): void {
     this.currentView = "nueva-reunion";
   }
+  
 }

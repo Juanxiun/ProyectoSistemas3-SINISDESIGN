@@ -1,38 +1,79 @@
 <section class="w-full h-[100%] p-4 flex justify-center">
-    @defer{
+    @defer {
     <ng-container *ngFor="let p of proyecto$ | async">
-        <div class="lg:w-[80%] w-full h-full flex md:flex-row flex-col shadow-2xl bg-[#92443a] rounded-2xl overflow-hidden hover:shadow-3xl transition-shadow duration-300">
+        <div class="lg:w-[90%] w-full h-full flex md:flex-row flex-col shadow-2xl bg-[#92443a] rounded-2xl overflow-hidden hover:shadow-3xl transition-shadow duration-300">
             
-            <div class="md:w-[50%] w-full md:h-full h-[50%] overflow-hidden">
-                <img src={{p.imagen}} alt={{p.nombre}}
+            <div class="md:w-[45%] w-full md:h-full h-[50%] overflow-hidden relative">
+                <img [src]="getImagenUrl(p.imagen)" [alt]="p.nombre"
                     class="w-full h-full object-cover">
+                <button (click)="editarProyecto(p.id)"
+                    class="absolute top-4 right-4 bg-white/90 hover:bg-white text-[#92443a] p-3 rounded-full shadow-lg transition-all duration-200 hover:scale-110">
+                    <i class="bi-pencil-square text-xl"></i>
+                </button>
             </div>
             
-            <div class="md:w-[50%] w-full md:h-full h-[50%] p-6 md:p-8 flex flex-col justify-between">
-                
-                <div>
-                    <div class="flex justify-between items-start gap-4 mb-6">
-                        <h1 class="lg:text-4xl md:text-2xl text-lg font-bold text-[#E0A189] uppercase leading-tight">
+            <div class="md:w-[55%] w-full md:h-full h-[50%] p-6 md:p-8 flex flex-col">
+                <div class="flex justify-between items-start gap-4 mb-6">
+                    <div class="flex-1">
+                        <h1 class="lg:text-4xl md:text-2xl text-xl font-bold text-[#E0A189] uppercase leading-tight mb-2">
                             {{p.nombre}}
                         </h1>
-                        <i class="bi-pencil-square text-[#E0A189] text-2xl cursor-pointer hover:text-white flex-shrink-0"></i>
+                        <div class="flex items-center gap-2">
+                            <span [class]="getEstadoClass(p.est || 1)">
+                                {{getEstadoText(p.est || 1)}}
+                            </span>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <p class="text-[#f6efe5] text-sm font-semibold uppercase tracking-wide">Período</p>
-                    <p class="text-white text-lg font-medium">{{p.inicio}} - {{p.final ?? "En proceso"}}</p>
-                </div>
-                
-                <div>
-                    <p class="text-[#f6efe5] text-sm font-semibold uppercase tracking-wide">Inversión</p>
-                    <p class="text-[#E0A189] text-2xl font-bold">{{p.costo}} Bs.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div class="space-y-2">
+                        <p class="text-[#f6efe5] text-sm font-semibold uppercase tracking-wide">
+                            <i class="bi bi-calendar-event mr-2"></i>Período
+                        </p>
+                        <p class="text-white text-lg font-medium">
+                            {{formatFecha(p.inicio)}} - {{p.final ? formatFecha(p.final) : "En proceso"}}
+                        </p>
+                    </div>
+
+                    <!-- Inversión -->
+                    <div class="space-y-2">
+                        <p class="text-[#f6efe5] text-sm font-semibold uppercase tracking-wide">
+                            <i class="bi bi-currency-dollar mr-2"></i>Inversión
+                        </p>
+                        <p class="text-[#E0A189] text-2xl font-bold">{{p.costo}} Bs.</p>
+                    </div>
+
+                    <div class="space-y-2" *ngIf="p.cli_nombre">
+                        <p class="text-[#f6efe5] text-sm font-semibold uppercase tracking-wide">
+                            <i class="bi bi-person-badge mr-2"></i>Cliente
+                        </p>
+                        <p class="text-white text-lg font-medium">
+                            {{p.cli_nombre}} {{p.cli_apellido}}
+                            <span *ngIf="p.cli_ci" class="text-sm text-[#E0A189] block">CI: {{p.cli_ci}}</span>
+                        </p>
+                    </div>
+
+                    <div class="space-y-2" *ngIf="p.arq_nombre">
+                        <p class="text-[#f6efe5] text-sm font-semibold uppercase tracking-wide">
+                            <i class="bi bi-person-workspace mr-2"></i>Arquitecto
+                        </p>
+                        <p class="text-white text-lg font-medium">{{p.arq_nombre}} {{p.arq_apellido}}</p>
+                        <p class="text-sm text-[#E0A189]">Código: {{p.arq}}</p>
+                    </div>
                 </div>
             </div>
-
         </div>
     </ng-container>
     }
     @loading {
+        <div class="flex justify-center items-center h-64">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#92443a]"></div>
+        </div>
+    }
+    @error {
+        <div class="text-center text-red-600 p-4">
+            Error al cargar la información del proyecto
+        </div>
     }
 </section>
