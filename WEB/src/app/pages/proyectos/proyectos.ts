@@ -47,7 +47,6 @@ export class Proyectos implements OnInit {
   }
 
   onSearchHandler(searchTerm: string) {
-    console.log("Término de búsqueda recibido:", searchTerm);
     this.searchTerm = searchTerm;
     
     const normalized = this.normalizeSearchTerm(searchTerm);
@@ -65,8 +64,6 @@ export class Proyectos implements OnInit {
     } else {
       this.noResults = !hasResults;
     }
-    
-    console.log("No results:", this.noResults, "Search term:", this.searchTerm, "Has results:", hasResults);
   }
 
   private normalizeSearchTerm(text: string): string {
@@ -92,3 +89,4 @@ export class Proyectos implements OnInit {
   abrirNuevaReunion(): void {
     this.currentView = "nueva-reunion";
   }
+}

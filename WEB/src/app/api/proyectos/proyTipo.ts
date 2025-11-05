@@ -4,7 +4,7 @@ export async function ProyTipo(proy: string): Promise<TipoProps[]> {
     const url = ConnectA.api;
 
     try {
-        const result = await fetch(url + "/tipo/" + proy);
+        const result = await fetch(url + "/tipo-proyectos?proy=" + proy); 
         const proydata = await result.json();
         if (proydata.status === 200) {
             return proydata.data.data as TipoProps[];
