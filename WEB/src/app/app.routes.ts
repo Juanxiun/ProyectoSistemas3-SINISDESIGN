@@ -17,6 +17,7 @@ import { DetalleProyectos } from "./pages/proyectos/detalle-proyectos/detalle-pr
 import { Calendario } from "./pages/calendario/calendario";
 
 import { ReportesPage } from "./pages/reportes/reportes";
+import { ErrorPage } from "./pages/error-page/error-page";
 
 export const routes: Routes = [
     { path: "", title: "SINISDESIGN", component: Presentation },
@@ -67,4 +68,6 @@ export const routes: Routes = [
     },
     { path: 'editar-proyecto/:id', component: EditarProyectos },
     { path: "agenda", title: "Agenda", component: Calendario },
+
+    {path:"**",title:"Error Page", component: ErrorPage}, 
 ];

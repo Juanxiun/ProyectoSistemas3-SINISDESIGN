@@ -54,6 +54,15 @@
               ✓
             </span>
           </button>
+          <button
+            (click)="cambiarSeccion('reasignar')"
+            [class]="seccionActual === 'reasignar'
+              ? 'bg-[#92443a] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+            class="px-6 py-3 rounded-t-lg font-semibold transition-all duration-200 flex items-center gap-2">
+            <i class="bi bi-arrow-repeat"></i>
+            Reasignar Arquitecto
+          </button>
         </div>
       </div>
 
@@ -379,6 +388,7 @@
           </div>
         </div>
 
+        <!--Apartado de Direccion del proyecto-->
         <div *ngIf="seccionActual === 'direccion'">
           <div class="bg-white p-6 rounded-xl border border-gray-200">
             <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
@@ -518,14 +528,69 @@
           </div>
         </div>
 
-      </div>
+        <!--Seccion de reasignacion de arquitectos-->
+        <!-- SECCIÓN: REASIGNAR ARQUITECTO -->
+        <div *ngIf="seccionActual === 'reasignar'">
+          <div class="bg-white p-6 rounded-xl border border-gray-200">
+            <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+              <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                <i class="bi bi-arrow-repeat text-[#92443a] text-lg"></i>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-gray-800">Reasignar Arquitecto</h2>
+                <p class="text-gray-500 text-sm mt-1">Cambia el arquitecto asignado a este proyecto</p>
+              </div>
+            </div>
 
-      <div class="mt-6 text-center">
-        <p class="text-gray-500 text-sm flex items-center justify-center gap-2">
-          <i class="bi bi-info-circle"></i>
-          Los campos marcados con <span class="text-red-500 font-bold">*</span> son obligatorios
-        </p>
-      </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Arquitecto actual
+                </label>
+                <input
+                  type="text"
+                  [value]="getNombreArquitectoActual()"
+                  readonly
+                  class="w-full px-4 py-3 border rounded-lg bg-gray-50 cursor-not-allowed" />
+
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Nuevo Arquitecto <span class="text-red-500">*</span>
+                </label>
+                <select
+                  [(ngModel)]="nuevoArquitecto"
+                  name="nuevoArquitecto"
+                  required
+                  class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer">
+                  <option value="" disabled>Seleccionar nuevo arquitecto...</option>
+                  <option *ngFor="let arq of arquitectos()" [value]="arq.codigo">
+                    {{ arq.nombre }} {{ arq.apellido }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="flex gap-4 pt-6 mt-6 border-t border-gray-100">
+              <button
+                type="button"
+                (click)="reasignarArquitecto()"
+                [disabled]="isLoading() || !nuevoArquitecto"
+                class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
+                <span *ngIf="!isLoading()">
+                  <i class="bi bi-check-circle"></i>
+                  Confirmar Reasignación
+                </span>
+                <span *ngIf="isLoading()">
+                  <i class="bi bi-hourglass-split animate-spin"></i>
+                  Guardando...
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
     </div>
   </div>
 </div>

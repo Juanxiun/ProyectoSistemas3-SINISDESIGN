@@ -87,6 +87,7 @@ export class EditarProyectos implements OnInit {
   isLoading = signal(false);
   proyectoId: number = 0;
   codigoArquitecto: string = "";
+  nuevoArquitecto: string = '';
 
   proyecto: Proyecto = {
     id: 0,
@@ -123,7 +124,7 @@ export class EditarProyectos implements OnInit {
 
   tieneTipo = false;
   tieneDireccion = false;
-  seccionActual: "basico" | "tipo" | "direccion" = "basico";
+  seccionActual: "basico" | "tipo" | "direccion" | "reasignar" = "basico";
 
   // Catálogo de servicios: Tipo (categoría) -> Subtipos
   serviciosCatalogo: { [key: string]: string[] } = {
@@ -266,6 +267,11 @@ export class EditarProyectos implements OnInit {
         this.isLoading.set(false);
       },
     });
+  }
+
+  getNombreArquitectoActual(): string {
+    const arquitecto = this.arquitectos().find(a => a.codigo === this.proyecto.arq);
+    return arquitecto ? `${arquitecto.nombre} ${arquitecto.apellido}` : 'No asignado';
   }
 
   cargarProyecto(): void {
@@ -423,6 +429,84 @@ export class EditarProyectos implements OnInit {
     });
   }
 
+  reasignarArquitecto(): void {
+    if (!this.nuevoArquitecto) {
+      this.mensajeError = "Por favor selecciona un arquitecto para reasignar.";
+      return;
+    }
+
+    this.isLoading.set(true);
+    this.mensajeError = "";
+    this.mensajeExito = "";
+
+    // Crear el FormData igual que en onSubmitBasico()
+    const formData = new FormData();
+    formData.append("nombre", this.proyecto.nombre.trim());
+    formData.append("costo", this.proyecto.costo.toString());
+    formData.append("inicio", this.proyecto.inicio);
+    formData.append("cli", this.proyecto.cli.toString());
+    formData.append("arq", this.nuevoArquitecto.trim());
+    formData.append("est", this.proyecto.est.toString());
+
+    if (this.proyecto.final && this.proyecto.final.trim() !== "") {
+      formData.append("final", this.proyecto.final);
+    }
+
+    // Si hay imagen (opcional)
+    if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
+      formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
+    }
+
+    console.log("Enviando FormData para reasignar arquitecto:", this.proyectoId);
+
+    this.http.put<any>(`${this.apiUrlProyectos}/${this.proyectoId}`, formData).subscribe({
+      next: (response: any) => {
+        if (response.std === 200 || response.status === 200) {
+          this.mensajeExito = "Arquitecto reasignado correctamente.";
+
+          // Actualizar el arquitecto mostrado en pantalla
+          this.proyecto.arq = this.nuevoArquitecto;
+
+          // Limpiar campos temporales
+          this.imagenSeleccionada = null;
+          this.nombreArchivo = "";
+
+          // Si hay vista previa, mantenerla
+          if (this.imagenSeleccionada !== null) {
+            setTimeout(() => this.cargarProyecto(), 500);
+          }
+
+          setTimeout(() => {
+            this.mensajeExito = "";
+          }, 3000);
+        } else {
+          this.mensajeError = response?.error || response?.msg || "Error al reasignar arquitecto.";
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        let mensajeError = `Error ${err.status}: `;
+        if (err.error?.error) {
+          mensajeError += err.error.error;
+        } else if (err.error?.msg) {
+          mensajeError += err.error.msg;
+        } else {
+          mensajeError += err.statusText || "Error desconocido.";
+        }
+
+        this.mensajeError = mensajeError;
+
+        if (err.status === 400 && err.error?.error?.toLowerCase().includes("imagen")) {
+          this.mensajeError += ". Por favor, selecciona una imagen válida (JPG, PNG, WebP, máximo 5MB)";
+        }
+      },
+      complete: () => {
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+
+
   cargarDireccion(): void {
     const url = `${this.apiUrlDirecciones}?proy=${this.proyectoId}`;
 
@@ -501,6 +585,8 @@ export class EditarProyectos implements OnInit {
       };
       reader.readAsDataURL(file);
     }
+
+    
   }
 
   private resetImagen(): void {
@@ -939,7 +1025,7 @@ onSubmitBasico(): void {
     });
   }
 
-  cambiarSeccion(seccion: "basico" | "tipo" | "direccion"): void {
+  cambiarSeccion(seccion: "basico" | "tipo" | "direccion" | "reasignar"): void {
     this.seccionActual = seccion;
     this.mensajeError = "";
     this.mensajeExito = "";
