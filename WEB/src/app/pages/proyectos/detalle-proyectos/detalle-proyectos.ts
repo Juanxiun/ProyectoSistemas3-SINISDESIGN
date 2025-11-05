@@ -36,6 +36,26 @@ export interface ApiResponse<T> {
   msg?: string;
 }
 
+export interface PhasePrediction {
+  fastest: number;
+  slowest: number;
+  average: number;
+  predicted: number;
+}
+
+export interface PredictionResponse {
+  projectPredictedTime: number;
+  phasePredictions: {
+    [fase: string]: PhasePrediction;
+  };
+}
+
+export interface FaseCreada {
+  nombre: string;
+  diasEstimados: number;
+  horasEstimadas: number;
+}
+
 @Component({
   selector: 'app-detalle-proyectos',
   standalone: true,
@@ -52,6 +72,7 @@ export interface ApiResponse<T> {
 export class DetalleProyectos implements OnInit {
   private apiUrlTipos = `${ConnectA.api}/tipo-proyectos`;
   private apiUrlDirecciones = `${ConnectA.api}/direccion-proyectos`;
+  private apiUrlPrediccion = `${ConnectA.api}/prediccion`;
 
   proyectoId!: number;
   codigoArquitecto: string = '';
@@ -75,10 +96,19 @@ export class DetalleProyectos implements OnInit {
   isLoading = signal(false);
   mensajeError = '';
   mensajeExito = '';
-  pasoActual: 'tipo' | 'direccion' = 'tipo';
+  pasoActual: 'tipo' | 'direccion' | 'estimado' = 'tipo';
 
   tipoCompletado = false;
   direccionCompletada = false;
+  prediccionCalculada = false;
+
+  botonTipoPresionado = false;
+  botonDireccionPresionado = false;
+
+  tiempoTotalEstimado: number = 0;
+  fasesCreadas: FaseCreada[] = [];
+  fechaFinalEstimada: string = '';
+  Math = Math;
 
   serviciosCatalogo: { [key: string]: string[] } = {
     'Planes y legalizaciones de construcción': [
@@ -161,8 +191,7 @@ export class DetalleProyectos implements OnInit {
             this.onTipoChange();
           }
         }
-      },
-      error: (err) => console.error('Error al cargar tipo:', err)
+      }
     });
 
     this.http.get<ApiResponse<DireccionProyecto[]>>(`${this.apiUrlDirecciones}?proy=${this.proyectoId}`).subscribe({
@@ -171,8 +200,7 @@ export class DetalleProyectos implements OnInit {
           this.direccion = response.data[0];
           this.direccionCompletada = true;
         }
-      },
-      error: (err) => console.error('Error al cargar dirección:', err)
+      }
     });
   }
 
@@ -219,7 +247,7 @@ export class DetalleProyectos implements OnInit {
       this.direccion.puerta = 0;
     } else if (valor > 9999) {
       this.erroresValidacion['puerta'] = 'El número de puerta no puede ser mayor a 9999';
-    return;
+      return;
     }
   }
 
@@ -357,6 +385,7 @@ export class DetalleProyectos implements OnInit {
       return;
     }
 
+    this.botonTipoPresionado = true;
     this.isLoading.set(true);
     this.mensajeError = '';
     this.mensajeExito = '';
@@ -370,21 +399,17 @@ export class DetalleProyectos implements OnInit {
       next: (response: any) => {
         if (response.std === 200 || response.status === 200) {
           this.tipoCompletado = true;
-          this.mensajeExito = 'Tipo de proyecto guardado correctamente';
-          
-          setTimeout(() => {
-            this.pasoActual = 'direccion';
-            this.mensajeExito = '';
-          }, 1000);
+          this.pasoActual = 'direccion';
+          this.isLoading.set(false);
         } else {
           this.mensajeError = response?.msg || 'Error al guardar el tipo de proyecto';
+          this.botonTipoPresionado = false;
+          this.isLoading.set(false);
         }
       },
       error: (err: HttpErrorResponse) => {
         this.mensajeError = `Error ${err.status}: ${err.error?.msg || err.statusText}`;
-        console.error('Error al guardar tipo:', err);
-      },
-      complete: () => {
+        this.botonTipoPresionado = false;
         this.isLoading.set(false);
       }
     });
@@ -400,6 +425,7 @@ export class DetalleProyectos implements OnInit {
       this.mensajeError = 'Por favor corrige los errores en el formulario de dirección';
       return;
     }
+    
     if (!this.direccion.departamento.trim() || 
         !this.direccion.zona.trim() || 
         !this.direccion.calle.trim() || 
@@ -408,6 +434,7 @@ export class DetalleProyectos implements OnInit {
       return;
     }
 
+    this.botonDireccionPresionado = true;
     this.isLoading.set(true);
     this.mensajeError = '';
     this.mensajeExito = '';
@@ -424,24 +451,98 @@ export class DetalleProyectos implements OnInit {
       next: (response: any) => {
         if (response.std === 200 || response.status === 200) {
           this.direccionCompletada = true;
-          this.mensajeExito = '¡Proyecto completado exitosamente!';
-          
-          setTimeout(() => {
-            this.navegarAProyectos();
-          }, 1500);
+          this.calcularPrediccion();
         } else {
           this.mensajeError = response?.msg || 'Error al guardar la dirección';
+          this.isLoading.set(false);
+          this.botonDireccionPresionado = false;
         }
       },
       error: (err: HttpErrorResponse) => {
         this.mensajeError = `Error ${err.status}: ${err.error?.msg || err.statusText}`;
-        console.error('Error al guardar dirección:', err);
-      },
-      complete: () => {
         this.isLoading.set(false);
+        this.botonDireccionPresionado = false;
       }
     });
   }
+
+  calcularPrediccion(): void {
+  this.http.get<PredictionResponse>(`${this.apiUrlPrediccion}/${this.proyectoId}`).subscribe({
+    next: (prediction: any) => {
+      if (prediction.error) {
+        this.mensajeError = 'Dirección guardada pero hubo un problema al calcular la predicción de fases';
+        this.isLoading.set(false);
+        return;
+      }
+
+      this.tiempoTotalEstimado = prediction.projectPredictedTime || 0;
+      this.fasesCreadas = [];
+
+      const fechaInicio = new Date();
+      const fechaFinal = new Date(fechaInicio);
+      fechaFinal.setDate(fechaFinal.getDate() + Math.round(this.tiempoTotalEstimado));
+      this.fechaFinalEstimada = fechaFinal.toLocaleDateString('es-ES', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      const ordenFases = [
+        'inicial',
+        'inspeccion/diseño', 
+        'desarrollo',
+        'legalizacion',
+        'finalizacion'
+      ];
+
+      const mapeoNombres: { [key: string]: string } = {
+        'inspeccion/disenio': 'inspeccion/diseño',
+        'inspeccion-disenio': 'inspeccion/diseño',
+        'inspeccion disenio': 'inspeccion/diseño'
+      };
+
+      if (prediction.phasePredictions) {
+        // Normalizar nombres de fases del backend
+        const phasePredictionsNormalizado: any = {};
+        for (const [nombreFase, datos] of Object.entries(prediction.phasePredictions)) {
+          const nombreNormalizado = mapeoNombres[nombreFase] || nombreFase;
+          phasePredictionsNormalizado[nombreNormalizado] = datos;
+        }
+
+        for (const nombreFase of ordenFases) {
+          const datos = phasePredictionsNormalizado[nombreFase];
+          if (datos) {
+            const faseData = datos as PhasePrediction;
+            this.fasesCreadas.push({
+              nombre: nombreFase,
+              diasEstimados: Math.round(faseData.predicted),
+              horasEstimadas: Math.round(faseData.predicted * 24)
+            });
+          }
+        }
+
+        for (const [nombreFase, datos] of Object.entries(phasePredictionsNormalizado)) {
+          if (!ordenFases.includes(nombreFase)) {
+            const faseData = datos as PhasePrediction;
+            this.fasesCreadas.push({
+              nombre: nombreFase,
+              diasEstimados: Math.round(faseData.predicted),
+              horasEstimadas: Math.round(faseData.predicted * 24)
+            });
+          }
+        }
+      }
+
+      this.prediccionCalculada = true;
+      this.pasoActual = 'estimado';
+      this.isLoading.set(false);
+    },
+    error: (err: HttpErrorResponse) => {
+      this.mensajeError = 'Proyecto guardado pero no se pudo calcular la predicción de fases';
+      this.isLoading.set(false);
+    }
+  });
+}
 
   volverATipo(): void {
     this.pasoActual = 'tipo';
@@ -454,7 +555,7 @@ export class DetalleProyectos implements OnInit {
     if (this.pasoActual === 'tipo') {
       this.pasoActual = 'direccion';
     } else if (this.pasoActual === 'direccion') {
-      this.navegarAProyectos();
+      this.pasoActual = 'estimado';
     }
     this.mensajeError = '';
     this.erroresValidacion = {};

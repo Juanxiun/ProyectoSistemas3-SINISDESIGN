@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import FaseProps from '../../../api/proyectos/proyFase';
+import { ProyFase, FaseProps } from "../../../api/proyectos/proyFase";
 
 @Component({
   selector: 'app-fase-card',
