@@ -1,11 +1,12 @@
+
+
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { ConnectA } from '../../../../config/index';
-import { dateNotInFutureOnlyValidator } from '../../../validators/dateFutureonly';
+import { Observable, throwError } from 'rxjs';
 
-import { Observable } from 'rxjs';
 export interface Informacion {
   foto: string | null;
   universidad: string;
@@ -29,6 +30,9 @@ export class InformacionProfesional implements OnInit {
   @Input() arquitectoCodigo!: string;
   @Input() isEditing!: boolean;
   @Input() isLoading!: boolean;
+
+
+  @Output() formChanged = new EventEmitter<boolean>();
 
 
   private get apiUrl() { return `${ConnectA.api}/arquitectos/${this.arquitectoCodigo}/informaciones`; }
@@ -57,17 +61,13 @@ export class InformacionProfesional implements OnInit {
   get displayPhotoSrc(): string | null {
     const fotoData = this.currentInfo.foto;
 
-
     if (!fotoData || typeof fotoData !== 'string' || fotoData.trim() === '') {
       return null;
     }
 
-
     if (fotoData.startsWith('data:')) {
       return fotoData;
     }
-
-
 
     return `data:image/jpeg;base64,${fotoData}`;
   }
@@ -96,7 +96,6 @@ export class InformacionProfesional implements OnInit {
 
           if (fotoBase64 && typeof fotoBase64 !== 'string') {
 
-            console.warn('La foto no se recibió como cadena Base64. Forzando a nulo.');
             fotoBase64 = null;
           }
 
@@ -143,7 +142,6 @@ export class InformacionProfesional implements OnInit {
       this.selectedFile = input.files[0];
       this.validateForm();
 
-
       const reader = new FileReader();
       reader.onload = () => {
         this.currentInfo.foto = reader.result as string;
@@ -153,8 +151,9 @@ export class InformacionProfesional implements OnInit {
 
     } else {
       this.selectedFile = null;
-      this.currentInfo.foto = this.originalInfo.foto;
+      this.currentInfo.foto = this.originalInfo.foto ?? null;
       this.validateForm();
+      this.cdr.detectChanges();
     }
   }
 
@@ -216,26 +215,40 @@ export class InformacionProfesional implements OnInit {
 
 
     this.isValid = isValid;
+
+    this.formChanged.emit(isValid);
     this.cdr.detectChanges();
     return isValid;
   }
 
   public saveInformacion(): Observable<ApiResponse<any>> {
-    if (!this.validateForm() || !this.arquitectoCodigo) {
 
-      throw new Error('Local validation failed in infoProfesional.');
+    if (!this.validateForm()) {
+      return throwError(() => new Error('Error de validación: Por favor, corrija los campos marcados.'));
+    }
+
+    if (!this.arquitectoCodigo) {
+      return throwError(() => new Error('Código de arquitecto ausente.'));
     }
 
     const formData = new FormData();
-
 
     formData.append('arq', this.arquitectoCodigo);
     formData.append('universidad', this.currentInfo.universidad!);
     formData.append('titulacion', this.currentInfo.titulacion!);
     formData.append('descripcion', this.currentInfo.descripcion!);
 
+
     if (this.selectedFile) {
       formData.append('foto', this.selectedFile);
+    } else {
+      const origFoto = this.originalInfo?.foto;
+
+      if (origFoto && typeof origFoto === 'string' && origFoto.trim() !== '') {
+
+        formData.append('foto_base64', origFoto);
+      }
+
     }
 
     return this.http.post<ApiResponse<any>>(this.apiUrl, formData);

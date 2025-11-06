@@ -12,6 +12,7 @@ import { ChangeDetectorRef } from '@angular/core';
 import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
+import { CookieService } from "ngx-cookie-service";
 
 
 import { InformacionProfesionalCreateComponent, InfoProfesionalOutput, Informacion } from '../../../components/arquitecto/informacion-profesional-create/informacion-profesional-create';
@@ -45,7 +46,7 @@ export class CrearArquitecto implements OnInit {
     private apiUrl = `${ConnectA.api}/arquitectos`;
     isLoading = false;
     isValid = false;
-
+    userData: any = null;
     newArchitect: Partial<Arquitecto> = {
         ci: undefined,
         nombre: '',
@@ -60,7 +61,8 @@ export class CrearArquitecto implements OnInit {
     constructor(
         private http: HttpClient,
         private router: Router,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private cookieService: CookieService
     ) { }
 
     infoProfesionalData: Partial<Informacion> = {};
@@ -69,6 +71,16 @@ export class CrearArquitecto implements OnInit {
     especializaciones: Especializacion[] = [];
     ngOnInit(): void {
 
+        if (this.cookieService.check("sesion")) {
+            const cookieValue = this.cookieService.get("sesion");
+            this.userData = JSON.parse(cookieValue);
+            console.log(this.userData);
+        } else {
+            this.router.navigate(["/"]);
+        }
+        if (!(this.userData && this.userData.admin === 1)) {
+            this.router.navigate(["/"]);
+        }
         this.validateForm();
         this.cdr.detectChanges();
     }

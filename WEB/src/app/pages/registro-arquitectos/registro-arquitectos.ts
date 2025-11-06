@@ -67,6 +67,9 @@ export class RegistroArquitectos implements OnInit {
         } else {
             this.router.navigate(["/"]);
         }
+        if (!(this.userData && this.userData.admin === 1)) {
+            this.router.navigate(["/"]);
+        }
         this.fetchArchitects();
 
     }

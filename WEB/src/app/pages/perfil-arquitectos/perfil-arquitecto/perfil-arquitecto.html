@@ -1,0 +1,55 @@
+<app-navbar [Ubi]="'Mi Perfil'" />
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+    <app-siderbar />
+    <div class="bg-[#f6efe5] w-full h-full px-5 py-5 overflow-y-auto">
+
+        <div class="mb-6 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-[#283845]">MI PERFIL PROFESIONAL</h1>
+        </div>
+
+        <div *ngIf="isLoading" class="text-center py-10">
+            <p class="text-[#283845] font-semibold">Cargando datos del perfil...</p>
+        </div>
+        <div *ngIf="!isLoading && !arquitecto" class="text-center py-10 text-red-600">
+            No se pudo cargar la información de su perfil.
+        </div>
+
+
+        <div *ngIf="!isLoading && arquitecto" class="w-full max-w-3xl mx-auto">
+
+            <div class="bg-white p-6 rounded-lg shadow-xl mb-6">
+                <h2 class="text-xl font-semibold text-[#283845] mb-4">
+                    {{ arquitecto.nombre }} {{ arquitecto.apellido }} ({{ arquitecto.codigo }})
+                </h2>
+                <p class="text-gray-600 mb-4">Utilice este apartado para gestionar su información profesional y
+                    especializaciones.</p>
+                <div class="flex gap-3">
+                    <button *ngIf="!isEditing" type="button" (click)="toggleEdit()"
+                        class="bg-[#722C23] hover:bg-[#5a231c] text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                        MODIFICAR MI PERFIL
+                    </button>
+
+                    <button *ngIf="isEditing" type="button" (click)="saveChanges()"
+                        [disabled]="!isInfoFormValid || isSaving"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50">
+                        {{ isSaving ? 'GUARDANDO...' : 'GUARDAR CAMBIOS' }}
+                    </button>
+
+                    <button *ngIf="isEditing" type="button" (click)="toggleEdit()"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-300">
+                        CANCELAR
+                    </button>
+                </div>
+            </div>
+
+            <app-informacion-profesional [arquitectoCodigo]="arquitecto.codigo!" [isEditing]="isEditing"
+                [isLoading]="isLoading" (formChanged)="onInfoFormValidityChange($event)">
+            </app-informacion-profesional>
+
+            <app-especializaciones [arquitectoCodigo]="arquitecto.codigo!" [isEditing]="isEditing"
+                [isLoading]="isLoading">
+            </app-especializaciones>
+
+        </div>
+    </div>
+</div>

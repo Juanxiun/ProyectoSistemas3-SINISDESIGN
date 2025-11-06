@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Notification } from '../notification/notification';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
-
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-navbar',
   standalone: true,
@@ -14,12 +14,13 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 export class Navbar implements OnDestroy {
   @Input() id: string = "";
   @Input() Ubi: string = "";
-  @Input() noResults: boolean = false; 
+  @Input() noResults: boolean = false;
   @Output() onSearch = new EventEmitter<string>();
+
 
   searchText: string = '';
   private searchSubject = new Subject<string>();
-  
+
   get hasValidSearchText(): boolean {
     if (!this.searchText) return false;
     const normalized = this.searchText
@@ -32,7 +33,7 @@ export class Navbar implements OnDestroy {
     return normalized.length > 0;
   }
 
-  constructor() {
+  constructor(private router: Router,) {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged()
@@ -49,7 +50,9 @@ export class Navbar implements OnDestroy {
     this.searchText = '';
     this.onSearch.emit('');
   }
-
+  goMiPerfil() {
+    this.router.navigate(['/miPerfil']);
+  }
   ngOnDestroy() {
     this.searchSubject.complete();
   }

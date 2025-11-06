@@ -15,6 +15,7 @@ import { InformacionProfesional } from '../../../components/arquitecto/informaci
 import { EspecializacionesComponent } from '../../../components/arquitecto/especializaciones/especializaciones';
 
 import { ViewChild } from '@angular/core';
+import { CookieService } from "ngx-cookie-service";
 
 export interface Arquitecto {
     codigo?: string;
@@ -55,16 +56,28 @@ export class DetalleArquitecto implements OnInit {
     isSaving = false;
     isEditing = false;
     isValid = true;
-
+    userData: any = null;
 
 
     constructor(
         private http: HttpClient,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private cookieService: CookieService
     ) { }
 
     ngOnInit(): void {
+
+        if (this.cookieService.check("sesion")) {
+            const cookieValue = this.cookieService.get("sesion");
+            this.userData = JSON.parse(cookieValue);
+            console.log(this.userData);
+        } else {
+            this.router.navigate(["/"]);
+        }
+        if (!(this.userData && this.userData.admin === 1)) {
+            this.router.navigate(["/"]);
+        }
         console.log('ngOnInit DetalleArquitecto');
         this.route.paramMap.subscribe(params => {
             const codigo = params.get('codigo');
