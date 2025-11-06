@@ -4,6 +4,7 @@ import ReunionModel from "../model.ts";
 interface res {
   data?: ReunionModel[];
   std: number;
+  insertId?: number;
 }
 
 // SELECT
@@ -27,8 +28,9 @@ export const SelectQuery = async (proy: number, id?: number): Promise<res> => {
 // CREATE
 export const CreateQuery = async (data: ReunionModel): Promise<res> => {
   try {
+    // 5 columnas => 5 placeholders
     const query = `INSERT INTO reuniones (proy, titulo, descripcion, fecha, estado)
-      VALUES (?, ?, ?, ?, ?, ?)`;
+      VALUES (?, ?, ?, ?, ?)`;
     const params = [
       data.proy,
       data.titulo,
@@ -37,9 +39,21 @@ export const CreateQuery = async (data: ReunionModel): Promise<res> => {
       data.estado ?? 1,
     ];
 
-    await cli.query(query, params);
+    const result = await cli.query(query, params);
 
-    return { std: 200 };
+    // intentar obtener insertId si el driver lo devuelve
+    // la forma exacta depende del cliente MySQL que uses en Deno
+    let insertId: number | undefined = undefined;
+    try {
+      // Muchos drivers retornan un objeto con insertId o lastInsertId
+      if ((result as any).lastInsertId) insertId = Number((result as any).lastInsertId);
+      else if ((result as any).insertId) insertId = Number((result as any).insertId);
+      // si tu driver retorna otra forma, ajustar aquí
+    } catch (e) {
+      // ignore
+    }
+
+    return { std: 200, insertId };
   } catch (error) {
     console.error("Error en la query: Reunion_Proy > Create >", error);
     return { std: 500 };
@@ -68,11 +82,11 @@ export const UpdateQuery = async (data: ReunionModel): Promise<res> => {
   }
 };
 
-// DELETE
+// DELETE (eliminado lógico -> actualizar campo 'estado')
 export const DeleteQuery = async (id: number): Promise<res> => {
   try {
     await cli.query(`UPDATE reuniones
-      SET est = 0 
+      SET estado = 0 
       WHERE id = ?`,
       [id],
     );

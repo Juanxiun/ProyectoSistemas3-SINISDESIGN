@@ -44,8 +44,10 @@ export class CrudReunion {
         app: "application/json",
       });
     } else {
+      // devolver insertId si está disponible
       return ResponseOak(ctx, 200, {
         msg: "Creacion exitosa!.",
+        id: result.insertId ?? undefined,
       }, {
         content: "Content-Type",
         app: "application/json",

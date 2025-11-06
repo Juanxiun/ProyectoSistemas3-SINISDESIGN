@@ -179,3 +179,13 @@
     padding: 8px 2px;
   }
 }
+
+.reuniones-del-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.reunion-item {
+  text-overflow: ellipsis;
+}

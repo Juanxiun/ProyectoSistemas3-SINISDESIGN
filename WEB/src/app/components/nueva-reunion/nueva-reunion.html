@@ -1,11 +1,6 @@
-<div class="w-full h-screen bg-[#f6efe5] flex flex-col items-center p-6">
+<div class="w-full bg-[#f6efe5] flex flex-col items-center p-6">
   <div class="w-full max-w-4xl flex justify-between items-center mb-6 border-b-2 pb-3">
     <h1 class="text-2xl font-bold text-gray-800">Crear Nueva Reunión</h1>
-    <button 
-      class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-semibold py-2 px-4 rounded-xl transition"
-      (click)="volverAProyectos()">
-      ← Volver
-    </button>
   </div>
 
   <form class="w-full max-w-4xl bg-white p-6 rounded-2xl shadow-md">
@@ -15,7 +10,7 @@
         <input 
           type="text" 
           class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-blue-400 outline-none"
-          placeholder="Ej. Reunión semanal de coordinación"
+          placeholder="Ej. Coordinar reunion..."
           [(ngModel)]="titulo"
           name="titulo"
         />
@@ -85,11 +80,12 @@
       </button>
 
       <button 
-        type="submit"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-xl transition"
-        (click)="crearReunion()">
-        Crear Reunión
-      </button>
+      type="button"
+      class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-xl transition"
+      (click)="crearReunion()">
+      Crear Reunión
+    </button>
+
     </div>
   </form>
 </div>

@@ -1,48 +1,66 @@
+<app-navbar [id]="userData.id" [Ubi]="'Agenda'" />
 
-
-<app-navbar
-  [id]="userData.id"
-  [Ubi]="'Agenda'"/>
-<div
-  class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
   <app-siderbar [admin]="userData.admin" />
-  <div class="w-full bg-[rgb(246,239,229)]">
-    <div class="calendario-header">
-      <div class="calendario-controls">
-        <button class="btn-control" (click)="mesAnterior()">
-          ‹
-        </button>
-        <h2 class="mes-actual">{{ mesActual | titlecase }} {{ anioActual }}</h2>
-        <button class="btn-control" (click)="mesSiguiente()">
-          ›
-        </button>
-      </div>
-      <button class="btn-hoy" (click)="irHoy()">Hoy</button>
+
+  <div class="w-full bg-[rgb(246,239,229)] p-4">
+
+    <!-- 🔹 Botón para abrir el formulario -->
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-bold text-gray-800">Calendario</h2>
+      <button
+        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition"
+        (click)="abrirFormulario()">
+        + Nueva Reunión
+      </button>
     </div>
 
-    <div class="calendario-grid">
-      <div class="dias-semana">
-        <div class="dia-semana">Dom</div>
-        <div class="dia-semana">Lun</div>
-        <div class="dia-semana">Mar</div>
-        <div class="dia-semana">Mié</div>
-        <div class="dia-semana">Jue</div>
-        <div class="dia-semana">Vie</div>
-        <div class="dia-semana">Sáb</div>
+    <!-- Mostrar el formulario si se activó -->
+    <div *ngIf="mostrarFormulario; else calendarioView">
+      <app-nueva-reunion (reunionCreada)="cerrarFormulario()" />
+    </div>
+
+    <!-- Vista normal del calendario -->
+    <ng-template #calendarioView>
+      <div class="calendario-header">
+        <div class="calendario-controls">
+          <button class="btn-control" (click)="mesAnterior()">‹</button>
+          <h2 class="mes-actual">{{ mesActual | titlecase }} {{ anioActual }}</h2>
+          <button class="btn-control" (click)="mesSiguiente()">›</button>
+        </div>
+        <button class="btn-hoy" (click)="irHoy()">Hoy</button>
       </div>
 
-      <div class="semanas">
-        <div *ngFor="let semana of semanas" class="semana">
-          <div
-            *ngFor="let dia of semana"
-            class="dia"
-            [class.dia-actual]="esMismoDia(dia, hoy)"
-            [class.dia-otro-mes]="!esMesActual(dia)">
-            <div class="numero-dia">{{ dia.getDate() }}</div>
-            <!-- Aquí irían las reuniones cuando las implementemos -->
+      <div class="calendario-grid">
+        <div class="dias-semana">
+          <div class="dia-semana">Dom</div>
+          <div class="dia-semana">Lun</div>
+          <div class="dia-semana">Mar</div>
+          <div class="dia-semana">Mié</div>
+          <div class="dia-semana">Jue</div>
+          <div class="dia-semana">Vie</div>
+          <div class="dia-semana">Sáb</div>
+        </div>
+
+        <div class="semanas">
+          <div *ngFor="let semana of semanas" class="semana">
+            <div
+              *ngFor="let dia of semana"
+              class="dia"
+              [class.dia-actual]="esMismoDia(dia, hoy)"
+              [class.dia-otro-mes]="!esMesActual(dia)">
+              <div class="numero-dia">{{ dia.getDate() }}</div>
+                <div class="reuniones-del-dia">
+                  <ng-container *ngFor="let reunion of obtenerReunionesDelDia(dia)">
+                    <div class="reunion-item">
+                      {{ reunion.title }}
+                    </div>
+                  </ng-container>                          
+                </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ng-template>
   </div>
 </div>
