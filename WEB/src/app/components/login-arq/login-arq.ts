@@ -25,6 +25,11 @@ export class LoginArq implements OnInit {
   @Output()
   goRecuperar = new EventEmitter<void>();
 
+  @Output()
+  notification = new EventEmitter<
+    { type: 1 | 2 | 3; Tittle: string; message: string }
+  >();
+
   loginForm: FormGroup;
   submitted = false;
   showPassword = false;
@@ -58,20 +63,33 @@ export class LoginArq implements OnInit {
 
   async onSubmit(): Promise<void> {
     this.submitted = true;
-
     if (this.loginForm.invalid) {
+      this.notification.emit({
+        type: 3, // Error
+        Tittle: "Error de Validación",
+        message: "Por favor, corrige los errores en el formulario.",
+      });
       return;
     }
-
     try {
       const user: any = await this.auth.login(
         this.loginForm.value.codigoUsuario,
         this.loginForm.value.contrasena,
       );
-
+      // Éxito: emitir notificación y navegar
+      this.notification.emit({
+        type: 1, // Éxito
+        Tittle: "Inicio de Sesión Exitoso",
+        message: "Bienvenido, arquitecto.",
+      });
       this.router.navigate(["/proyectos/"]);
     } catch (err) {
-      this.errorMessage = "Usuario o contraseña incorrecta";
+      // Error: emitir notificación
+      this.notification.emit({
+        type: 3, // Error
+        Tittle: "Error de Inicio de Sesión",
+        message: "Usuario o contraseña incorrecta.",
+      });
       console.error(err);
     }
   }

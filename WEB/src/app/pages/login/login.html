@@ -1,20 +1,13 @@
+
 <div class="login-page">
   <div class="left">
     <div class="form-container">
-      <!-- Menú de opciones -->
-      <!--<div class="options">
-        <button [class.active]="currentView === 'cli'" (click)="showCliente()">Cliente</button>
-        <button [class.active]="currentView === 'arq'" (click)="showArquitecto()">Arquitecto</button>
-        <button [class.active]="currentView === 'recuperar'" (click)="showRecuperar()">Recuperar contraseña</button>
-        <button [class.active]="currentView === 'nuevo'" (click)="showNuevoPass()">Nuevo password</button>
-      </div>-->
-
       @switch (currentView) {
         @case ('cli') {
           <app-login-cli (navigate)="onNavigate($event)" />
         }
         @case ('arq') {
-          <app-login-arq (navigate)="onNavigate($event)" />
+          <app-login-arq (navigate)="onNavigate($event)" (notification)="onNotification($event)" />
         }
         @case ('recuperar') {
           <app-recuperar-pass (navigate)="onNavigate($event)" />
@@ -28,4 +21,12 @@
       }
     </div>
   </div>
+  <!-- Mostrar notificación solo si hay datos -->
+  <app-notificacion 
+    *ngIf="notificationData" 
+    [type]="notificationData.type" 
+    [Tittle]="notificationData.Tittle" 
+    [message]="notificationData.message" 
+    (close)="notificationData = null">
+  </app-notificacion>
 </div>
