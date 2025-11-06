@@ -16,9 +16,10 @@
     </div>
 
     <!-- Mostrar el formulario si se activó -->
-    <div *ngIf="mostrarFormulario; else calendarioView">
+    <div *ngIf="mostrarFormulario && !reunionSeleccionada; else calendarioView">
       <app-nueva-reunion (reunionCreada)="cerrarFormulario()" />
     </div>
+
 
     <!-- Vista normal del calendario -->
     <ng-template #calendarioView>
@@ -53,9 +54,13 @@
                 <div class="reuniones-del-dia">
                   <ng-container *ngFor="let reunion of obtenerReunionesDelDia(dia)">
                     <div class="reunion-item">
-                      {{ reunion.title }}
+                      <button
+                        class="text-blue-600 underline hover:text-blue-800"
+                        (click)="abrirEditor(reunion)">
+                        {{ reunion.titulo }}
+                      </button>
                     </div>
-                  </ng-container>                          
+                  </ng-container>
                 </div>
             </div>
           </div>

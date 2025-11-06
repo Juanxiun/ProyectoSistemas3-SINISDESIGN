@@ -6,11 +6,12 @@ import { CookieService } from "ngx-cookie-service";
 import { Router } from "@angular/router";
 import { NuevaReunionComponent } from "../../components/nueva-reunion/nueva-reunion";
 import { getReuniones } from "../../api/reuniones/reunionCrud";
+import { EditarReunion } from "../../components/editar-reunion/editar-reunion";
 
 @Component({
   selector: "app-calendario",
   standalone: true,
-  imports: [CommonModule, Navbar, Siderbar, NuevaReunionComponent],
+  imports: [CommonModule, Navbar, Siderbar, NuevaReunionComponent, EditarReunion],
   templateUrl: "./calendario.html",
   styleUrls: ["./calendario.css"],
 })
@@ -24,6 +25,9 @@ export class Calendario implements OnInit {
   reuniones: any[] = [];
   proyectoId: number = 1;
   mostrarFormulario: boolean = false;
+
+  mostrarEditor: boolean = false;
+  reunionSeleccionada: any = null;
 
   constructor(
     private router: Router,
@@ -54,7 +58,7 @@ export class Calendario implements OnInit {
 
       this.reuniones = data.map((r: any) => ({
         id: r.id,
-        title: r.titulo,
+        titulo: r.titulo,
         start: r.fecha,
         description: r.descripcion,
         estado: r.estado,
@@ -139,13 +143,43 @@ export class Calendario implements OnInit {
     return this.reuniones.filter(r => this.esMismoDia(this.convertirFecha(r.start), fecha));
   }
 
-  // 🟢 Agregar estos dos métodos:
+  // Abrir formulario nuevo
   abrirFormulario() {
     this.mostrarFormulario = true;
+    this.mostrarEditor = false;
   }
 
+  // Cerrar formulario nuevo
   cerrarFormulario() {
     this.mostrarFormulario = false;
-    this.cargarReuniones(); // 🔄 Refresca al cerrar el formulario
+    this.cargarReuniones(); // refresca lista
+  }
+
+  // 🔹 Abrir editor
+  abrirEditor(reunion: any) {
+    this.reunionSeleccionada = reunion;
+    this.mostrarEditor = true;
+    this.mostrarFormulario = false;
+  }
+
+  // 🔹 Cerrar editor (desde el componente hijo)
+  cerrarEditor(refrescar: boolean = false) {
+    this.mostrarEditor = false;
+    this.reunionSeleccionada = null;
+    if (refrescar) this.cargarReuniones(); // actualiza calendario
+  }
+
+  // ✅ Cuando se actualiza una reunión desde el editor
+  onReunionActualizada() {
+    console.log("♻️ Reunión actualizada correctamente, recargando...");
+    this.reunionSeleccionada = null; // Cierra el editor
+    this.cargarReuniones(); // Recarga las reuniones actualizadas
+  }
+
+  // ✅ Cuando se elimina una reunión desde el editor
+  onReunionEliminada() {
+    console.log("🗑️ Reunión eliminada correctamente, recargando...");
+    this.reunionSeleccionada = null; // Cierra el editor
+    this.cargarReuniones(); // Recarga las reuniones actualizadas
   }
 }
