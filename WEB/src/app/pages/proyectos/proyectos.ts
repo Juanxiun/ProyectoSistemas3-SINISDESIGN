@@ -8,11 +8,17 @@ import { ProyInfo } from "../../components/project/proy-info/proy-info";
 import { CookieService } from "ngx-cookie-service";
 import { NotificacionComponent } from "../../components/notificacion/notificacion";
 
-
 @Component({
   selector: "app-proyectos",
   standalone: true,
-  imports: [CommonModule, Navbar, Siderbar, CardProy, ProyInfo, NotificacionComponent],
+  imports: [
+    CommonModule,
+    Navbar,
+    Siderbar,
+    CardProy,
+    ProyInfo,
+    NotificacionComponent,
+  ],
   templateUrl: "./proyectos.html",
   styleUrls: ["./proyectos.css"],
 })
@@ -23,6 +29,11 @@ export class Proyectos implements OnInit {
   searchTerm: string = "";
   noResults: boolean = false;
   userData: any = null;
+
+  // Propiedades para notificaciones
+  mostrarNotif: boolean = false;
+  tipoNotif: 1 | 2 | 3 = 1;
+  mensajeNotif: string = "";
 
   constructor(
     private router: Router,
@@ -50,9 +61,9 @@ export class Proyectos implements OnInit {
 
   onSearchHandler(searchTerm: string) {
     this.searchTerm = searchTerm;
-    
+
     const normalized = this.normalizeSearchTerm(searchTerm);
-    
+
     if (!normalized) {
       this.noResults = false;
     }
@@ -60,7 +71,7 @@ export class Proyectos implements OnInit {
 
   onResultsChange(hasResults: boolean) {
     const normalized = this.normalizeSearchTerm(this.searchTerm);
-    
+
     if (!normalized) {
       this.noResults = false;
     } else {
@@ -69,14 +80,14 @@ export class Proyectos implements OnInit {
   }
 
   private normalizeSearchTerm(text: string): string {
-    if (!text) return '';
-    
+    if (!text) return "";
+
     return text
       .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-z0-9\s]/gi, '')
-      .replace(/\s+/g, '')
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/gi, "")
+      .replace(/\s+/g, "")
       .trim();
   }
 
@@ -90,5 +101,24 @@ export class Proyectos implements OnInit {
 
   abrirNuevaReunion(): void {
     this.currentView = "nueva-reunion";
+  }
+
+  // Método para mostrar notificaciones
+  private mostrarNotificacion(tipo: 1 | 2 | 3, mensaje: string) {
+    this.tipoNotif = tipo;
+    this.mensajeNotif = mensaje;
+    this.mostrarNotif = true;
+    setTimeout(() => {
+      this.mostrarNotif = false;
+    }, 3000); // Ocultar después de 3 segundos
+  }
+
+  // Manejadores para los nuevos outputs
+  onProyectoEliminado(id: number) {
+    this.mostrarNotificacion(1, "Proyecto eliminado exitosamente");
+  }
+
+  onProyectosCargados() {
+    this.mostrarNotificacion(2, "Proyectos cargados");
   }
 }

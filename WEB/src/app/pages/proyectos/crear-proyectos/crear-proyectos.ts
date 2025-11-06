@@ -13,6 +13,7 @@ import { ConnectA } from "../../../../config/index";
 
 import { Navbar } from "../../../components/navbar/navbar";
 import { Siderbar } from "../../../components/siderbar/siderbar";
+import { NotificacionComponent } from "../../../components/notificacion/notificacion";
 
 export interface Cliente {
   ci: number;
@@ -55,6 +56,7 @@ export interface ApiResponse<T> {
     HttpClientModule,
     Navbar,
     Siderbar,
+    NotificacionComponent
   ],
   templateUrl: "./crear-proyectos.html",
 })
@@ -79,9 +81,15 @@ export class CrearProyectos implements OnInit {
   imagenSeleccionada: File | null = null;
   nombreArchivo = "";
   previewImagen = "";
-  mensajeError = "";
-  mensajeExito = "";
+  mensajeError = "";  // Inicializar vacío
+  mensajeExito = "";  // Inicializar vacío
   fechaActual: string = "";
+
+  // Nuevas propiedades para la notificación
+  showNotification = false;
+  notificationType: 1 | 2 | 3 = 1;
+  notificationTitle = "";
+  notificationMessage = "";
 
   constructor(
     private http: HttpClient,
@@ -117,6 +125,7 @@ export class CrearProyectos implements OnInit {
 
     if (!codigoArq) {
       this.mensajeError = "No se encontró el código de arquitecto.";
+      this.showNotificationError("Error", this.mensajeError);
       return;
     }
 
@@ -138,13 +147,16 @@ export class CrearProyectos implements OnInit {
         if (arqEncontrado) {
           this.arquitectos.set([arqEncontrado]);
           this.proyecto.arq = arqEncontrado.codigo;
+          // Mostrar notificación azul para carga exitosa
+          this.showNotificationInfo("Información", "Arquitecto cargado exitosamente.");
         } else {
           this.mensajeError = "No se encontró el arquitecto correspondiente.";
+          this.showNotificationError("Error", this.mensajeError);
         }
       },
       error: (err: HttpErrorResponse) => {
-        this.mensajeError = "Error al cargar los arquitectos: " +
-          err.statusText;
+        this.mensajeError = "Error al cargar los arquitectos: " + err.statusText;
+        this.showNotificationError("Error", this.mensajeError);
       },
       complete: () => {
         this.isLoading.set(false);
@@ -168,13 +180,16 @@ export class CrearProyectos implements OnInit {
 
         if (list.length === 0) {
           this.mensajeError = "No hay clientes disponibles";
+          this.showNotificationError("Error", this.mensajeError);
+        } else {
+          this.clientes.set(list);
+          // Mostrar notificación azul para carga exitosa
+          this.showNotificationInfo("Información", "Clientes cargados exitosamente.");
         }
-
-        this.clientes.set(list);
       },
       error: (err: HttpErrorResponse) => {
-        this.mensajeError =
-          `Error al cargar los clientes: ${err.status} ${err.statusText}`;
+        this.mensajeError = `Error al cargar los clientes: ${err.status} ${err.statusText}`;
+        this.showNotificationError("Error", this.mensajeError);
       },
       complete: () => {
         this.isLoading.set(false);
@@ -192,8 +207,8 @@ export class CrearProyectos implements OnInit {
       const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
       if (!file.type.startsWith("image/")) {
-        this.mensajeError =
-          "Por favor selecciona una imagen válida (JPG, PNG, WebP)";
+        this.mensajeError = "Por favor selecciona una imagen válida (JPG, PNG, WebP)";
+        this.showNotificationError("Error", this.mensajeError);
         this.imagenSeleccionada = null;
         this.nombreArchivo = "";
         this.previewImagen = "";
@@ -202,6 +217,7 @@ export class CrearProyectos implements OnInit {
 
       if (file.size > maxSizeBytes) {
         this.mensajeError = `La imagen no puede exceder ${maxSizeMB}MB`;
+        this.showNotificationError("Error", this.mensajeError);
         this.imagenSeleccionada = null;
         this.nombreArchivo = "";
         this.previewImagen = "";
@@ -241,8 +257,8 @@ export class CrearProyectos implements OnInit {
 
   onSubmit(): void {
     if (!this.isFormValid()) {
-      this.mensajeError =
-        "Por favor completa todos los campos correctamente y selecciona una imagen";
+      this.mensajeError = "Por favor completa todos los campos correctamente y selecciona una imagen";
+      this.showNotificationError("Error", this.mensajeError);
       return;
     }
 
@@ -257,7 +273,6 @@ export class CrearProyectos implements OnInit {
     formData.append("cli", this.proyecto.cli.toString());
     formData.append("arq", this.proyecto.arq);
     formData.append("imagen", this.imagenSeleccionada!);
-
 
     this.http.post<ApiResponse<any>>(this.apiUrlProyectos, formData).subscribe({
       next: (response: any) => {        
@@ -283,6 +298,7 @@ export class CrearProyectos implements OnInit {
         
         if (exitoso && idProyecto) {
           this.mensajeExito = "Proyecto creado exitosamente. Redirigiendo a completar detalles...";
+          this.showNotificationSuccess("Éxito", this.mensajeExito);
           
           setTimeout(() => {
             this.router.navigate(['/detalle-proyectos', idProyecto], {
@@ -297,6 +313,7 @@ export class CrearProyectos implements OnInit {
           console.warn("⚠ Proyecto creado pero no se obtuvo el ID");
           this.isLoading.set(false);
           this.mensajeError = "Proyecto creado pero no se pudo obtener el ID. Verifica en la lista de proyectos.";
+          this.showNotificationError("Error", this.mensajeError);
           
           setTimeout(() => {
             this.goBack();
@@ -306,6 +323,7 @@ export class CrearProyectos implements OnInit {
           console.error("✗ Error al crear el proyecto");
           this.isLoading.set(false);
           this.mensajeError = response?.msg || "Error al crear el proyecto";
+          this.showNotificationError("Error", this.mensajeError);
         }
       },
       error: (err: HttpErrorResponse) => {
@@ -314,11 +332,38 @@ export class CrearProyectos implements OnInit {
         this.mensajeError = `Error ${err.status}: ${
           err.error?.msg || err.statusText
         }`;
+        this.showNotificationError("Error", this.mensajeError);
       },
     });
   }
 
   goBack(): void {
     this.router.navigate(["/proyectos/"]);
+  }
+
+  // Métodos para manejar notificaciones
+  private showNotificationSuccess(title: string, message: string): void {
+    this.notificationType = 1; // Verde
+    this.notificationTitle = title;
+    this.notificationMessage = message;
+    this.showNotification = true;
+  }
+
+  private showNotificationInfo(title: string, message: string): void {
+    this.notificationType = 2; // Azul
+    this.notificationTitle = title;
+    this.notificationMessage = message;
+    this.showNotification = true;
+  }
+
+  private showNotificationError(title: string, message: string): void {
+    this.notificationType = 3; // Rojo
+    this.notificationTitle = title;
+    this.notificationMessage = message;
+    this.showNotification = true;
+  }
+
+  closeNotification(): void {
+    this.showNotification = false;
   }
 }

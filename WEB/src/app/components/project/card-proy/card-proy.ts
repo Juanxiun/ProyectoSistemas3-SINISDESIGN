@@ -25,6 +25,12 @@ export class CardProy implements OnChanges {
   @Output()
   resultsChange = new EventEmitter<boolean>(); 
 
+  @Output()
+  proyectoEliminado = new EventEmitter<number>(); // Emite el ID del proyecto eliminado
+
+  @Output()
+  proyectosCargados = new EventEmitter<void>(); // Emite cuando se cargan proyectos
+
   private proyectos$ = new BehaviorSubject<ListProps[]>([]);
   private searchTerm$ = new BehaviorSubject<string>('');
   
@@ -70,6 +76,7 @@ export class CardProy implements OnChanges {
         next: (proyectos) => {
           this.proyectos$.next(proyectos);
           this.resultsChange.emit(true);
+          this.proyectosCargados.emit(); 
         },
         error: (error) => {
           console.error('Error cargando proyectos:', error);
@@ -110,11 +117,10 @@ export class CardProy implements OnChanges {
 
       if (success) {
         console.log('Proyecto eliminado exitosamente');
-        
-        // Actualizar la lista de proyectos después de eliminar
+      
         this.cargarProyectos();
         
-        alert('Proyecto eliminado exitosamente');
+        alert('Proyecto eliminado exitosamente'); 
       } else {
         console.error('Error al eliminar el proyecto');
         alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
