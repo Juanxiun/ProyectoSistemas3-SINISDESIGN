@@ -1,28 +1,38 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { LoginCli } from '../../components/login-cli/login-cli';
-import { LoginArq } from '../../components/login-arq/login-arq';
-import { RecuperarPass } from '../../components/recuperar-pass/recuperar-pass';
-import { NuevoPass } from '../../components/nuevo-pass/nuevo-pass';
+// login.component.ts
+import { Component } from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { LoginCli } from "../../components/login-cli/login-cli";
+import { LoginArq } from "../../components/login-arq/login-arq";
+import { RecuperarPass } from "../../components/recuperar-pass/recuperar-pass";
+import { NuevoPass } from "../../components/nuevo-pass/nuevo-pass";
+import { NotificacionComponent } from "../../components/notificacion/notificacion";
 
 @Component({
-  selector: 'app-login',
+  selector: "app-login",
   standalone: true,
-  imports: [CommonModule, LoginCli, LoginArq, RecuperarPass, NuevoPass],
-  templateUrl: './login.html',
-  styleUrls: ['./login.css']
+  imports: [
+    CommonModule,
+    LoginCli,
+    LoginArq,
+    RecuperarPass,
+    NuevoPass,
+    NotificacionComponent,
+  ],
+  templateUrl: "./login.html",
+  styleUrls: ["./login.css"],
 })
 export class Login {
-  // Controla qué componente se muestra
-  currentView: 'cli' | 'arq' | 'recuperar' | 'nuevo' = 'cli';
+  currentView: "cli" | "arq" | "recuperar" | "nuevo" = "cli";
+  notificationData: {type: 1 | 2 | 3, Tittle: string, message: string} | null = null; // Nueva propiedad
 
-  // Métodos para cambiar de vista
-  showCliente() { this.currentView = 'cli'; }
-  showArquitecto() { this.currentView = 'arq'; }
-  showRecuperar() { this.currentView = 'recuperar'; }
-  showNuevoPass() { this.currentView = 'nuevo'; }
+  // ... (métodos existentes)
 
-    onNavigate(view: 'cli' | 'arq' | 'recuperar' | 'nuevo') {
+  onNavigate(view: "cli" | "arq" | "recuperar" | "nuevo") {
     this.currentView = view;
+  }
+
+  // Nuevo método para manejar notificaciones
+  onNotification(data: {type: 1 | 2 | 3, Tittle: string, message: string}) {
+    this.notificationData = data;
   }
 }

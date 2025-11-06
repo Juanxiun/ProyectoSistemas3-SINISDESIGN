@@ -6,11 +6,13 @@ import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
 import { ProyInfo } from "../../components/project/proy-info/proy-info";
 import { CookieService } from "ngx-cookie-service";
+import { NotificacionComponent } from "../../components/notificacion/notificacion";
+
 
 @Component({
   selector: "app-proyectos",
   standalone: true,
-  imports: [CommonModule, Navbar, Siderbar, CardProy, ProyInfo],
+  imports: [CommonModule, Navbar, Siderbar, CardProy, ProyInfo, NotificacionComponent],
   templateUrl: "./proyectos.html",
   styleUrls: ["./proyectos.css"],
 })
