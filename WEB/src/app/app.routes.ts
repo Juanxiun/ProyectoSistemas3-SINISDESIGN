@@ -7,6 +7,7 @@ import { PerfilArquitectos } from "./pages/perfil-arquitectos/perfil-arquitectos
 import { RegistroArquitectos } from "./pages/registro-arquitectos/registro-arquitectos";
 import { CrearArquitecto } from "./pages/registro-arquitectos/crear-arquitecto/crear-arquitecto";
 import { DetalleArquitecto } from "./pages/registro-arquitectos/detalle-arquitecto/detalle-arquitecto";
+import { PerfilArquitectoComponent } from "./pages/perfil-arquitectos/perfil-arquitecto/perfil-arquitecto";
 
 import { Login } from "./pages/login/login";
 import { DocumentosCrudPage } from "./pages/documentos/documentos";
@@ -40,9 +41,14 @@ export const routes: Routes = [
         title: "Detalle Arquitecto",
         component: DetalleArquitecto,
     },
+    {
+        path: "miPerfil",
+        title: "Mi Perfil",
+        component: PerfilArquitectoComponent,
+    },
 
     {
-        path:"reportes", title: "Reportes", component: ReportesPage
+        path: "reportes", title: "Reportes", component: ReportesPage
     },
 
     // RUTA DE LOGIN

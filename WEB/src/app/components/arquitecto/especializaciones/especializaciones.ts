@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
@@ -66,10 +66,7 @@ export class EspecializacionesComponent implements OnInit {
     this.especialidadError = null;
     this.newEspecialidad = this.newEspecialidad.trim();
 
-    if (!this.newEspecialidad) {
-      this.especialidadError = 'La especialidad es obligatoria.';
-      return false;
-    }
+
 
     if (this.newEspecialidad.length > 25) {
       this.especialidadError = 'La especialidad no puede exceder 25 caracteres.';
