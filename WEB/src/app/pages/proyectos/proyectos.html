@@ -3,6 +3,7 @@
     [Ubi]="'Proyectos'"
     [noResults]="noResults"
     (onSearch)="onSearchHandler($event)" />
+
 <div
     class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row ">
     <app-siderbar [admin]="userData.admin" />
@@ -22,6 +23,8 @@
         <app-card-proy
             (idproy)="InformationProy($event)"
             (resultsChange)="onResultsChange($event)"
+            (proyectoEliminado)="onProyectoEliminado($event)"
+            (proyectosCargados)="onProyectosCargados()"
             [usr]="userData.id ?? ''"
             [searchTerm]="searchTerm" />
         }
@@ -39,5 +42,10 @@
         }
     </div>
     <div>
+        <app-notificacion
+            *ngIf="mostrarNotif"
+            [type]="tipoNotif"
+            [message]="mensajeNotif">
+        </app-notificacion>
     </div>
 </div>
