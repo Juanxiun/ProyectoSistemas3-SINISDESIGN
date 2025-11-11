@@ -14,7 +14,53 @@ export async function ProyData(usr: string, id: string): Promise<ProyProps[]> {
         return [];
     }
 }
-export async function DeleteProyecto(id: number): Promise<boolean> {
+
+export interface DeleteProyectoRequest {
+    id: number;
+    justificacion: string; // Ahora la justificación es obligatoria
+}
+
+export async function DeleteProyecto(request: DeleteProyectoRequest): Promise<{success: boolean, message: string}> {
+    const url = ConnectA.api;
+    try {
+        console.log(`🗑️ Eliminando proyecto ${request.id} con justificación...`);
+        
+        // Enviar la eliminación con justificación
+        const result = await fetch(`${url}/proyectos/${request.id}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                justificacion: request.justificacion
+            })
+        });
+        
+        const data = await result.json();
+        
+        if (data.status === 200) {
+            return { 
+                success: true, 
+                message: "Proyecto eliminado exitosamente" 
+            };
+        }
+        
+        return { 
+            success: false, 
+            message: data.msg || "Error al eliminar el proyecto" 
+        };
+        
+    } catch (e) {
+        console.log("Error > API > DeleteProyecto >\n" + e);
+        return { 
+            success: false, 
+            message: "Error de conexión" 
+        };
+    }
+}
+
+// Función simple sin justificación (para compatibilidad)
+export async function DeleteProyectoSimple(id: number): Promise<boolean> {
     const url = ConnectA.api;
     try {
         const result = await fetch(`${url}/proyectos/${id}`, {
@@ -25,11 +71,7 @@ export async function DeleteProyecto(id: number): Promise<boolean> {
         });
         
         const data = await result.json();
-        
-        if (data.status === 200) {
-            return true;
-        }
-        return false;
+        return data.status === 200;
     } catch (e) {
         console.log("Error > API > DeleteProyecto >\n" + e);
         return false;

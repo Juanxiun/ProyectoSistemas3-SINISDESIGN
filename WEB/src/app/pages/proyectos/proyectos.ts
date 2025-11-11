@@ -8,6 +8,12 @@ import { ProyInfo } from "../../components/project/proy-info/proy-info";
 import { CookieService } from "ngx-cookie-service";
 import { NotificacionComponent } from "../../components/notificacion/notificacion";
 
+export interface EliminacionResponse {
+  success: boolean;
+  message: string;
+  proyectoId?: number | null; 
+}
+
 @Component({
   selector: "app-proyectos",
   standalone: true,
@@ -103,19 +109,24 @@ export class Proyectos implements OnInit {
     this.currentView = "nueva-reunion";
   }
 
-  // Método para mostrar notificaciones
   private mostrarNotificacion(tipo: 1 | 2 | 3, mensaje: string) {
     this.tipoNotif = tipo;
     this.mensajeNotif = mensaje;
     this.mostrarNotif = true;
     setTimeout(() => {
       this.mostrarNotif = false;
-    }, 3000); // Ocultar después de 3 segundos
+    }, 3000); 
   }
 
-  // Manejadores para los nuevos outputs
-  onProyectoEliminado(id: number) {
-    this.mostrarNotificacion(1, "Proyecto eliminado exitosamente");
+  onProyectoEliminado(response: EliminacionResponse) {
+    if (response.success) {
+      this.mostrarNotificacion(1, response.message);
+      if (this.information && this.idproy === response.proyectoId) {
+        this.salirInformacion();
+      }
+    } else {
+      this.mostrarNotificacion(3, response.message);
+    }
   }
 
   onProyectosCargados() {
