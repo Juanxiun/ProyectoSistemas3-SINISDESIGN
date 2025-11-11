@@ -3,14 +3,16 @@ import { LoadDisplay } from "../../../elements/load-display/load-display";
 import { from, Observable, BehaviorSubject, combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 import { ListProps, ListProyectos } from "../../../api/proyectos/list";
-import { DeleteProyecto } from "../../../api/proyectos/poryData";
+import { DeleteProyecto, DeleteProyectoRequest } from "../../../api/proyectos/poryData";
 import { AsyncPipe, NgForOf } from "@angular/common";
+import { FormsModule } from "@angular/forms"; 
+import { EliminacionResponse } from "../../../pages/proyectos/proyectos"; 
 
 @Component({
   selector: "app-card-proy",
-  imports: [LoadDisplay, NgForOf, AsyncPipe],
+  imports: [LoadDisplay, NgForOf, AsyncPipe, FormsModule], 
   templateUrl: "./card-proy.html",
-  styles: ``,
+  styles: ``
 })
 export class CardProy implements OnChanges {
   @Input()
@@ -26,15 +28,22 @@ export class CardProy implements OnChanges {
   resultsChange = new EventEmitter<boolean>(); 
 
   @Output()
-  proyectoEliminado = new EventEmitter<number>(); // Emite el ID del proyecto eliminado
+  proyectoEliminado = new EventEmitter<EliminacionResponse>();
 
   @Output()
-  proyectosCargados = new EventEmitter<void>(); // Emite cuando se cargan proyectos
+  proyectosCargados = new EventEmitter<void>();
 
   private proyectos$ = new BehaviorSubject<ListProps[]>([]);
   private searchTerm$ = new BehaviorSubject<string>('');
   
   proyFiltrados$: Observable<ListProps[]>;
+
+  // Propiedades para el modal de justificación
+  mostrarModalJustificacion = false;
+  proyectoAEliminar: number | null = null;
+  justificacion = '';
+  eliminando = false;
+  proyectoNombre = '';
 
   constructor() {
     this.proyFiltrados$ = combineLatest([
@@ -106,28 +115,73 @@ export class CardProy implements OnChanges {
     this.idproy.emit(id);
   }
 
-  async eliminarProyecto(event: Event, id: number) {
+  // Método simplificado: siempre mostrar modal de justificación
+  eliminarProyecto(event: Event, id: number, proyecto?: ListProps) {
     event.stopPropagation();
     
-    const confirmar = confirm('¿Está seguro que desea eliminar este proyecto?');
-    if (!confirmar) return;
+    this.proyectoAEliminar = id;
+    this.proyectoNombre = proyecto?.nombre || 'este proyecto';
+    this.mostrarModalJustificacion = true;
+    this.justificacion = '';
+  }
 
-    try {
-      const success = await DeleteProyecto(id);
-
-      if (success) {
-        console.log('Proyecto eliminado exitosamente');
-      
-        this.cargarProyectos();
-        
-        alert('Proyecto eliminado exitosamente'); 
-      } else {
-        console.error('Error al eliminar el proyecto');
-        alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
-      }
-    } catch (error) {
-      console.error('Error en la solicitud de eliminación:', error);
-      alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
+  // Método para eliminar con justificación
+  async eliminarConJustificacion() {
+    if (!this.proyectoAEliminar) return;
+    
+    if (!this.justificacion || this.justificacion.trim().length < 10) {
+      alert('La justificación debe tener al menos 10 caracteres.');
+      return;
     }
+
+    this.eliminando = true;
+    
+    try {
+      const request: DeleteProyectoRequest = {
+        id: this.proyectoAEliminar,
+        justificacion: this.justificacion
+      };
+      
+      const resultado = await DeleteProyecto(request);
+      
+      this.proyectoEliminado.emit({
+        success: resultado.success,
+        message: resultado.message,
+        proyectoId: this.proyectoAEliminar
+      });
+      
+      if (resultado.success) {
+        this.cargarProyectos();
+        this.cerrarModal();
+      }
+      
+    } catch (error) {
+      console.error('Error al eliminar con justificación:', error);
+      this.proyectoEliminado.emit({
+        success: false,
+        message: 'Error al eliminar el proyecto',
+        proyectoId: this.proyectoAEliminar
+      });
+    } finally {
+      this.eliminando = false;
+    }
+  }
+  
+  cerrarModal() {
+    this.mostrarModalJustificacion = false;
+    this.proyectoAEliminar = null;
+    this.justificacion = '';
+    this.eliminando = false;
+    this.proyectoNombre = '';
+  }
+
+  // Método para cancelar eliminación
+  cancelarEliminacion() {
+    this.cerrarModal();
+    this.proyectoEliminado.emit({
+      success: false,
+      message: 'Eliminación cancelada por el usuario',
+      proyectoId: this.proyectoAEliminar
+    });
   }
 }
