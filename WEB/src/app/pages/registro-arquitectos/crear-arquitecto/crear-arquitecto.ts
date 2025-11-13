@@ -18,6 +18,8 @@ import { CookieService } from "ngx-cookie-service";
 import { InformacionProfesionalCreateComponent, InfoProfesionalOutput, Informacion } from '../../../components/arquitecto/informacion-profesional-create/informacion-profesional-create';
 import { EspecializacionesCreateComponent, Especializacion } from '../../../components/arquitecto/especializaciones-create/especializaciones-create';
 
+import { NotificacionComponent } from "../../../components/notificacion/notificacion";
+
 export interface Arquitecto {
     codigo?: string;
     ci: number;
@@ -39,7 +41,7 @@ export interface ApiResponse<T> {
 @Component({
     selector: 'app-crear-arquitecto',
     standalone: true,
-    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesionalCreateComponent, EspecializacionesCreateComponent], templateUrl: './crear-arquitecto.html',
+    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesionalCreateComponent, EspecializacionesCreateComponent, NotificacionComponent], templateUrl: './crear-arquitecto.html',
     styleUrl: './crear-arquitecto.css',
 })
 export class CrearArquitecto implements OnInit {
@@ -47,6 +49,11 @@ export class CrearArquitecto implements OnInit {
     isLoading = false;
     isValid = false;
     userData: any = null;
+
+    //notis
+    notificationData: { type: 1 | 2 | 3, Tittle: string, message: string } | null = null;
+
+
     newArchitect: Partial<Arquitecto> = {
         ci: undefined,
         nombre: '',
@@ -227,7 +234,13 @@ export class CrearArquitecto implements OnInit {
         this.http.post<ApiResponse<any>>(this.apiUrl, formData).subscribe({
             next: (response: ApiResponse<any>) => {
                 if (response.data?.msg) {
-                    alert(response.data.msg);
+                    //alert(response.data.msg);
+                    this.onNotification({
+                        type: 2,
+                        Tittle: "información",
+                        message: response.data.msg,
+                    });
+                    this.cdr.detectChanges();
                     if (response.data.msg === 'Arquitecto creado exitosamente.') {
                         this.router.navigate(['/arquitectos']);
                     }
@@ -249,7 +262,12 @@ export class CrearArquitecto implements OnInit {
                 } else {
                     errorMsg += 'Error de conexión/servidor.';
                 }
-                alert(errorMsg);
+                this.onNotification({
+                    type: 2,
+                    Tittle: "información",
+                    message: errorMsg,
+                });
+                this.cdr.detectChanges();
                 this.isLoading = false;
                 this.cdr.detectChanges();
 
@@ -261,5 +279,9 @@ export class CrearArquitecto implements OnInit {
                 this.router.navigate(['/arquitectos']);
             }
         });
+    }
+    //notis
+    onNotification(data: { type: 1 | 2 | 3, Tittle: string, message: string }) {
+        this.notificationData = data;
     }
 }

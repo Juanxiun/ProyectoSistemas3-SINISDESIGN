@@ -20,6 +20,7 @@ export class EspecializacionesCreateComponent implements OnInit {
   @Input() isLoading: boolean = false;
 
   @Output() especializacionesChange = new EventEmitter<Especializacion[]>();
+  @Output() notificacion = new EventEmitter<{ type: 1 | 2 | 3; Tittle: string; message: string }>();
 
   especializaciones: Especializacion[] = [];
   newEspecialidad: string = '';

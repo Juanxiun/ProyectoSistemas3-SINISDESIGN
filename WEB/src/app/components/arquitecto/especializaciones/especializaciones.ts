@@ -26,6 +26,11 @@ export class EspecializacionesComponent implements OnInit {
   @Input() isEditing!: boolean;
   @Input() isLoading!: boolean;
 
+  @Output()
+  notification = new EventEmitter<
+    { type: 1 | 2 | 3; Tittle: string; message: string }
+  >();
+
   private get apiUrl() { return `${ConnectA.api}/arquitectos/${this.arquitectoCodigo}/especializaciones`; }
 
   especializaciones: Especializacion[] = [];
@@ -90,7 +95,12 @@ export class EspecializacionesComponent implements OnInit {
 
     this.http.post<ApiResponse<any>>(this.apiUrl, formData).subscribe({
       next: (response: ApiResponse<any>) => {
-        alert(response.data?.msg || 'Especialidad agregada exitosamente!');
+        this.notification.emit({
+          type: 1,
+          Tittle: "Creación exitosa",
+          message: "Especialidad agregada exitosamente!",
+        });
+
         this.newEspecialidad = '';
         this.fetchEspecializaciones();
       },
@@ -112,12 +122,22 @@ export class EspecializacionesComponent implements OnInit {
 
     this.http.delete<ApiResponse<any>>(urlDelete).subscribe({
       next: (response: ApiResponse<any>) => {
-        alert(response.data?.msg || 'Especialidad eliminada exitosamente!');
+        //alert(response.data?.msg || 'Especialidad eliminada exitosamente!');
+        this.notification.emit({
+          type: 1,
+          Tittle: "Eliminación exitosa",
+          message: "Especialidad eliminada exitosamente!",
+        });
         this.fetchEspecializaciones();
       },
       error: (err: HttpErrorResponse) => {
         console.error('Error al eliminar especialidad:', err);
-        alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+        //alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+        this.notification.emit({
+          type: 3, // Error
+          Tittle: "Error de Validación",
+          message: 'Error al eliminar: ' + (err.error?.data?.msg || err.message),
+        });
         this.isSaving = false;
         this.cdr.detectChanges();
       }

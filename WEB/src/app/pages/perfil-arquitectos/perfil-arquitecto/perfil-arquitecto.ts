@@ -14,6 +14,7 @@ import { EspecializacionesComponent } from '../../../components/arquitecto/espec
 
 import { CookieService } from "ngx-cookie-service";
 
+import { NotificacionComponent } from "../../../components/notificacion/notificacion";
 
 interface Arquitecto {
   codigo?: string;
@@ -33,7 +34,7 @@ export interface ApiResponse<T> {
   standalone: true,
   imports: [
     CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule,
-    InformacionProfesional, EspecializacionesComponent
+    InformacionProfesional, EspecializacionesComponent, NotificacionComponent,
   ],
   templateUrl: './perfil-arquitecto.html',
   styleUrl: './perfil-arquitecto.css'
@@ -53,6 +54,9 @@ export class PerfilArquitectoComponent implements OnInit {
   isInfoFormValid = true;
 
   userData: any;
+
+  //notis
+  notificationData: { type: 1 | 2 | 3, Tittle: string, message: string } | null = null;
 
   private apiUrl = `${ConnectA.api}/arquitectos`;
 
@@ -146,8 +150,15 @@ export class PerfilArquitectoComponent implements OnInit {
 
     this.infoProfesionalComponent.saveInformacion().subscribe({
       next: (infoResponse) => {
-        alert(infoResponse.data?.msg || 'Información profesional actualizada exitosamente!');
+        // alert(infoResponse.data?.msg || 'Información profesional actualizada exitosamente!');
+        this.onNotification({
+          type: 1,
+          Tittle: "atctualización exitosa",
+          message: 'Información profesional actualizada exitosamente!',
+        });
+
         this.isEditing = false;
+        this.cdr.detectChanges();
       },
 
       error: (infoErr: any) => {
@@ -158,7 +169,12 @@ export class PerfilArquitectoComponent implements OnInit {
           ? (infoErr.error?.data?.msg || infoErr.message)
           : (infoErr.message || 'Error de validación interna, revise los campos.');
 
-        alert('Error al actualizar info profesional: ' + errorMessage);
+        //alert('Error al actualizar info profesional: ' + errorMessage);
+        this.onNotification({
+          type: 3,
+          Tittle: "Error de atctualización",
+          message: 'Error al actualizar info profesional: ' + errorMessage,
+        });
         this.isSaving = false;
         this.cdr.detectChanges();
       },
@@ -167,5 +183,9 @@ export class PerfilArquitectoComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+  //notis
+  onNotification(data: { type: 1 | 2 | 3, Tittle: string, message: string }) {
+    this.notificationData = data;
   }
 }
