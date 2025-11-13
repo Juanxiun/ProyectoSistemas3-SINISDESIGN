@@ -9,7 +9,7 @@ export default interface DocumentoProps {
     fecha: string;
 }
 
-const API_ENDPOINT = ConnectA.api + "/documento";
+const API_ENDPOINT = ConnectA.api + "/documento-proyectos";
 //sacar tipo
 function getDocumentTypeFromFile(file: File): string {
 
@@ -36,6 +36,16 @@ export async function getDocumentosByFase(fase: string, id?: string): Promise<Do
 
     try {
         const result = await fetch(url);
+
+        // CORRECCIÓN: Manejar 404/Errores sin intentar leer JSON
+        if (!result.ok) {
+            const errorBody = await result.text();
+            console.error(`Error de servidor (${result.status} ${result.statusText}) al obtener documentos:`, errorBody);
+            // Si el 404 es esperado (por ejemplo, fase sin documentos), devolver []
+            if (result.status === 404) return [];
+            throw new Error(`Error ${result.status}: No se pudieron cargar los documentos.`);
+        }
+
         const proydata = await result.json();
 
         if (proydata.status === 200) {
@@ -47,6 +57,7 @@ export async function getDocumentosByFase(fase: string, id?: string): Promise<Do
         return [];
     }
 }
+
 //crear
 export async function createDocumento(documento: Omit<DocumentoProps, 'id' | 'documento'>, file: File): Promise<boolean> {
     const url = API_ENDPOINT;
@@ -62,6 +73,7 @@ export async function createDocumento(documento: Omit<DocumentoProps, 'id' | 'do
         const result = await fetch(url, {
             method: "POST",
             body: formData,
+            // IMPORTANTE: NO incluir 'Content-Type': 'multipart/form-data' aquí.
         });
 
         if (!result.ok) {
@@ -71,7 +83,6 @@ export async function createDocumento(documento: Omit<DocumentoProps, 'id' | 'do
         }
 
         const responseData = await result.json();
-
 
         if (responseData.status === 200) {
             return true;
@@ -85,8 +96,8 @@ export async function createDocumento(documento: Omit<DocumentoProps, 'id' | 'do
         console.log("ERROR > API > createDocumento >\n" + e);
         return false;
     }
-
 }
+
 //actualizar
 export async function updateDocumento(documento: DocumentoProps, file?: File): Promise<boolean> {
     if (!documento.id) {
@@ -134,6 +145,7 @@ export async function updateDocumento(documento: DocumentoProps, file?: File): P
         return false;
     }
 }
+
 //eliminar
 export async function deleteDocumento(id: number): Promise<boolean> {
     const url = `${API_ENDPOINT}/${id}`;

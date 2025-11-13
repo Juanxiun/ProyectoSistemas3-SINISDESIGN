@@ -16,7 +16,7 @@ import { EspecializacionesComponent } from '../../../components/arquitecto/espec
 
 import { ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
-
+import { NotificacionComponent } from "../../../components/notificacion/notificacion";
 export interface Arquitecto {
     codigo?: string;
     ci: number;
@@ -41,7 +41,7 @@ export interface ApiResponse<T> {
 @Component({
     selector: 'app-detalle-arquitecto',
     standalone: true,
-    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesional, EspecializacionesComponent],
+    imports: [CommonModule, RouterModule, Navbar, Siderbar, FormsModule, HttpClientModule, InformacionProfesional, EspecializacionesComponent, NotificacionComponent,],
     templateUrl: './detalle-arquitecto.html',
     styleUrl: './detalle-arquitecto.css',
 })
@@ -57,6 +57,9 @@ export class DetalleArquitecto implements OnInit {
     isEditing = false;
     isValid = true;
     userData: any = null;
+
+    //notis
+    notificationData: { type: 1 | 2 | 3, Tittle: string, message: string } | null = null;
 
 
     constructor(
@@ -163,7 +166,12 @@ export class DetalleArquitecto implements OnInit {
     saveChanges() {
         if (!this.arquitecto || !this.arquitectoCodigo) return;
         if (!this.validateForm() || !this.infoProfesionalComponent.validateForm()) {
-            alert('Por favor, corrija los errores en la información del arquitecto y/o profesional.');
+            //alert('Por favor, corrija los errores en la información del arquitecto y/o profesional.');
+            this.onNotification({
+                type: 3,
+                Tittle: "Error de Validación",
+                message: "Por favor, corrija los errores en la información del arquitecto y/o profesional.",
+            });
             return;
         }
         this.isSaving = true;
@@ -189,8 +197,12 @@ export class DetalleArquitecto implements OnInit {
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
 
-                alert(response.data?.msg || 'Arquitecto actualizado exitosamente!');
-
+                //alert(response.data?.msg || 'Arquitecto actualizado exitosamente!');
+                this.onNotification({
+                    type: 1,
+                    Tittle: "Actualización Exitosa",
+                    message: "Arquitecto actualizado exitosamente!",
+                });
 
 
                 this.infoProfesionalComponent.saveInformacion().subscribe({
@@ -202,7 +214,12 @@ export class DetalleArquitecto implements OnInit {
                     },
                     error: (infoErr) => {
                         console.error('Error al guardar info profesional (hijo):', infoErr);
-                        alert('Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message));
+                        //alert('Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message));
+                        this.onNotification({
+                            type: 3,
+                            Tittle: "Error de atctualización",
+                            message: 'Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message),
+                        });
                         this.isSaving = false;
                         this.cdr.detectChanges();
                     }
@@ -211,7 +228,12 @@ export class DetalleArquitecto implements OnInit {
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al guardar cambios (padre):', err);
-                alert('Error al actualizar: ' + (err.error?.data?.msg || err.message));
+                //alert('Error al actualizar: ' + (err.error?.data?.msg || err.message));
+                this.onNotification({
+                    type: 3,
+                    Tittle: "Error de atctualización",
+                    message: 'Error al actualizar: ' + (err.error?.data?.msg || err.message),
+                });
                 this.isSaving = false;
                 this.cdr.detectChanges();
             }
@@ -229,12 +251,25 @@ export class DetalleArquitecto implements OnInit {
 
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
+                this.onNotification({
+                    type: 1,
+                    Tittle: "Actualización Exitosa",
+                    message: "Arquitecto desactivado exitosamente!",
+                });
                 alert(response.data?.msg || 'Arquitecto eliminado lógicamente.');
                 this.router.navigate(['/arquitectos']);
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al eliminar:', err);
-                alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+
+
+                this.onNotification({
+                    type: 3,
+                    Tittle: "Error de atctualización",
+                    message: 'Error al eliminar: ' + (err.error?.data?.msg || err.message),
+                });
+                this.isSaving = false;
+                this.cdr.detectChanges();
             },
             complete: () => {
                 this.isSaving = false;
@@ -254,12 +289,22 @@ export class DetalleArquitecto implements OnInit {
 
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
+                this.onNotification({
+                    type: 1,
+                    Tittle: "Actualización Exitosa",
+                    message: "Arquitecto activado exitosamente!",
+                });
                 alert(response.data?.msg || 'Arquitecto activado.');
                 this.router.navigate(['/arquitectos']);
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al eliminar:', err);
-                alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+                //alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+                this.onNotification({
+                    type: 3,
+                    Tittle: "Error de atctualización",
+                    message: 'Error al eliminar: ' + (err.error?.data?.msg || err.message),
+                });
             },
             complete: () => {
                 this.isSaving = false;
@@ -391,5 +436,10 @@ export class DetalleArquitecto implements OnInit {
             default:
                 return null;
         }
+    }
+
+    //notis
+    onNotification(data: { type: 1 | 2 | 3, Tittle: string, message: string }) {
+        this.notificationData = data;
     }
 }

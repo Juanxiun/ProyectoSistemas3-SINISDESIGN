@@ -25,7 +25,7 @@ export class ProyInfo implements OnInit {
   constructor(
     private cdr: ChangeDetectorRef,
     private router: Router
-  ) {}
+  ) { }
 
   async ngOnInit() {
     try {
@@ -43,7 +43,7 @@ export class ProyInfo implements OnInit {
   private async loadProjectData() {
     try {
       const data = await ProyData(this.usr, this.idproy.toString());
-      
+
       if (data && data.length > 0) {
         this.proyectoData = data[0];
         this.cdr.detectChanges();
@@ -58,7 +58,7 @@ export class ProyInfo implements OnInit {
   private async loadTipoData() {
     try {
       const tipoData = await ProyTipo(this.idproy.toString());
-      
+
       if (tipoData && tipoData.length > 0) {
         this.tipo = tipoData[0];
       } else {
@@ -72,9 +72,9 @@ export class ProyInfo implements OnInit {
   private async loadFasesData() {
     try {
       const fasesData = await ProyFase(this.idproy.toString());
-      
+
       this.fases = fasesData || [];
-      
+
       this.fases.sort((a, b) => {
         const fechaA = this.parseDate(a.inicio);
         const fechaB = this.parseDate(b.inicio);
@@ -83,7 +83,7 @@ export class ProyInfo implements OnInit {
       });
 
       this.faseActual = this.getFaseActual();
-      
+
       if (this.fases.length === 0) {
       }
     } catch (error) {
@@ -110,7 +110,7 @@ export class ProyInfo implements OnInit {
         if (!fechaA || !fechaB) return 0;
         return fechaA.getTime() - fechaB.getTime();
       })[0];
-      
+
       return faseEnProgreso;
     }
 
@@ -135,21 +135,21 @@ export class ProyInfo implements OnInit {
 
   private esMismaFecha(fecha1: Date, fecha2: Date): boolean {
     return fecha1.getFullYear() === fecha2.getFullYear() &&
-           fecha1.getMonth() === fecha2.getMonth() &&
-           fecha1.getDate() === fecha2.getDate();
+      fecha1.getMonth() === fecha2.getMonth() &&
+      fecha1.getDate() === fecha2.getDate();
   }
 
   parseDate(dateString: string): Date | null {
     if (!dateString) return null;
-    
+
     try {
       const cleanDateString = dateString.toString().trim();
-      
+
       let date = new Date(cleanDateString);
       if (!isNaN(date.getTime())) {
         return date;
       }
-      
+
       const mysqlFormat = cleanDateString.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
       if (mysqlFormat) {
         const [, year, month, day, hour, minute, second] = mysqlFormat;
@@ -158,18 +158,18 @@ export class ProyInfo implements OnInit {
           return date;
         }
       }
-      
+
       // Intentar formato español
       const spanishFormat = cleanDateString.match(/(\d{1,2}) de (\w+) de (\d{4})/i);
       if (spanishFormat) {
         const [, day, month, year] = spanishFormat;
-        
+
         const months: { [key: string]: string } = {
           'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
           'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
           'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
         };
-        
+
         const monthNumber = months[month.toLowerCase()];
         if (monthNumber) {
           const isoString = `${year}-${monthNumber}-${day.padStart(2, '0')}T00:00:00`;
@@ -179,7 +179,7 @@ export class ProyInfo implements OnInit {
           }
         }
       }
-      
+
       // Intentar formato dd/mm/yyyy
       const parts = cleanDateString.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
       if (parts) {
@@ -188,7 +188,7 @@ export class ProyInfo implements OnInit {
           return date;
         }
       }
-      
+
       return null;
     } catch (error) {
       return null;
@@ -197,12 +197,12 @@ export class ProyInfo implements OnInit {
 
   formatDate(dateString: string): string {
     if (!dateString) return 'No definida';
-    
+
     const date = this.parseDate(dateString);
     if (!date) {
       return 'Fecha inválida';
     }
-    
+
     try {
       return date.toLocaleDateString('es-ES', {
         year: 'numeric',
@@ -245,5 +245,13 @@ export class ProyInfo implements OnInit {
         queryParams: { arq: this.usr }
       });
     }
+  }
+
+  goDocumentos(faseId: number | undefined): void {
+    if (!faseId) {
+      console.error('faseId no definido');
+      return;
+    }
+    this.router.navigate([`/fases/${faseId}/documentos`]);
   }
 }

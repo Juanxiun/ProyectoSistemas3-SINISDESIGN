@@ -2,7 +2,7 @@ import { Component, OnInit, OnChanges, SimpleChanges, inject, Input } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
-//validators
+
 import { dateNotInFutureValidator } from '../../validators/dateValidator';
 import { filesValidator } from '../../validators/filesValidator';
 
@@ -29,7 +29,8 @@ export class DocInfo implements OnInit, OnChanges {
   @Input({ required: true }) faseId!: string;
 
   documentos: DocumentoProps[] = [];
-  documentoForm!: FormGroup;
+
+  documentoForm: FormGroup = this.fb.group({});
   isEditMode = false;
   selectedFile: File | null = null;
   isLoading = false;
@@ -50,7 +51,7 @@ export class DocInfo implements OnInit, OnChanges {
       nombre: [doc?.nombre || '', [Validators.required, Validators.maxLength(50), filesValidator()]],
       documento: [doc?.documento || null, Validators.required],
       fecha: [
-        doc?.fecha?.substring(0, 10) || defaultDate,
+        { value: doc?.fecha?.substring(0, 10) || defaultDate, disabled: true },
         [Validators.required, dateNotInFutureValidator()]
       ],
     });
@@ -97,18 +98,16 @@ export class DocInfo implements OnInit, OnChanges {
     if (!this.faseId) return;
 
     this.isLoading = true;
+    this.cdr.detectChanges();
     try {
       this.documentos = await getDocumentosByFase(this.faseId);
 
-      this.cdr.detectChanges();
     } catch (e) {
       console.error('Error al cargar documentos:', e);
-
-      if (this.documentos.length === 0) {
-        console.warn('La API devolvió un resultado vacío o con error.');
-      }
+      this.documentos = [];
     } finally {
       this.isLoading = false;
+      this.cdr.detectChanges();
     }
     this.resetForm();
   }
@@ -130,8 +129,7 @@ export class DocInfo implements OnInit, OnChanges {
     }
 
     this.isLoading = true;
-    const formValue = this.documentoForm.value;
-
+    const formValue = this.documentoForm.getRawValue();
     try {
       const isSuccess = this.isEditMode
         ? await this.handleUpdate(formValue)

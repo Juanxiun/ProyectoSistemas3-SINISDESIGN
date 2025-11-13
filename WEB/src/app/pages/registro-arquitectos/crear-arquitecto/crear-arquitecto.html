@@ -97,5 +97,9 @@
             </form>
 
         </div>
+
+        <app-notificacion *ngIf="notificationData" [type]="notificationData.type" [Tittle]="notificationData.Tittle"
+            [message]="notificationData.message" (close)="notificationData = null">
+        </app-notificacion>
     </div>
 </div>

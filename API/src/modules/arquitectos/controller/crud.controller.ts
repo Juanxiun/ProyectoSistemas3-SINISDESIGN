@@ -6,6 +6,7 @@ import {
   SelectQuery,
   UpdateQuery,
   DeleteQuery,
+  checkAssignedProjects,
 } from "../query/crud.query.ts";
 
 
@@ -139,6 +140,24 @@ export class CrudArquitectos {
 
       if (estadoRaw !== null && !form.get("ci") && !form.get("nombre") && !form.get("codigo") && !form.get("telefono")) {
         const estNum = Number(estadoRaw);
+
+        if (estNum === 0) {
+          const checkRes = await checkAssignedProjects(codigo);
+
+          if (checkRes.std !== 200) {
+            return ResponseOak(ctx, 500, { msg: "Error de servidor al verificar proyectos." }, { content: "Content-Type", app: "application/json" });
+          }
+
+          if (checkRes.count > 0) {
+            return ResponseOak(
+              ctx,
+              400,
+              { msg: `No se puede desactivar el arquitecto: tiene ${checkRes.count} proyectos activos asignados.` },
+              { content: "Content-Type", app: "application/json" }
+            );
+          }
+        }
+
         if (!Number.isNaN(estNum)) {
           const res = await UpdateQuery(codigo, { estado: estNum });
           return ResponseOak(ctx, 200, { msg: "Estado de arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });

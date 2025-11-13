@@ -238,3 +238,24 @@ export const DeleteQuery = async (codigo: string): Promise<res> => {
     };
   }
 };
+
+export const checkAssignedProjects = async (codigo: string): Promise<{ count: number, std: number }> => {
+  try {
+    const query = `
+          SELECT COUNT(*) AS count
+          FROM proyectos
+          WHERE arq = ? AND est = 1
+        `;
+
+    const [rows] = await cli.query(query, [codigo]);
+
+
+    const firstRow = Array.isArray(rows) && rows.length > 0 ? (rows as any[])[0] : null;
+    const count = firstRow ? Number(firstRow.count ?? firstRow['COUNT(*)'] ?? 0) : 0;
+
+    return { count, std: 200 };
+  } catch (error) {
+    console.error("Error en la query: Arquitectos > checkAssignedProjects >", error);
+    return { count: -1, std: 500 };
+  }
+};

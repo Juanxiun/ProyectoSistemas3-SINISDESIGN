@@ -102,7 +102,7 @@
             </app-informacion-profesional>
 
             <app-especializaciones [arquitectoCodigo]="arquitecto.codigo!" [isEditing]="isEditing"
-                [isLoading]="isLoading">
+                [isLoading]="isLoading" (notification)="onNotification($event)">
             </app-especializaciones>
         </div>
 
@@ -112,4 +112,7 @@
             </a>
         </div>
     </div>
+    <app-notificacion *ngIf="notificationData" [type]="notificationData.type" [Tittle]="notificationData.Tittle"
+        [message]="notificationData.message" (close)="notificationData = null">
+    </app-notificacion>
 </div>
