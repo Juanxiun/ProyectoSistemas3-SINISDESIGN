@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './recuperar-pass.css'
 })
 export class RecuperarPass {
-  @Output() navigate = new EventEmitter<'cli' | 'arq' | 'recuperar' | 'nuevo'>();
+  @Output() navigate = new EventEmitter<'form' | 'recuperar' | 'nuevo'>();
   correo: string = '';
   codigo: string = '';
 

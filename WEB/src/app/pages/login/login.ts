@@ -1,8 +1,6 @@
-// login.component.ts
 import { Component } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { LoginCli } from "../../components/login-cli/login-cli";
-import { LoginArq } from "../../components/login-arq/login-arq";
+import { LoginForm } from "../../components/login-form/login-form";
 import { RecuperarPass } from "../../components/recuperar-pass/recuperar-pass";
 import { NuevoPass } from "../../components/nuevo-pass/nuevo-pass";
 import { NotificacionComponent } from "../../components/notificacion/notificacion";
@@ -12,27 +10,23 @@ import { NotificacionComponent } from "../../components/notificacion/notificacio
   standalone: true,
   imports: [
     CommonModule,
-    LoginCli,
-    LoginArq,
+    LoginForm,
     RecuperarPass,
     NuevoPass,
-    NotificacionComponent,
+    NotificacionComponent
   ],
   templateUrl: "./login.html",
   styleUrls: ["./login.css"],
 })
 export class Login {
-  currentView: "cli" | "arq" | "recuperar" | "nuevo" = "cli";
-  notificationData: {type: 1 | 2 | 3, Tittle: string, message: string} | null = null; // Nueva propiedad
+  currentView: "form" | "recuperar" | "nuevo" = "form";
+  notificationData: { type: 1 | 2 | 3; Tittle: string; message: string } | null = null;
 
-  // ... (métodos existentes)
-
-  onNavigate(view: "cli" | "arq" | "recuperar" | "nuevo") {
+  onNavigate(view: "form" | "recuperar" | "nuevo") {
     this.currentView = view;
   }
 
-  // Nuevo método para manejar notificaciones
-  onNotification(data: {type: 1 | 2 | 3, Tittle: string, message: string}) {
+  onNotification(data: { type: 1 | 2 | 3; Tittle: string; message: string }) {
     this.notificationData = data;
   }
 }

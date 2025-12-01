@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./nuevo-pass.css']
 })
 export class NuevoPass {
-  @Output() navigate = new EventEmitter<'cli' | 'arq' | 'recuperar' | 'nuevo'>();
+  @Output() navigate = new EventEmitter<'form' | 'recuperar' | 'nuevo'>();
 
   codigoUsuario: string = '12345678';
   nuevaContrasena: string = '';
@@ -34,10 +34,10 @@ export class NuevoPass {
 
     console.log('Nuevo usuario creado con contraseña:', this.nuevaContrasena);
     alert('Usuario registrado correctamente.');
-    this.navigate.emit('cli');
+    this.navigate.emit('form');
   }
 
   volverLogin(): void {
-    this.navigate.emit('cli');
+    this.navigate.emit('form');
   }
 }
