@@ -1,0 +1,50 @@
+<div class="form-wrap">
+  <img src="/images/LogoSINISDESIGN.png" alt="Logo" class="logo">
+  <h2>Inicio de Sesión</h2>
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <label class="label-pass">Código de Usuario</label>
+    <input
+      type="text"
+      formControlName="codigoUsuario"
+      placeholder="Ingresa tu código de usuario"
+      [class.input-error]="submitted && f['codigoUsuario'].errors"
+      [class.input-success]="submitted && !f['codigoUsuario'].errors && f['codigoUsuario'].value"
+    />
+
+    <div class="error-message" *ngIf="submitted && f['codigoUsuario'].errors">
+      <small *ngIf="f['codigoUsuario'].errors['required']">El código de usuario es requerido.</small>
+      <small *ngIf="f['codigoUsuario'].errors['minlength']">Debe tener al menos 6 caracteres.</small>
+      <small *ngIf="f['codigoUsuario'].errors['maxlength']">No puede exceder 12 caracteres.</small>
+      <small *ngIf="f['codigoUsuario'].errors['pattern']">Solo se permiten letras y números, sin espacios ni símbolos.</small>
+    </div>
+
+    <label class="label-pass">Contraseña</label>
+    <div class="password-container">
+      <input
+        [type]="showPassword ? 'text' : 'password'"
+        formControlName="contrasena"
+        placeholder="Ingresa tu contraseña"
+        [class.input-error]="submitted && f['contrasena'].errors"
+        [class.input-success]="submitted && !f['contrasena'].errors && f['contrasena'].value"
+      />
+      <button type="button" class="toggle-password-btn" (click)="togglePasswordVisibility()" tabindex="-1">
+        <span *ngIf="!showPassword">😃</span>
+        <span *ngIf="showPassword">😑</span>
+      </button>
+    </div>
+
+    <div class="error-message" *ngIf="submitted && f['contrasena'].errors">
+      <small *ngIf="f['contrasena'].errors['required']">La contraseña es requerida.</small>
+      <small *ngIf="f['contrasena'].errors['minlength']">Debe tener al menos 8 caracteres.</small>
+      <small *ngIf="f['contrasena'].errors['maxlength']">No puede exceder 25 caracteres.</small>
+    </div>
+
+    <button class="btn" type="submit">Iniciar Sesión</button>
+  </form>
+
+  <div class="links">
+    <!-- los links emiten eventos para la page que maneja vistas -->
+    <a (click)="goRecuperar()" role="button" tabindex="0">¿Olvidaste tu contraseña?</a>
+  </div>
+</div>
