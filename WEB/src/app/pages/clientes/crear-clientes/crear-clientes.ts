@@ -100,7 +100,7 @@ export class CrearClientes implements OnInit {
     fetch(`${this.apiUrl}/${ci}`)
       .then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`Error HTTP: ${response.status}`);
         }
         return response.json();
       })
@@ -136,11 +136,11 @@ export class CrearClientes implements OnInit {
         }
       })
       .catch(error => {
-        console.error('Error al cargar cliente:', error);
-        this.mostrarNotificacion(3, 'Error al cargar los datos del cliente');
+        // Mostrar en notificación en lugar de consola
+        this.mostrarNotificacion(3, `Error al cargar cliente: ${error.message}`);
         setTimeout(() => {
           this.volver();
-        }, 1500);
+        }, 2000);
       });
   }
 
@@ -460,72 +460,122 @@ export class CrearClientes implements OnInit {
   }
 
   async guardarCliente(): Promise<void> {
-    if (!this.validarFormularioCompleto()) {
+  if (!this.validarFormularioCompleto()) {
+    this.mostrarNotificacion(2, 'Por favor completa todos los campos correctamente');
+    return;
+  }
+
+  this.sanitizarDatos();
+  this.guardando = true;
+
+  const formData = new FormData();
+  formData.append('ci', this.cliente.ci.toString());
+  formData.append('nombre', this.cliente.nombre);
+  formData.append('apellido', this.cliente.apellido);
+  formData.append('telefono', this.cliente.telefono.toString());
+  formData.append('correo', this.cliente.correo);
+  
+  if (!this.modoEdicion) {
+    if (!this.cliente.password || this.cliente.password.trim() === '') {
+      this.guardando = false;
+      this.mostrarNotificacion(3, 'La contraseña es obligatoria');
+      return;
+    }
+    formData.append('password', this.cliente.password);
+  }
+  
+  if (this.modoEdicion) {
+    formData.append('estado', this.cliente.estado.toString());
+  }
+
+  const url = this.modoEdicion 
+    ? `${this.apiUrl}/${this.ciOriginal}`
+    : this.apiUrl;
+  
+  const method = this.modoEdicion ? 'PUT' : 'POST';
+
+  try {
+    const response = await fetch(url, {
+      method: method,
+      body: formData
+    });
+    
+    const responseText = await response.text();
+    
+    let res: any;
+    try {
+      res = JSON.parse(responseText);
+    } catch (parseError) {
+      res = { raw: responseText };
+    }
+
+    // Extraer mensaje de error o éxito desde TODAS las ubicaciones posibles
+    let mensaje = '';
+    
+    // Buscar en múltiples ubicaciones (prioridad de más específico a más general)
+    if (res?.msg) {
+      mensaje = res.msg;
+    } else if (res?.data?.msg) {
+      mensaje = res.data.msg;
+    } else if (res?.message) {
+      mensaje = res.message;
+    } else if (res?.error) {
+      mensaje = res.error;
+    } else if (res?.data?.message) {
+      mensaje = res.data.message;
+    } else if (res?.data?.error) {
+      mensaje = res.data.error;
+    }
+
+    if (!response.ok) {
+      this.guardando = false;
+      
+      // Si no se encontró mensaje, usar uno genérico según el status
+      if (!mensaje) {
+        if (response.status === 400) {
+          mensaje = 'Error en los datos enviados';
+        } else if (response.status === 409) {
+          mensaje = 'El registro ya existe en el sistema';
+        } else if (response.status === 500) {
+          mensaje = 'Error interno del servidor';
+        } else {
+          mensaje = `Error: ${response.status}`;
+        }
+      }
+      
+      // MOSTRAR LA NOTIFICACIÓN DE ERROR
+      this.mostrarNotificacion(3, mensaje);
+      this.cdr.detectChanges();
       return;
     }
 
-    this.sanitizarDatos();
-    this.guardando = true;
-
-    const formData = new FormData();
-    formData.append('ci', this.cliente.ci.toString());
-    formData.append('nombre', this.cliente.nombre);
-    formData.append('apellido', this.cliente.apellido);
-    formData.append('telefono', this.cliente.telefono.toString());
-    formData.append('correo', this.cliente.correo);
+    this.guardando = false;
     
-    if (!this.modoEdicion) {
-      formData.append('password', this.cliente.password || '');
+    // Mensaje de éxito
+    const mensajeExito = mensaje || (this.modoEdicion 
+      ? 'Cliente actualizado exitosamente' 
+      : 'Cliente creado exitosamente');
+    
+    this.mostrarNotificacion(1, mensajeExito);
+    
+    setTimeout(() => {
+      this.router.navigate(['/clientes']);
+    }, 1500);
+
+  } catch (error: any) {
+    this.guardando = false;
+    
+    let mensajeError = 'Error al conectar con el servidor';
+    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+      mensajeError = 'Error de conexión. Verifica tu internet o si el servidor está corriendo';
+    } else if (error.message) {
+      mensajeError = error.message;
     }
     
-    if (this.modoEdicion) {
-      formData.append('estado', this.cliente.estado.toString());
-    }
-
-    const url = this.modoEdicion 
-      ? `${this.apiUrl}/${this.ciOriginal}`
-      : this.apiUrl;
-    
-    const method = this.modoEdicion ? 'PUT' : 'POST';
-
-    try {
-      const response = await fetch(url, {
-        method: method,
-        body: formData
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.msg || 'Error en el servidor');
-      }
-
-      const res = await response.json();
-      this.guardando = false;
-      this.mostrarNotificacion(1, res.msg || 'Cliente guardado exitosamente');
-      
-      setTimeout(() => {
-        this.router.navigate(['/clientes']);
-      }, 1000);
-
-    } catch (error: any) {
-      console.error('Error al guardar cliente:', error);
-      this.guardando = false;
-      
-      let mensajeError = 'Error al guardar el cliente';
-      
-      if (error.message.includes('CI ya existe') || error.message.includes('duplicate')) {
-        mensajeError = 'El CI ya está registrado en el sistema';
-      } else if (error.message.includes('correo') || error.message.includes('email')) {
-        mensajeError = 'El correo electrónico ya está registrado';
-      } else if (error.message.includes('conexión') || error.message.includes('network')) {
-        mensajeError = 'Error de conexión. Verifica tu internet';
-      } else if (error.message) {
-        mensajeError = error.message;
-      }
-      
-      this.mostrarNotificacion(3, mensajeError);
-    }
+    this.mostrarNotificacion(3, mensajeError);
+    this.cdr.detectChanges();
   }
+}
 
   volver(): void {
     this.router.navigate(['/clientes']);
