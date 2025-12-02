@@ -1,0 +1,45 @@
+<app-navbar [Ubi]="'Proyectos de Arquitecto'" [noResults]="noResults" (onSearch)="onSearchHandler($event)" />
+
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+    <app-siderbar [admin]="userData?.admin" />
+
+    <div class="bg-[#f6efe5] w-full h-full relative">
+
+        @if(information === false){
+        <div class="w-full h-[10%] flex justify-between items-center px-6 pt-4 mb-2">
+            <a routerLink="/arquitectos"
+                class="bg-[#283845] text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition flex items-center gap-2 shadow-md">
+                <i class="bi bi-arrow-left"></i> Volver
+            </a>
+
+            <button (click)="goToCreate()"
+                class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 flex items-center">
+                <i class="bi bi-plus-circle-fill mr-2 text-lg"></i>
+                NUEVO PROYECTO
+            </button>
+        </div>
+
+        <div class="h-[90%] w-full">
+            <app-card-proy (idproy)="InformationProy($event)" (resultsChange)="onResultsChange($event)"
+                (proyectoEliminado)="onProyectoEliminado($event)" (proyectosCargados)="onProyectosCargados()"
+                [usr]="targetArqId" [searchTerm]="searchTerm" />
+        </div>
+        }
+
+        @else {
+        <div class="w-full h-full backdrop-blur-2xl">
+            <button (click)="salirInformacion()"
+                class="absolute top-4 right-4 z-10 flex items-center gap-2 text-[#000] hover:text-[#b8523e] hover:bg-white/50 px-4 py-2 rounded-lg transition-all duration-200 backdrop-blur-sm">
+                <i class="bi bi-x-circle-fill text-xl"></i>
+                <span class="font-semibold">CERRAR</span>
+            </button>
+            <app-proy-info [usr]="targetArqId" [idproy]="idproy" />
+        </div>
+        }
+    </div>
+
+    <div>
+        <app-notificacion *ngIf="mostrarNotif" [type]="tipoNotif" [message]="mensajeNotif">
+        </app-notificacion>
+    </div>
+</div>

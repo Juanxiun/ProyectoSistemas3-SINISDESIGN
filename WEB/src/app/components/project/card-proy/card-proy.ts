@@ -5,6 +5,8 @@ import { map } from "rxjs/operators";
 import { ListProps, ListProyectos } from "../../../api/proyectos/list";
 import { DeleteProyecto, DeleteProyectoRequest } from "../../../api/proyectos/poryData";
 import { AsyncPipe, NgForOf } from "@angular/common";
+// Imports combinados
+import { CookieService } from "ngx-cookie-service"; 
 import { FormsModule } from "@angular/forms"; 
 import { EliminacionResponse } from "../../../pages/proyectos/proyectos"; 
 
@@ -17,15 +19,15 @@ import { EliminacionResponse } from "../../../pages/proyectos/proyectos";
 export class CardProy implements OnChanges {
   @Input()
   usr: string = "";
-  
+
   @Input()
-  searchTerm: string = ""; 
-  
-  @Output()
-  idproy = new EventEmitter<number>(); 
+  searchTerm: string = "";
 
   @Output()
-  resultsChange = new EventEmitter<boolean>(); 
+  idproy = new EventEmitter<number>();
+
+  @Output()
+  resultsChange = new EventEmitter<boolean>();
 
   @Output()
   proyectoEliminado = new EventEmitter<EliminacionResponse>();
@@ -33,36 +35,40 @@ export class CardProy implements OnChanges {
   @Output()
   proyectosCargados = new EventEmitter<void>();
 
-  private proyectos$ = new BehaviorSubject<ListProps[]>([]);
-  private searchTerm$ = new BehaviorSubject<string>('');
-  
-  proyFiltrados$: Observable<ListProps[]>;
+  @Output() onNotificar = new EventEmitter<{ tipo: 1 | 2 | 3, mensaje: string }>();
 
-  // Propiedades para el modal de justificación
+  proyectos$ = new BehaviorSubject<ListProps[]>([]);
+  private searchTerm$ = new BehaviorSubject<string>('');
+  cantProyectos: number = 0;
+  proyFiltrados$: Observable<ListProps[]>;
+  userData: any = null;
+
+  // Propiedades para el modal de justificación (Main)
   mostrarModalJustificacion = false;
   proyectoAEliminar: number | null = null;
   justificacion = '';
   eliminando = false;
   proyectoNombre = '';
 
-  constructor() {
+  // Constructor combinado: Inyectamos CookieService pero mantenemos la lógica del pipe
+  constructor(private cookieService: CookieService) {
     this.proyFiltrados$ = combineLatest([
       this.proyectos$,
       this.searchTerm$
     ]).pipe(
       map(([proyectos, searchTerm]) => {
         const normalizedSearchTerm = this.normalizeForSearch(searchTerm);
-        
+
         if (!normalizedSearchTerm) {
-          this.resultsChange.emit(true); 
+          this.resultsChange.emit(true);
           return proyectos;
         }
-        
+
         const filtered = proyectos.filter(proyecto =>
           this.normalizeForSearch(proyecto.nombre).includes(normalizedSearchTerm) ||
           this.normalizeForSearch(proyecto.direccion).includes(normalizedSearchTerm)
         );
-        
+
         this.resultsChange.emit(filtered.length > 0);
         return filtered;
       })
@@ -73,7 +79,7 @@ export class CardProy implements OnChanges {
     if (changes['usr'] && this.usr) {
       this.cargarProyectos();
     }
-    
+
     if (changes['searchTerm']) {
       this.searchTerm$.next(this.searchTerm || '');
     }
@@ -85,7 +91,7 @@ export class CardProy implements OnChanges {
         next: (proyectos) => {
           this.proyectos$.next(proyectos);
           this.resultsChange.emit(true);
-          this.proyectosCargados.emit(); 
+          this.proyectosCargados.emit();
         },
         error: (error) => {
           console.error('Error cargando proyectos:', error);
@@ -101,11 +107,11 @@ export class CardProy implements OnChanges {
 
   private normalizeForSearch(text: string): string {
     if (!text) return '';
-    
+
     return text
       .toLowerCase()
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') 
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9\s]/gi, '')
       .replace(/\s+/g, '')
       .trim();
@@ -115,17 +121,30 @@ export class CardProy implements OnChanges {
     this.idproy.emit(id);
   }
 
-  // Método simplificado: siempre mostrar modal de justificación
+  // Lógica fusionada: Verifica Admin (PROY-108) -> Si ok, Abre Modal (Main)
   eliminarProyecto(event: Event, id: number, proyecto?: ListProps) {
     event.stopPropagation();
     
+    // 1. Verificación de Administrador (PROY-108)
+    if (this.cookieService.check("sesion")) {
+        const cookieValue = this.cookieService.get("sesion");
+        this.userData = JSON.parse(cookieValue);
+    }
+
+    if (this.userData && this.userData.admin == 0) {
+      alert('SI QUIERES ELIMINAR TU PROYECTO, CONSULTA CON UN ADMINISTRADOR PARA DESACTIVAR TU PROYECTO');
+      this.onNotificar.emit({ tipo: 2, mensaje: 'CONSULTA CON UN ADMINISTRADOR PARA DESACTIVAR TU PROYECTO' });
+      return;
+    }
+
+    // 2. Si es admin, procedemos a mostrar el modal (Main)
     this.proyectoAEliminar = id;
     this.proyectoNombre = proyecto?.nombre || 'este proyecto';
     this.mostrarModalJustificacion = true;
     this.justificacion = '';
   }
 
-  // Método para eliminar con justificación
+  // Método para eliminar con justificación (Main)
   async eliminarConJustificacion() {
     if (!this.proyectoAEliminar) return;
     
@@ -167,6 +186,12 @@ export class CardProy implements OnChanges {
     }
   }
   
+  // Helper de PROY-108
+  verifCant() {
+    return this.proyectos$.value.length == 0;
+  }
+
+  // Helpers de Main
   cerrarModal() {
     this.mostrarModalJustificacion = false;
     this.proyectoAEliminar = null;
@@ -175,7 +200,6 @@ export class CardProy implements OnChanges {
     this.proyectoNombre = '';
   }
 
-  // Método para cancelar eliminación
   cancelarEliminacion() {
     this.cerrarModal();
     this.proyectoEliminado.emit({
