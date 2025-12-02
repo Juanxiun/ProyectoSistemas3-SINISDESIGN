@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { CookieService } from "ngx-cookie-service";
 import { 
   HttpClient, 
   HttpClientModule, 
@@ -77,6 +78,7 @@ export class DetalleProyectos implements OnInit {
   proyectoId!: number;
   codigoArquitecto: string = '';
   esNuevoProyecto = false;
+  userData: any = null;
 
   tipoProyecto: TipoProyecto = {
     proy: 0,
@@ -144,9 +146,25 @@ export class DetalleProyectos implements OnInit {
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
+    private cookieService: CookieService,
   ) {}
 
   ngOnInit(): void {
+    if (this.cookieService.check("sesion")) {
+    try {
+      const cookieValue = this.cookieService.get("sesion");
+      this.userData = JSON.parse(cookieValue);
+      console.log("Usuario autenticado:", this.userData);
+    } catch (error) {
+      console.error("Error al parsear cookie:", error);
+      this.router.navigate(["/"]);
+      return;
+    }
+  } else {
+    console.warn("No hay sesión activa, redirigiendo...");
+    this.router.navigate(["/"]);
+    return;
+  }
     this.tiposDisponibles = Object.keys(this.serviciosCatalogo);
     
     this.route.params.subscribe(params => {

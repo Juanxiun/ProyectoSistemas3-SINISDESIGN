@@ -1,6 +1,6 @@
-<app-navbar [Ubi]="'Proyectos'" />
+<app-navbar [id]="userData.id"[Ubi]="'Proyectos'" />
 <div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
-  <app-siderbar />
+  <app-siderbar [admin]="userData.admin" />
   <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
     <div class="max-w-4xl mx-auto">
       <div

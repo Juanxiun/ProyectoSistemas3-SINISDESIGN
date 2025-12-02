@@ -1,6 +1,8 @@
-<app-navbar [Ubi]="'Editar Proyecto'" />
+<app-navbar 
+[id]="userData.id"
+[Ubi]="'Editar Proyecto'" />
 <div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
-  <app-siderbar />
+  <app-siderbar [admin]="userData.admin" />
   <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
     <button type="button" (click)="goBack()"
       class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">

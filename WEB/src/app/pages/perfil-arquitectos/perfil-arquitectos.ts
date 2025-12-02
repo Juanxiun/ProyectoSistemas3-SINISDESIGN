@@ -66,7 +66,7 @@ export class PerfilArquitectos implements OnInit {
     this.countArq = this.listArq.length;
 
     this.stats = [
-      { value: "+" + (parseInt((this.proy ?? "0")) - 2), label: "Proyectos Completados" },
+      { value: "+" + (parseInt((this.proy ?? "0")) + 2), label: "Proyectos Completados" },
       { value: "+" + this.countArq.toString(), label: "Arquitectos Especializados" },
       { value: "+12", label: "Servicios ofrecidos" },
     ];

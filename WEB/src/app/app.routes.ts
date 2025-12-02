@@ -17,7 +17,8 @@ import { CrearProyectos } from "./pages/proyectos/crear-proyectos/crear-proyecto
 import { EditarProyectos } from "./pages/proyectos/editar-proyectos/editar-proyectos";
 import { DetalleProyectos } from "./pages/proyectos/detalle-proyectos/detalle-proyectos";
 import { Calendario } from "./pages/calendario/calendario";
-
+import { Clientes } from "./pages/clientes/clientes";
+import { CrearClientes } from "./pages/clientes/crear-clientes/crear-clientes";
 import { ReportesPage } from "./pages/reportes/reportes";
 import { ErrorPage } from "./pages/error-page/error-page";
 
@@ -82,5 +83,11 @@ export const routes: Routes = [
     { path: 'editar-proyecto/:id', component: EditarProyectos },
     { path: "agenda", title: "Agenda", component: Calendario },
 
-    { path: "**", title: "Error Page", component: ErrorPage },
+    // RUTAS DE CLIENTES
+    { path: "clientes", title: "Clientes", component: Clientes },
+    { path: "crear-clientes", title: "Gestión de Clientes", component: CrearClientes },
+    
+    // Ruta de error - siempre al final
+    { path: "**", title: "Error Page", component: ErrorPage }, 
+
 ];

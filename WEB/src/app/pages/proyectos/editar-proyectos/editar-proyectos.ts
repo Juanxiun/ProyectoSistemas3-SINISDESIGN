@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
+import { CookieService } from "ngx-cookie-service";
 import {
   HttpClient,
   HttpClientModule,
@@ -92,6 +93,7 @@ export class EditarProyectos implements OnInit {
   proyectoId: number = 0;
   codigoArquitecto: string = "";
   nuevoArquitecto: string = '';
+  userData: any = null;
 
   // Propiedades para notificaciones
   mostrarNotif: boolean = false;
@@ -134,10 +136,8 @@ export class EditarProyectos implements OnInit {
   tieneTipo = false;
   tieneDireccion = false;
   seccionActual: "basico" | "tipo" | "direccion" | "reasignar" = "basico";
-
   userData: any = null;
 
-  // Catálogo de servicios: Tipo (categoría) -> Subtipos
   serviciosCatalogo: { [key: string]: string[] } = {
     'Planes y legalizaciones de construcción': [
       'Viviendas',
@@ -163,17 +163,34 @@ export class EditarProyectos implements OnInit {
     ]
   };
 
-  // Arrays para los combobox
   tiposDisponibles: string[] = [];
   subtiposDisponibles: string[] = [];
 
-  // Estados de validación
   erroresValidacion: { [key: string]: string } = {};
 
   constructor(
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
+    private cookieService: CookieService,
+  ) {}
+
+
+ngOnInit(): void {
+  if (this.cookieService.check("sesion")) {
+    try {
+      const cookieValue = this.cookieService.get("sesion");
+      this.userData = JSON.parse(cookieValue);
+      console.log("Usuario autenticado:", this.userData);
+    } catch (error) {
+      console.error("Error al parsear cookie:", error);
+      this.router.navigate(["/"]);
+      return;
+    }
+  } else {
+    console.warn("No hay sesión activa, redirigiendo...");
+    this.router.navigate(["/"]);
+    return;
     private cookieService: CookieService
   ) { }
 
@@ -216,6 +233,36 @@ export class EditarProyectos implements OnInit {
       });
     });
   }
+  
+  this.tiposDisponibles = Object.keys(this.serviciosCatalogo);
+  
+  this.route.params.subscribe((params) => {
+    this.proyectoId = +params["id"];
+    if (!this.proyectoId) {
+      this.mensajeError = "ID de proyecto no válido.";
+      return;
+    }
+    this.proyecto.id = this.proyectoId;
+    this.tipoProyecto.proy = this.proyectoId;
+    this.direccion.proy = this.proyectoId;
+
+    this.route.queryParams.subscribe((queryParams) => {
+      this.codigoArquitecto = queryParams["arq"] || "";
+      
+      if (this.codigoArquitecto && this.proyectoId) {
+        this.fetchClients();
+        this.fetchArchitects();
+        this.cargarProyecto();
+        this.cargarTipo();
+        this.cargarDireccion();
+      } else {
+        this.mensajeError = "Falta el código de arquitecto. Redirigiendo...";
+        setTimeout(() => this.goBack(), 2000);
+      }
+    });
+  });
+}
+
 
   onTipoChange(): void {
     // Cuando cambia el tipo (categoría), actualizar los subtipos disponibles

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core";
 
 import { Options } from "../../elements/options/options";
 import { CommonModule } from "@angular/common";
+import { Router } from "@angular/router";
 import { AuthService } from "../../middlewares/auth.service";
 import { CookieService } from "ngx-cookie-service";
 import { RouterModule, Router } from '@angular/router';
@@ -24,7 +25,7 @@ export class Siderbar implements OnInit {
 
   @Output()
   cambiarVista = new EventEmitter<"proyectos" | "reuniones">();
-
+  constructor(private router: Router) {}
   constructor(private authService: AuthService, private router: Router, private cookieService: CookieService) { }
   ngOnInit(): void {
     // verificar sesion
@@ -43,6 +44,16 @@ export class Siderbar implements OnInit {
   }
 
   onLogout(): void {
-    this.authService.logout();
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+    
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    this.router.navigate(['/login']);
   }
 }

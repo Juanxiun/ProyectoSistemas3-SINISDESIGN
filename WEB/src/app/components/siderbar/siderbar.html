@@ -9,11 +9,15 @@
         <app-options initIcon="bi-clipboard2-data-fill" hoverIcon="text-[#f6efe5]" option="Reportes"
             direction="/reportes/" />
 
-        <app-options initIcon="bi-people-fill" hoverIcon="text-[#f6efe5]" option="Reuniones" direction="/agenda" />
+        <app-options initIcon="bi bi-calendar-event" hoverIcon="text-[#f6efe5]"
+            option="Reuniones" direction="/agenda" />
 
-        @if ((admin && admin === 1)) {
-        <app-options initIcon="bi-building" hoverIcon="text-[#f6efe5]" option="Arquitectos" direction="/arquitectos" />
-        }
+        <app-options initIcon="bi bi-people-fill" hoverIcon="text-[#f6efe5]"
+            option="Clientes" direction="/clientes" />
+
+        @if (admin && admin === 1) {
+        <app-options initIcon="bi-building" hoverIcon="text-[#f6efe5]"
+            option="Arquitectos" direction="/arquitectos" />
 
     </div>
 

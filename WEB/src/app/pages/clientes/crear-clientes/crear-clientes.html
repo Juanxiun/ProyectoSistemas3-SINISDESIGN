@@ -1,0 +1,245 @@
+<app-navbar
+    [id]="userData.id"
+    [Ubi]="modoEdicion ? 'Editar Cliente' : 'Nuevo Cliente'" />
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
+    <app-siderbar [admin]="userData.admin" />
+    <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-t-2xl p-6 shadow-sm border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <div>
+                            <h1 class="text-3xl font-bold text-[#92443a]">
+                                {{ modoEdicion ? 'Editar Cliente' : 'Crear Nuevo Cliente' }}
+                            </h1>
+                            <p class="text-gray-600 mt-1 text-sm">
+                                {{ modoEdicion ? 'Modifica los datos del cliente' : 'Completa los campos para registrar un nuevo cliente en el sistema' }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="hidden md:block">
+                        <div class="bg-[#f8f4f0] p-3 rounded-lg border border-gray-200">
+                            <i class="bi bi-person-plus text-2xl text-[#92443a]"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-b-2xl shadow-lg p-8">
+                <form (ngSubmit)="guardarCliente()" #clienteForm="ngForm" novalidate class="space-y-8">
+                    
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                            <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                                <i class="bi bi-person-badge text-[#92443a] text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Información Personal</h2>
+                                <p class="text-gray-500 text-sm mt-1">Datos de identificación del cliente</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-credit-card text-[#92443a]"></i>
+                                    CI <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="number"
+                                    name="ci"
+                                    [(ngModel)]="cliente.ci"
+                                    (blur)="marcarCampoTocado('ci'); validarCI()"
+                                    (input)="validarCI()"
+                                    [disabled]="modoEdicion"
+                                    required
+                                    placeholder="Ingrese el CI"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                                    [class.border-red-500]="errores.ci && camposTocados.ci">
+                                <small *ngIf="errores.ci && camposTocados.ci" class="text-red-500 text-sm mt-1 block">
+                                    {{ errores.ci }}
+                                </small>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-telephone text-[#92443a]"></i>
+                                    Teléfono <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="number"
+                                    name="telefono"
+                                    [(ngModel)]="cliente.telefono"
+                                    (blur)="marcarCampoTocado('telefono'); validarTelefono()"
+                                    (input)="validarTelefono()"
+                                    required
+                                    placeholder="Ingrese el teléfono"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                                    [class.border-red-500]="errores.telefono && camposTocados.telefono">
+                                <small *ngIf="errores.telefono && camposTocados.telefono" class="text-red-500 text-sm mt-1 block">
+                                    {{ errores.telefono }}
+                                </small>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-person text-[#92443a]"></i>
+                                    Nombre <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text"
+                                    name="nombre"
+                                    [(ngModel)]="cliente.nombre"
+                                    (blur)="marcarCampoTocado('nombre'); validarNombre()"
+                                    (input)="validarNombre()"
+                                    required
+                                    placeholder="Ingrese el nombre"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                                    [class.border-red-500]="errores.nombre && camposTocados.nombre">
+                                <small *ngIf="errores.nombre && camposTocados.nombre" class="text-red-500 text-sm mt-1 block">
+                                    {{ errores.nombre }}
+                                </small>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-person text-[#92443a]"></i>
+                                    Apellido <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="text"
+                                    name="apellido"
+                                    [(ngModel)]="cliente.apellido"
+                                    (blur)="marcarCampoTocado('apellido'); validarApellido()"
+                                    (input)="validarApellido()"
+                                    required
+                                    placeholder="Ingrese el apellido"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                                    [class.border-red-500]="errores.apellido && camposTocados.apellido">
+                                <small *ngIf="errores.apellido && camposTocados.apellido" class="text-red-500 text-sm mt-1 block">
+                                    {{ errores.apellido }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                            <div class="bg-[#f8f4f0] p-2 rounded-lg border border-gray-200">
+                                <i class="bi bi-envelope text-[#92443a] text-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">Información de Contacto</h2>
+                                <p class="text-gray-500 text-sm mt-1">Datos de acceso y comunicación</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-envelope-at text-[#92443a]"></i>
+                                    Correo Electrónico <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="email"
+                                    name="correo"
+                                    [(ngModel)]="cliente.correo"
+                                    (blur)="marcarCampoTocado('correo'); validarCorreo()"
+                                    (input)="validarCorreo()"
+                                    required
+                                    placeholder="ejemplo@correo.com"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                                    [class.border-red-500]="errores.correo && camposTocados.correo">
+                                <small *ngIf="errores.correo && camposTocados.correo" class="text-red-500 text-sm mt-1 block">
+                                    {{ errores.correo }}
+                                </small>
+                            </div>
+
+                            <div *ngIf="!modoEdicion">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-lock text-[#92443a]"></i>
+                                    Contraseña <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="password"
+                                    name="password"
+                                    [(ngModel)]="cliente.password"
+                                    (blur)="marcarCampoTocado('password'); validarPassword()"
+                                    (input)="validarPassword()"
+                                    [required]="!modoEdicion"
+                                    placeholder="Ingrese la contraseña"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200"
+                                    [class.border-red-500]="errores.password && camposTocados.password">
+                                <small *ngIf="errores.password && camposTocados.password" class="text-red-500 text-sm mt-1 block">
+                                    {{ errores.password }}
+                                </small>
+                                <small class="text-gray-500 text-xs mt-1 block">Mínimo 6 caracteres, debe incluir letras y números</small>
+                            </div>
+
+                            <div *ngIf="modoEdicion" hidden>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                    <i class="bi bi-toggle-on text-[#92443a]"></i>
+                                    Estado
+                                </label>
+                                <select 
+                                    name="estado"
+                                    [(ngModel)]="cliente.estado"
+                                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E0A189] transition-all duration-200 cursor-pointer">
+                                    <option [value]="1">Activo</option>
+                                    <option [value]="0">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                        <button 
+                            type="submit"
+                            [disabled]="guardando"
+                            class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">
+                            <span *ngIf="!guardando" class="flex items-center gap-2">
+                                <i class="bi bi-check-circle text-lg"></i>
+                                {{ modoEdicion ? 'ACTUALIZAR CLIENTE' : 'CREAR CLIENTE' }}
+                            </span>
+                            <span *ngIf="guardando" class="flex items-center gap-2">
+                                <i class="bi bi-hourglass-split animate-spin"></i>
+                                Guardando...
+                            </span>
+                        </button>
+
+                        <button 
+                            type="button"
+                            (click)="volver()"
+                            [disabled]="guardando"
+                            class="flex-1 bg-gray-500 hover:bg-gray-600 disabled:opacity-50 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-3">
+                            <i class="bi bi-x-circle text-lg"></i>
+                            CANCELAR
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="mt-6 text-center">
+                <p class="text-gray-500 text-sm flex items-center justify-center gap-2">
+                    <i class="bi bi-info-circle"></i>
+                    Los campos marcados con <span class="text-red-500 font-bold">*</span> son obligatorios
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="guardando" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center space-y-4">
+            <div class="animate-spin rounded-full h-16 w-16 border-4 border-[#E0A189] border-t-[#92443a]"></div>
+            <p class="text-gray-800 font-semibold text-lg">Guardando cliente...</p>
+            <p class="text-gray-500 text-sm">Por favor espere</p>
+        </div>
+    </div>
+
+    <app-notificacion
+        *ngIf="mostrarNotif"
+        [type]="tipoNotif"
+        [message]="mensajeNotif"
+        class="fixed top-4 right-4 z-50">
+    </app-notificacion>
+</div>

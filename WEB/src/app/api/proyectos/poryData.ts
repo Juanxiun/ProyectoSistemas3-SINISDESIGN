@@ -17,7 +17,7 @@ export async function ProyData(usr: string, id: string): Promise<ProyProps[]> {
 
 export interface DeleteProyectoRequest {
     id: number;
-    justificacion: string; // Ahora la justificación es obligatoria
+    justificacion: string; 
 }
 
 export async function DeleteProyecto(request: DeleteProyectoRequest): Promise<{success: boolean, message: string}> {
