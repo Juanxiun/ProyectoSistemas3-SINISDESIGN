@@ -1,13 +1,12 @@
 import { Component, EventEmitter, Input, Output } from "@angular/core";
 import { Options } from "../../elements/options/options";
 import { CommonModule } from "@angular/common";
-import { AuthService } from "../../middlewares/auth.service";
+import { Router } from "@angular/router";
 
 @Component({
   selector: "app-siderbar",
   standalone: true,
   imports: [Options, CommonModule],
-  /* Añadido del import a CommonModule, y el StandAlone para la llamada a mi componente calendario */
   templateUrl: "./siderbar.html",
   styles: ``,
 })
@@ -21,13 +20,23 @@ export class Siderbar {
   @Output()
   cambiarVista = new EventEmitter<"proyectos" | "reuniones">();
 
-  constructor(private authService: AuthService) {}
+  constructor(private router: Router) {}
 
   onCambiarVista(vista: "proyectos" | "reuniones"): void {
     this.cambiarVista.emit(vista);
   }
 
   onLogout(): void {
-    this.authService.logout();
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+      const eqPos = cookie.indexOf('=');
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    }
+    
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    this.router.navigate(['/login']);
   }
 }

@@ -8,7 +8,7 @@ import {
 } from "@angular/common/http";
 import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { Observable } from "rxjs";
-
+import { CookieService } from "ngx-cookie-service";
 import { ConnectA } from "../../../../config/index";
 
 import { Navbar } from "../../../components/navbar/navbar";
@@ -68,6 +68,7 @@ export class CrearProyectos implements OnInit {
   clientes = signal<Cliente[]>([]);
   arquitectos = signal<Arquitecto[]>([]);
   isLoading = signal(false);
+  userData: any = null;
 
   proyecto: Proyecto = {
     arq: "",
@@ -81,11 +82,10 @@ export class CrearProyectos implements OnInit {
   imagenSeleccionada: File | null = null;
   nombreArchivo = "";
   previewImagen = "";
-  mensajeError = "";  // Inicializar vacío
-  mensajeExito = "";  // Inicializar vacío
+  mensajeError = "";  
+  mensajeExito = "";  
   fechaActual: string = "";
 
-  // Nuevas propiedades para la notificación
   showNotification = false;
   notificationType: 1 | 2 | 3 = 1;
   notificationTitle = "";
@@ -95,9 +95,25 @@ export class CrearProyectos implements OnInit {
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
+    private cookieService: CookieService,
   ) {}
 
   ngOnInit(): void {
+    if (this.cookieService.check("sesion")) {
+    try {
+      const cookieValue = this.cookieService.get("sesion");
+      this.userData = JSON.parse(cookieValue);
+      console.log("Usuario autenticado:", this.userData);
+    } catch (error) {
+      console.error("Error al parsear cookie:", error);
+      this.router.navigate(["/"]);
+      return;
+    }
+  } else {
+    console.warn("No hay sesión activa, redirigiendo...");
+    this.router.navigate(["/"]);
+    return;
+  }
     const codigoArq = this.route.snapshot.paramMap.get("arq") ??
       this.route.snapshot.queryParamMap.get("arq");
     this.fetchArchitects();

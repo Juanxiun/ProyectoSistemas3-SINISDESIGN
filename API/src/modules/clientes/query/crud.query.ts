@@ -1,5 +1,6 @@
 import cli from "../../../database/connect.ts";
 import ClienteModel from "../model.ts";
+import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
 interface res {
   data?: ClienteModel[];
@@ -11,8 +12,7 @@ export const SelectQuery = async (ci?: string): Promise<res> => {
     const query = `
       SELECT ci, nombre, apellido, telefono, correo, estado
       FROM clientes
-      WHERE estado = 1
-      ${ci ? "AND ci = ?" : ""}
+      ${ci ? "WHERE ci = ?" : ""}
     `;
 
     const params = ci ? [ci] : [];
@@ -35,6 +35,22 @@ export const SelectQuery = async (ci?: string): Promise<res> => {
 
 export const CreateQuery = async (data: ClienteModel): Promise<res> => {
   try {
+    // Verificar si ya existe un cliente con ese CI
+    const [existingRows] = await cli.query(
+      'SELECT ci FROM clientes WHERE ci = ?',
+      [data.ci]
+    );
+    
+    if (Array.isArray(existingRows) && existingRows.length > 0) {
+      console.error("Cliente con CI duplicado:", data.ci);
+      return {
+        std: 400,
+      };
+    }
+
+    // Encriptar la contraseña con bcrypt
+    const hashedPassword = await bcrypt.hash(data.password);
+
     const query = `
       INSERT INTO clientes (ci, nombre, apellido, telefono, correo, password, estado)
       VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -45,7 +61,7 @@ export const CreateQuery = async (data: ClienteModel): Promise<res> => {
       data.apellido,
       data.telefono,
       data.correo,
-      data.password,
+      hashedPassword, 
       1,
     ];
 
@@ -55,7 +71,7 @@ export const CreateQuery = async (data: ClienteModel): Promise<res> => {
       std: 200,
     };
   } catch (error) {
-    console.log("Error en la query: Clientes > Create >\n" + error);
+    console.error("Error en la query: Clientes > Create >", error);
     return {
       std: 500,
     };
@@ -79,26 +95,39 @@ export const UpdateQuery = async (data: ClienteModel): Promise<res> => {
       data.ci,
     ];
 
-    await cli.query(query, params);
+    const [result] = await cli.query(query, params);
+    
+    // Verificar si se actualizó alguna fila
+    if (result && (result as any).affectedRows === 0) {
+      console.error("No se encontró cliente con CI:", data.ci);
+      return { std: 404 };
+    }
 
     return { std: 200 };
   } catch (error) {
-    console.log("Error en la query: Clientes > Update >\n", error);
+    console.error("Error en la query: Clientes > Update >", error);
     return { std: 500 };
   }
 };
 
 export const DeleteQuery = async (ci: string): Promise<res> => {
   try {
-    await cli.query(
+    const [result] = await cli.query(
       `UPDATE clientes SET estado = 0 WHERE ci = ?`,
       [ci]
     );
+    
+    // Verificar si se actualizó alguna fila
+    if (result && (result as any).affectedRows === 0) {
+      console.error("No se encontró cliente con CI:", ci);
+      return { std: 404 };
+    }
+    
     return {
       std: 200,
     };
   } catch (error) {
-    console.log("Error en la query: Clientes > Delete >\n" + error);
+    console.error("Error en la query: Clientes > Delete >", error);
     return {
       std: 500,
     };
