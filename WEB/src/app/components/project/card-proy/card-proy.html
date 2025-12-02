@@ -9,41 +9,36 @@
             [&::-webkit-scrollbar-thumb]:bg-[#92443a]">
 
     <ng-container *ngFor="let p of proyFiltrados$ | async">
-        <section
-            (click)="EnviarId(p.id ?? 0)"
-            class="w-120 h-90 flex flex-col bg-white rounded-xl overflow-hidden 
+        <section (click)="EnviarId(p.id ?? 0)" class="w-120 h-90 flex flex-col bg-white rounded-xl overflow-hidden 
                    shadow-lg hover:shadow-2xl border border-[#E0A189]/20 hover:border-[#92443a]/50
                    cursor-pointer transition-all duration-300 group">
 
             <div class="w-full h-[70%] overflow-hidden relative bg-[#f6efe5]">
                 <img src="{{p.imagen}}"
-                     class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                     alt="{{p.nombre}}">
+                    class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    alt="{{p.nombre}}">
                 <div class="absolute inset-0 bg-gradient-to-t from-[#92443a]/30 to-transparent 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                            <button
-                (click)="$event.stopPropagation(); eliminarProyecto($event, p.id ?? 0)"
-                class="absolute top-3 right-3 z-10 
+                <button (click)="$event.stopPropagation(); eliminarProyecto($event, p.id ?? 0)" class="absolute top-3 right-3 z-10 
                        w-8 h-8 rounded-full 
                        bg-red-500 hover:bg-red-600 
                        text-white shadow-lg
                        flex items-center justify-center
                        transition-all duration-300
                        opacity-0 group-hover:opacity-100
-                       transform scale-90 group-hover:scale-100"
-                title="Eliminar proyecto"
-                aria-label="Eliminar proyecto">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
-            </button>
+                       transform scale-90 group-hover:scale-100" title="Eliminar proyecto"
+                    aria-label="Eliminar proyecto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
             </div>
 
             <div class="w-full h-[30%] bg-gradient-to-br from-[#92443a] to-[#7a3830] 
                         flex flex-col justify-center px-5 py-4">
-                
+
                 <h1 class="text-2xl font-semibold text-white mb-2 leading-tight line-clamp-2 
                            group-hover:text-[#E0A189] transition-colors duration-300">
                     {{p.nombre}}
@@ -55,8 +50,8 @@
                 <div class="flex items-center gap-2">
                     <svg class="w-4 h-4 text-[#E0A189] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
-                              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                              clip-rule="evenodd" />
+                            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                            clip-rule="evenodd" />
                     </svg>
                     <span class="text-white/90 text-sm font-medium truncate">
                         {{p.direccion}}
@@ -65,11 +60,17 @@
             </div>
         </section>
     </ng-container>
+    @if (verifCant()) {
+    <h2>NO TIENE PROYECTOS ACTIVOS</h2>
+    }
+
 </div>
+
 }
+
 @placeholder {
-  <app-load-display />
+<app-load-display />
 }
 @loading {
-  <app-load-display />
+<app-load-display />
 }

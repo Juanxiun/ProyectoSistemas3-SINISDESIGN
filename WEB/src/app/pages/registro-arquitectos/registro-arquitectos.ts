@@ -147,4 +147,11 @@ export class RegistroArquitectos implements OnInit {
             alert('No se puede ver el detalle: Código no disponible.');
         }
     }
+    goToProjects(codigo: string | undefined) {
+        if (codigo) {
+            this.router.navigate(['arquitectos', codigo, 'proyectos']);
+        } else {
+            alert('No se puede ver proyectos: Código no disponible.');
+        }
+    }
 }

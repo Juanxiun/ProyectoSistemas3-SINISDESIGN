@@ -8,6 +8,7 @@ import { RegistroArquitectos } from "./pages/registro-arquitectos/registro-arqui
 import { CrearArquitecto } from "./pages/registro-arquitectos/crear-arquitecto/crear-arquitecto";
 import { DetalleArquitecto } from "./pages/registro-arquitectos/detalle-arquitecto/detalle-arquitecto";
 import { PerfilArquitectoComponent } from "./pages/perfil-arquitectos/perfil-arquitecto/perfil-arquitecto";
+import { ListaProyectosArquitecto } from "./pages/registro-arquitectos/lista-proyectos-arquitecto/lista-proyectos-arquitecto";
 
 import { Login } from "./pages/login/login";
 import { DocumentosCrudPage } from "./pages/documentos/documentos";
@@ -19,6 +20,8 @@ import { Calendario } from "./pages/calendario/calendario";
 
 import { ReportesPage } from "./pages/reportes/reportes";
 import { ErrorPage } from "./pages/error-page/error-page";
+
+
 
 export const routes: Routes = [
     { path: "", title: "SINISDESIGN", component: Presentation },
@@ -46,7 +49,11 @@ export const routes: Routes = [
         title: "Mi Perfil",
         component: PerfilArquitectoComponent,
     },
-
+    {
+        path: "arquitectos/:id/proyectos",
+        title: "Proyectos de Arquitecto",
+        component: ListaProyectosArquitecto,
+    },
     {
         path: "reportes", title: "Reportes", component: ReportesPage
     },
@@ -54,13 +61,13 @@ export const routes: Routes = [
     // RUTA DE LOGIN
     { path: "login", component: Login },
     { path: "", redirectTo: "login", pathMatch: "full" },
-    
+
     //RUTAS DE DOCUMENTO
     {
         path: "fases/:faseId/documentos",
         component: DocumentosCrudPage,
     },
-    
+
     // RUTAS DE REGISTRO DE PROYECTOS
     {
         path: "registro-proyectos/crear/:arq",
@@ -75,5 +82,5 @@ export const routes: Routes = [
     { path: 'editar-proyecto/:id', component: EditarProyectos },
     { path: "agenda", title: "Agenda", component: Calendario },
 
-    {path:"**",title:"Error Page", component: ErrorPage}, 
+    { path: "**", title: "Error Page", component: ErrorPage },
 ];

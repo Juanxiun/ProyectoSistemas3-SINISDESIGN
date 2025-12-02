@@ -1,53 +1,67 @@
 import { Component, OnInit } from "@angular/core";
-import { Navbar } from "../../components/navbar/navbar";
-import { Siderbar } from "../../components/siderbar/siderbar";
-import { CardProy } from "../../components/project/card-proy/card-proy";
-import { Router } from "@angular/router";
 import { CommonModule } from "@angular/common";
-import { ProyInfo } from "../../components/project/proy-info/proy-info";
+import { ActivatedRoute, Router } from "@angular/router";
 import { CookieService } from "ngx-cookie-service";
-import { NotificacionComponent } from "../../components/notificacion/notificacion";
+import { Navbar } from "../../../components/navbar/navbar";
+import { Siderbar } from "../../../components/siderbar/siderbar";
+import { CardProy } from "../../../components/project/card-proy/card-proy";
+import { ProyInfo } from "../../../components/project/proy-info/proy-info";
+import { NotificacionComponent } from "../../../components/notificacion/notificacion";
+import { RouterModule } from "@angular/router";
 
 @Component({
-  selector: "app-proyectos",
+  selector: "app-lista-proyectos-arquitecto",
   standalone: true,
   imports: [
     CommonModule,
     Navbar,
+    RouterModule,
     Siderbar,
     CardProy,
     ProyInfo,
     NotificacionComponent,
   ],
-  templateUrl: "./proyectos.html",
-  styleUrls: ["./proyectos.css"],
+  templateUrl: "./lista-proyectos-arquitecto.html",
 })
-export class Proyectos implements OnInit {
+export class ListaProyectosArquitecto implements OnInit {
   idproy: number = 0;
   information: boolean = false;
-  currentView: "proyectos" | "reuniones" | "nueva-reunion" = "proyectos";
+  targetArqId: string = "";
   searchTerm: string = "";
   noResults: boolean = false;
   userData: any = null;
 
-  // Propiedades para notificaciones
   mostrarNotif: boolean = false;
   tipoNotif: 1 | 2 | 3 = 1;
   mensajeNotif: string = "";
 
   constructor(
+    private route: ActivatedRoute,
     private router: Router,
-    private cookieService: CookieService,
+    private cookieService: CookieService
   ) { }
 
   ngOnInit(): void {
+
     if (this.cookieService.check("sesion")) {
       const cookieValue = this.cookieService.get("sesion");
       this.userData = JSON.parse(cookieValue);
-      console.log(this.userData);
+      if (this.userData.admin != 1) {
+        this.router.navigate(["/"]);
+        return;
+      }
     } else {
       this.router.navigate(["/"]);
+      return;
     }
+
+
+    this.route.paramMap.subscribe(params => {
+      this.targetArqId = params.get('id') ?? '';
+      if (!this.targetArqId) {
+        this.router.navigate(['/arquitectos']);
+      }
+    });
   }
 
   InformationProy(id: number) {
@@ -61,9 +75,7 @@ export class Proyectos implements OnInit {
 
   onSearchHandler(searchTerm: string) {
     this.searchTerm = searchTerm;
-
     const normalized = this.normalizeSearchTerm(searchTerm);
-
     if (!normalized) {
       this.noResults = false;
     }
@@ -71,7 +83,6 @@ export class Proyectos implements OnInit {
 
   onResultsChange(hasResults: boolean) {
     const normalized = this.normalizeSearchTerm(this.searchTerm);
-
     if (!normalized) {
       this.noResults = false;
     } else {
@@ -81,7 +92,6 @@ export class Proyectos implements OnInit {
 
   private normalizeSearchTerm(text: string): string {
     if (!text) return "";
-
     return text
       .toLowerCase()
       .normalize("NFD")
@@ -91,29 +101,21 @@ export class Proyectos implements OnInit {
       .trim();
   }
 
-  goToCreate(id: string) {
-    this.router.navigate(["registro-proyectos/crear/" + id]);
+  goToCreate() {
+    if (this.targetArqId) {
+      this.router.navigate(["registro-proyectos/crear/" + this.targetArqId]);
+    }
   }
 
-  cambiarVista(view: "proyectos" | "reuniones" | "nueva-reunion"): void {
-    this.currentView = view;
-  }
-
-  abrirNuevaReunion(): void {
-    this.currentView = "nueva-reunion";
-  }
-
-  // Método para mostrar notificaciones
-  public mostrarNotificacion(tipo: 1 | 2 | 3, mensaje: string) {
+  private mostrarNotificacion(tipo: 1 | 2 | 3, mensaje: string) {
     this.tipoNotif = tipo;
     this.mensajeNotif = mensaje;
     this.mostrarNotif = true;
     setTimeout(() => {
       this.mostrarNotif = false;
-    }, 3000); // Ocultar después de 3 segundos
+    }, 3000);
   }
 
-  // Manejadores para los nuevos outputs
   onProyectoEliminado(id: number) {
     this.mostrarNotificacion(1, "Proyecto eliminado exitosamente");
   }
@@ -121,4 +123,9 @@ export class Proyectos implements OnInit {
   onProyectosCargados() {
     this.mostrarNotificacion(2, "Proyectos cargados");
   }
+
+  irListadoPage() {
+    this.router.navigate(['/arquitectos']);
+  }
+
 }
