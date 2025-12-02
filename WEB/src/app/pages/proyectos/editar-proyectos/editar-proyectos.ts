@@ -13,7 +13,6 @@ import { Observable } from "rxjs";
 import { ConnectA } from "../../../../config/index";
 import { Navbar } from "../../../components/navbar/navbar";
 import { Siderbar } from "../../../components/siderbar/siderbar";
-import { CookieService } from "ngx-cookie-service";
 import { NotificacionComponent } from "../../../components/notificacion/notificacion";
 
 export interface Cliente {
@@ -136,7 +135,6 @@ export class EditarProyectos implements OnInit {
   tieneTipo = false;
   tieneDireccion = false;
   seccionActual: "basico" | "tipo" | "direccion" | "reasignar" = "basico";
-  userData: any = null;
 
   serviciosCatalogo: { [key: string]: string[] } = {
     'Planes y legalizaciones de construcción': [
@@ -175,51 +173,38 @@ export class EditarProyectos implements OnInit {
     private cookieService: CookieService,
   ) {}
 
-
-ngOnInit(): void {
-  if (this.cookieService.check("sesion")) {
-    try {
-      const cookieValue = this.cookieService.get("sesion");
-      this.userData = JSON.parse(cookieValue);
-      console.log("Usuario autenticado:", this.userData);
-    } catch (error) {
-      console.error("Error al parsear cookie:", error);
+  ngOnInit(): void {
+    // Verificar sesión primero
+    if (!this.cookieService.check("sesion")) {
       this.router.navigate(["/"]);
       return;
     }
-  } else {
-    console.warn("No hay sesión activa, redirigiendo...");
-    this.router.navigate(["/"]);
-    return;
-    private cookieService: CookieService
-  ) { }
 
-  ngOnInit(): void {
+    try {
+      const cookieValue = this.cookieService.get("sesion");
+      this.userData = JSON.parse(cookieValue);
+    } catch (error) {
+      this.router.navigate(["/"]);
+      return;
+    }
+
     // Cargar los tipos (categorías) disponibles
     this.tiposDisponibles = Object.keys(this.serviciosCatalogo);
 
     this.route.params.subscribe((params) => {
       this.proyectoId = +params["id"];
-      // verificar sesion
-      if (this.cookieService.check("sesion")) {
-        const cookieValue = this.cookieService.get("sesion");
-        this.userData = JSON.parse(cookieValue);
-        console.log(this.userData);
-      } else {
-        this.router.navigate(["/"]);
-      }
       if (!this.proyectoId) {
         this.mensajeError = "ID de proyecto no válido.";
         return;
       }
+      
       this.proyecto.id = this.proyectoId;
       this.tipoProyecto.proy = this.proyectoId;
       this.direccion.proy = this.proyectoId;
 
-      // Una vez que tenemos el ID, suscribirse a queryParams
       this.route.queryParams.subscribe((queryParams) => {
         this.codigoArquitecto = queryParams["arq"] || "";
-
+        
         if (this.codigoArquitecto && this.proyectoId) {
           this.fetchClients();
           this.fetchArchitects();
@@ -233,36 +218,6 @@ ngOnInit(): void {
       });
     });
   }
-  
-  this.tiposDisponibles = Object.keys(this.serviciosCatalogo);
-  
-  this.route.params.subscribe((params) => {
-    this.proyectoId = +params["id"];
-    if (!this.proyectoId) {
-      this.mensajeError = "ID de proyecto no válido.";
-      return;
-    }
-    this.proyecto.id = this.proyectoId;
-    this.tipoProyecto.proy = this.proyectoId;
-    this.direccion.proy = this.proyectoId;
-
-    this.route.queryParams.subscribe((queryParams) => {
-      this.codigoArquitecto = queryParams["arq"] || "";
-      
-      if (this.codigoArquitecto && this.proyectoId) {
-        this.fetchClients();
-        this.fetchArchitects();
-        this.cargarProyecto();
-        this.cargarTipo();
-        this.cargarDireccion();
-      } else {
-        this.mensajeError = "Falta el código de arquitecto. Redirigiendo...";
-        setTimeout(() => this.goBack(), 2000);
-      }
-    });
-  });
-}
-
 
   onTipoChange(): void {
     // Cuando cambia el tipo (categoría), actualizar los subtipos disponibles
@@ -387,7 +342,7 @@ ngOnInit(): void {
     try {
       const mesesES: { [key: string]: string } = {
         'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
-        'mayo': '05', 'julio': '07', 'agosto': '08',
+        'mayo': '05', 'junio': '06', 'julio': '07', 'agosto': '08',
         'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
       };
 
@@ -549,10 +504,12 @@ ngOnInit(): void {
           this.mensajeExito = "Arquitecto reasignado correctamente.";
           this.mostrarNotificacion(1, this.mensajeExito);
           this.proyecto.arq = this.nuevoArquitecto;
+          this.codigoArquitecto = this.nuevoArquitecto;
 
           // Limpiar selección de imagen y mensaje
           this.imagenSeleccionada = null;
           this.nombreArchivo = "";
+          
           setTimeout(() => {
             this.mensajeExito = "";
           }, 3000);
@@ -569,21 +526,16 @@ ngOnInit(): void {
       },
       complete: () => {
         this.isLoading.set(false);
-        if (this.userData.admin) {
-          this.router.navigate(["/arquitectos/"])
-        }
-        this.router.navigate(["/proyectos/"])
-
       },
     });
   }
+
   goToProjects(codigo: string | undefined) {
     if (codigo) {
       this.router.navigate(['arquitectos', codigo, 'proyectos']);
-    } else {
-      alert('No se puede ver proyectos: Código no disponible.');
     }
   }
+
   cargarDireccion(): void {
     const url = `${this.apiUrlDirecciones}?proy=${this.proyectoId}`;
 
@@ -662,8 +614,6 @@ ngOnInit(): void {
       };
       reader.readAsDataURL(file);
     }
-
-
   }
 
   private resetImagen(): void {
@@ -749,7 +699,6 @@ ngOnInit(): void {
     }
 
     if (numero > 99999) {
-      // En lugar de cambiar el valor, mostramos un error
       this.erroresValidacion['puerta'] = 'El número de puerta no puede ser mayor a 99999';
       return;
     }
@@ -1113,10 +1062,9 @@ ngOnInit(): void {
   }
 
   goBack(): void {
-    if (this.userData.admin == 1) {
+    if (this.userData && this.userData.admin == 1) {
       this.router.navigate(['/arquitectos', this.codigoArquitecto, 'proyectos']);
-    }
-    else {
+    } else {
       this.router.navigate(["/proyectos/"]);
     }
   }
@@ -1128,6 +1076,6 @@ ngOnInit(): void {
     this.mostrarNotif = true;
     setTimeout(() => {
       this.mostrarNotif = false;
-    }, 3000); // Ocultar después de 3 segundos
+    }, 3000);
   }
 }
