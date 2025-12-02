@@ -116,7 +116,7 @@ export class ListaProyectosArquitecto implements OnInit {
     }, 3000);
   }
 
-  onProyectoEliminado(id: number) {
+  onProyectoEliminado(id: any) {
     this.mostrarNotificacion(1, "Proyecto eliminado exitosamente");
   }
 
