@@ -1,17 +1,20 @@
-import { Component, Optional, Host, EventEmitter, Input, Output, OnChanges, SimpleChanges } from "@angular/core";
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from "@angular/core";
 import { LoadDisplay } from "../../../elements/load-display/load-display";
 import { from, Observable, BehaviorSubject, combineLatest } from "rxjs";
 import { map } from "rxjs/operators";
 import { ListProps, ListProyectos } from "../../../api/proyectos/list";
-import { DeleteProyecto } from "../../../api/proyectos/poryData";
+import { DeleteProyecto, DeleteProyectoRequest } from "../../../api/proyectos/poryData";
 import { AsyncPipe, NgForOf } from "@angular/common";
-import { CookieService } from "ngx-cookie-service";
-import { Proyectos } from "../../../pages/proyectos/proyectos";
+// Imports combinados
+import { CookieService } from "ngx-cookie-service"; 
+import { FormsModule } from "@angular/forms"; 
+import { EliminacionResponse } from "../../../pages/proyectos/proyectos"; 
+
 @Component({
   selector: "app-card-proy",
-  imports: [LoadDisplay, NgForOf, AsyncPipe],
+  imports: [LoadDisplay, NgForOf, AsyncPipe, FormsModule], 
   templateUrl: "./card-proy.html",
-  styles: ``,
+  styles: ``
 })
 export class CardProy implements OnChanges {
   @Input()
@@ -27,10 +30,10 @@ export class CardProy implements OnChanges {
   resultsChange = new EventEmitter<boolean>();
 
   @Output()
-  proyectoEliminado = new EventEmitter<number>(); // Emite el ID del proyecto eliminado
+  proyectoEliminado = new EventEmitter<EliminacionResponse>();
 
   @Output()
-  proyectosCargados = new EventEmitter<void>(); // Emite cuando se cargan proyectos
+  proyectosCargados = new EventEmitter<void>();
 
   @Output() onNotificar = new EventEmitter<{ tipo: 1 | 2 | 3, mensaje: string }>();
 
@@ -40,6 +43,14 @@ export class CardProy implements OnChanges {
   proyFiltrados$: Observable<ListProps[]>;
   userData: any = null;
 
+  // Propiedades para el modal de justificación (Main)
+  mostrarModalJustificacion = false;
+  proyectoAEliminar: number | null = null;
+  justificacion = '';
+  eliminando = false;
+  proyectoNombre = '';
+
+  // Constructor combinado: Inyectamos CookieService pero mantenemos la lógica del pipe
   constructor(private cookieService: CookieService) {
     this.proyFiltrados$ = combineLatest([
       this.proyectos$,
@@ -110,42 +121,91 @@ export class CardProy implements OnChanges {
     this.idproy.emit(id);
   }
 
-  async eliminarProyecto(event: Event, id: number) {
+  // Lógica fusionada: Verifica Admin (PROY-108) -> Si ok, Abre Modal (Main)
+  eliminarProyecto(event: Event, id: number, proyecto?: ListProps) {
     event.stopPropagation();
-    const cookieValue = this.cookieService.get("sesion");
-    this.userData = JSON.parse(cookieValue);
-    console.log(this.userData);
+    
+    // 1. Verificación de Administrador (PROY-108)
+    if (this.cookieService.check("sesion")) {
+        const cookieValue = this.cookieService.get("sesion");
+        this.userData = JSON.parse(cookieValue);
+    }
 
-    if (this.userData.admin == 0) {
+    if (this.userData && this.userData.admin == 0) {
       alert('SI QUIERES ELIMINAR TU PROYECTO, CONSULTA CON UN ADMINISTRADOR PARA DESACTIVAR TU PROYECTO');
       this.onNotificar.emit({ tipo: 2, mensaje: 'CONSULTA CON UN ADMINISTRADOR PARA DESACTIVAR TU PROYECTO' });
       return;
     }
 
-    const confirmar = confirm('¿Está seguro que desea eliminar este proyecto?');
-    if (!confirmar) return;
+    // 2. Si es admin, procedemos a mostrar el modal (Main)
+    this.proyectoAEliminar = id;
+    this.proyectoNombre = proyecto?.nombre || 'este proyecto';
+    this.mostrarModalJustificacion = true;
+    this.justificacion = '';
+  }
 
+  // Método para eliminar con justificación (Main)
+  async eliminarConJustificacion() {
+    if (!this.proyectoAEliminar) return;
+    
+    if (!this.justificacion || this.justificacion.trim().length < 10) {
+      alert('La justificación debe tener al menos 10 caracteres.');
+      return;
+    }
+
+    this.eliminando = true;
+    
     try {
-      const success = await DeleteProyecto(id);
-
-      if (success) {
-        console.log('Proyecto eliminado exitosamente');
-
+      const request: DeleteProyectoRequest = {
+        id: this.proyectoAEliminar,
+        justificacion: this.justificacion
+      };
+      
+      const resultado = await DeleteProyecto(request);
+      
+      this.proyectoEliminado.emit({
+        success: resultado.success,
+        message: resultado.message,
+        proyectoId: this.proyectoAEliminar
+      });
+      
+      if (resultado.success) {
         this.cargarProyectos();
-
-        alert('Proyecto eliminado exitosamente');
-      } else {
-        console.error('Error al eliminar el proyecto');
-        alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
+        this.cerrarModal();
       }
+      
     } catch (error) {
-      console.error('Error en la solicitud de eliminación:', error);
-      alert('Error al eliminar el proyecto. Por favor, intente nuevamente.');
+      console.error('Error al eliminar con justificación:', error);
+      this.proyectoEliminado.emit({
+        success: false,
+        message: 'Error al eliminar el proyecto',
+        proyectoId: this.proyectoAEliminar
+      });
+    } finally {
+      this.eliminando = false;
     }
   }
+  
+  // Helper de PROY-108
   verifCant() {
     return this.proyectos$.value.length == 0;
   }
 
+  // Helpers de Main
+  cerrarModal() {
+    this.mostrarModalJustificacion = false;
+    this.proyectoAEliminar = null;
+    this.justificacion = '';
+    this.eliminando = false;
+    this.proyectoNombre = '';
+  }
 
+  cancelarEliminacion() {
+    this.cerrarModal();
+    this.proyectoEliminado.emit({
+      success: false,
+      message: 'Eliminación cancelada por el usuario',
+      proyectoId: this.proyectoAEliminar
+    });
+  }
 }
