@@ -1,32 +1,34 @@
-
 <div class="login-page">
   <div class="left">
     <div class="form-container">
+
       @switch (currentView) {
-        @case ('cli') {
-          <app-login-cli (navigate)="onNavigate($event)" />
+
+        @case ('form') {
+          <app-login-form 
+            (navigate)="onNavigate($event)"
+            (notification)="onNotification($event)"
+          />
         }
-        @case ('arq') {
-          <app-login-arq (navigate)="onNavigate($event)" (notification)="onNotification($event)" />
-        }
+
         @case ('recuperar') {
           <app-recuperar-pass (navigate)="onNavigate($event)" />
         }
+
         @case ('nuevo') {
           <app-nuevo-pass (navigate)="onNavigate($event)" />
         }
-        @default {
-          <p>Error: vista desconocida</p>
-        }
+
       }
+
     </div>
   </div>
-  <!-- Mostrar notificación solo si hay datos -->
+
   <app-notificacion 
-    *ngIf="notificationData" 
-    [type]="notificationData.type" 
-    [Tittle]="notificationData.Tittle" 
-    [message]="notificationData.message" 
-    (close)="notificationData = null">
-  </app-notificacion>
+    *ngIf="notificationData"
+    [type]="notificationData.type"
+    [Tittle]="notificationData.Tittle"
+    [message]="notificationData.message"
+    (close)="notificationData = null"
+  />
 </div>

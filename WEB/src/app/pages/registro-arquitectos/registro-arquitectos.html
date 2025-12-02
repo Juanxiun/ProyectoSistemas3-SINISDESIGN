@@ -74,14 +74,25 @@
                             {{ arq.correo }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            @if (arq.estado == 1) {
+                            <button (click)="goToProjects(arq.codigo)"
+                                class="text-blue-500 hover:text-blue-700 font-semibold py-1 px-3 rounded-lg border border-blue-500 hover:border-blue-700 transition duration-300">
+                                proyectos
+                            </button>
+                            }
                             <button (click)="goToDetails(arq.codigo)"
                                 class="text-[#E0A189] hover:text-[#C97D60] font-semibold py-1 px-3 rounded-lg border border-[#E0A189] hover:border-[#C97D60] transition duration-300">
-                                ver
+                                perfil
                             </button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
+        <!-- <div class="mt-8">
+            <a routerLink="/" class="text-[#283845] hover:text-[#E0A189] font-medium underline">
+                Volver
+            </a>
+        </div> -->
     </div>
 </div>

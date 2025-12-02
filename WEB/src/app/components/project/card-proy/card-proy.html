@@ -9,9 +9,7 @@
             [&::-webkit-scrollbar-thumb]:bg-[#92443a]">
 
     <ng-container *ngFor="let p of proyFiltrados$ | async">
-        <section
-            (click)="EnviarId(p.id ?? 0)"
-            class="w-120 h-90 flex flex-col bg-white rounded-xl overflow-hidden 
+        <section (click)="EnviarId(p.id ?? 0)" class="w-120 h-90 flex flex-col bg-white rounded-xl overflow-hidden 
                    shadow-lg hover:shadow-2xl border border-[#E0A189]/20 hover:border-[#92443a]/50
                    cursor-pointer transition-all duration-300 group">
 
@@ -22,7 +20,6 @@
                 <div class="absolute inset-0 bg-gradient-to-t from-[#92443a]/30 to-transparent 
                             opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                <!-- Badge de estado del proyecto -->
                 @if (p.est !== undefined && p.est !== 1) {
                   <div class="absolute top-3 left-3 z-10">
                     @switch (p.est) {
@@ -68,7 +65,7 @@
 
             <div class="w-full h-[30%] bg-gradient-to-br from-[#92443a] to-[#7a3830] 
                         flex flex-col justify-center px-5 py-4">
-                
+
                 <h1 class="text-2xl font-semibold text-white mb-2 leading-tight line-clamp-2 
                            group-hover:text-[#E0A189] transition-colors duration-300">
                     {{p.nombre}}
@@ -87,11 +84,15 @@
         </section>
     </ng-container>
 
-    <!-- Modal de justificación - Para TODOS los proyectos -->
+    @if (verifCant()) {
+        <div class="col-span-full text-center py-10">
+            <h2 class="text-xl text-gray-500 font-semibold">NO TIENE PROYECTOS ACTIVOS</h2>
+        </div>
+    }
+
     @if (mostrarModalJustificacion) {
         <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
             <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-                <!-- Header del modal -->
                 <div class="bg-red-50 border-b border-red-200 px-6 py-4">
                     <div class="flex items-center gap-3">
                         <div class="bg-red-100 p-2 rounded-full">
@@ -104,9 +105,7 @@
                     </div>
                 </div>
                 
-                <!-- Contenido del modal -->
                 <div class="p-6 overflow-y-auto max-h-[60vh]">
-                    <!-- Información del proyecto -->
                     <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
                         <div class="flex items-center gap-3 mb-2">
                             <i class="bi bi-folder-fill text-[#92443a] text-lg"></i>
@@ -115,7 +114,6 @@
                         <p class="text-lg font-bold text-[#92443a] pl-8">{{proyectoNombre}}</p>
                     </div>
 
-                    <!-- Advertencia -->
                     <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                         <div class="flex items-start gap-3">
                             <i class="bi bi-info-circle-fill text-amber-600 text-lg mt-0.5"></i>
@@ -129,7 +127,6 @@
                         </div>
                     </div>
 
-                    <!-- Campo de justificación -->
                     <div class="mb-1">
                         <label class="block text-gray-700 font-semibold mb-3">
                             <i class="bi bi-pencil-square text-gray-600 mr-2"></i>
@@ -170,7 +167,6 @@
                     </div>
                 </div>
                 
-                <!-- Footer del modal -->
                 <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
                     <div class="flex justify-between items-center">
                         <div class="text-sm text-gray-600">
@@ -211,7 +207,9 @@
         </div>
     }
 </div>
+
 }
+
 @placeholder {
     <app-load-display />
 }

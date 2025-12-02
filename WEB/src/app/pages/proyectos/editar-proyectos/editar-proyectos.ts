@@ -13,6 +13,8 @@ import { Observable } from "rxjs";
 import { ConnectA } from "../../../../config/index";
 import { Navbar } from "../../../components/navbar/navbar";
 import { Siderbar } from "../../../components/siderbar/siderbar";
+import { CookieService } from "ngx-cookie-service";
+import { NotificacionComponent } from "../../../components/notificacion/notificacion";
 
 export interface Cliente {
   ci: number;
@@ -24,6 +26,7 @@ export interface Arquitecto {
   codigo: string;
   nombre: string;
   apellido: string;
+  estado: number;
 }
 
 export interface Proyecto {
@@ -73,6 +76,7 @@ export interface ApiResponse<T> {
     HttpClientModule,
     Navbar,
     Siderbar,
+    NotificacionComponent
   ],
   templateUrl: "./editar-proyectos.html",
 })
@@ -90,6 +94,11 @@ export class EditarProyectos implements OnInit {
   codigoArquitecto: string = "";
   nuevoArquitecto: string = '';
   userData: any = null;
+
+  // Propiedades para notificaciones
+  mostrarNotif: boolean = false;
+  tipoNotif: 1 | 2 | 3 = 1;
+  mensajeNotif: string = "";
 
   proyecto: Proyecto = {
     id: 0,
@@ -127,6 +136,7 @@ export class EditarProyectos implements OnInit {
   tieneTipo = false;
   tieneDireccion = false;
   seccionActual: "basico" | "tipo" | "direccion" | "reasignar" = "basico";
+  userData: any = null;
 
   serviciosCatalogo: { [key: string]: string[] } = {
     'Planes y legalizaciones de construcción': [
@@ -181,6 +191,47 @@ ngOnInit(): void {
     console.warn("No hay sesión activa, redirigiendo...");
     this.router.navigate(["/"]);
     return;
+    private cookieService: CookieService
+  ) { }
+
+  ngOnInit(): void {
+    // Cargar los tipos (categorías) disponibles
+    this.tiposDisponibles = Object.keys(this.serviciosCatalogo);
+
+    this.route.params.subscribe((params) => {
+      this.proyectoId = +params["id"];
+      // verificar sesion
+      if (this.cookieService.check("sesion")) {
+        const cookieValue = this.cookieService.get("sesion");
+        this.userData = JSON.parse(cookieValue);
+        console.log(this.userData);
+      } else {
+        this.router.navigate(["/"]);
+      }
+      if (!this.proyectoId) {
+        this.mensajeError = "ID de proyecto no válido.";
+        return;
+      }
+      this.proyecto.id = this.proyectoId;
+      this.tipoProyecto.proy = this.proyectoId;
+      this.direccion.proy = this.proyectoId;
+
+      // Una vez que tenemos el ID, suscribirse a queryParams
+      this.route.queryParams.subscribe((queryParams) => {
+        this.codigoArquitecto = queryParams["arq"] || "";
+
+        if (this.codigoArquitecto && this.proyectoId) {
+          this.fetchClients();
+          this.fetchArchitects();
+          this.cargarProyecto();
+          this.cargarTipo();
+          this.cargarDireccion();
+        } else {
+          this.mensajeError = "Falta el código de arquitecto. Redirigiendo...";
+          setTimeout(() => this.goBack(), 2000);
+        }
+      });
+    });
   }
   
   this.tiposDisponibles = Object.keys(this.serviciosCatalogo);
@@ -217,12 +268,12 @@ ngOnInit(): void {
     // Cuando cambia el tipo (categoría), actualizar los subtipos disponibles
     const tipoSeleccionado = this.tipoProyecto.tipo;
     this.subtiposDisponibles = this.serviciosCatalogo[tipoSeleccionado] || [];
-    
+
     // Limpiar subtipo si el tipo seleccionado no contiene el subtipo actual
     if (!this.subtiposDisponibles.includes(this.tipoProyecto.subtipo)) {
       this.tipoProyecto.subtipo = '';
     }
-    
+
     this.limpiarErrores('tipo');
     this.limpiarErrores('subtipo');
   }
@@ -308,13 +359,13 @@ ngOnInit(): void {
 
         if (proyectos.length > 0) {
           const proy = proyectos[0];
-          
+
           this.proyecto = {
             ...proy,
             inicio: this.convertirFechaParaInput(proy.inicio),
             final: proy.final ? this.convertirFechaParaInput(proy.final) : "",
           };
-          
+
           this.imagenOriginal = proy.imagen as string || "";
           this.previewImagen = proy.imagen as string || "";
         } else {
@@ -332,33 +383,33 @@ ngOnInit(): void {
 
   convertirFechaParaInput(fecha: string): string {
     if (!fecha) return "";
-    
+
     try {
       const mesesES: { [key: string]: string } = {
         'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04',
         'mayo': '05', 'julio': '07', 'agosto': '08',
         'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
       };
-      
+
       const fechaLimpia = fecha.trim().toLowerCase();
       const partes = fechaLimpia.split(',');
-      
+
       if (partes.length < 2) {
         return "";
       }
-      
+
       const fechaParte = partes[0].trim();
       const horaParte = partes[1].trim();
-      
+
       const palabrasFecha = fechaParte.split(' ');
-      
+
       let dia = '';
       let mesTexto = '';
       let anio = '';
-      
+
       for (let i = 0; i < palabrasFecha.length; i++) {
         const palabra = palabrasFecha[i];
-        
+
         if (!dia && /^\d+$/.test(palabra)) {
           dia = palabra.padStart(2, '0');
         }
@@ -369,23 +420,23 @@ ngOnInit(): void {
           anio = palabra;
         }
       }
-      
+
       if (!dia || !mesTexto || !anio) {
         return "";
       }
-      
+
       let hora = '';
       let minutos = '';
-      
+
       const partesHora = horaParte.split(' ');
       const tiempo = partesHora[0];
       const periodo = partesHora[1];
-      
+
       if (tiempo && tiempo.includes(':')) {
         const [h, m] = tiempo.split(':');
         hora = h;
         minutos = m;
-        
+
         if (periodo && periodo.startsWith('p')) {
           const horaNum = parseInt(hora);
           if (horaNum !== 12) {
@@ -400,11 +451,11 @@ ngOnInit(): void {
           }
         }
       }
-      
+
       if (!hora || !minutos) {
         return "";
       }
-      
+
       return `${anio}-${mesTexto}-${dia}T${hora.padStart(2, '0')}:${minutos.padStart(2, '0')}`;
     } catch (error) {
       return "";
@@ -417,7 +468,7 @@ ngOnInit(): void {
     this.http.get<ApiResponse<TipoProyecto[]>>(url).subscribe({
       next: (response: any) => {
         let tipos: TipoProyecto[] = [];
-        
+
         if (response?.data?.data && Array.isArray(response.data.data)) {
           tipos = response.data.data;
         } else if (Array.isArray(response?.data)) {
@@ -446,88 +497,100 @@ ngOnInit(): void {
   }
 
   reasignarArquitecto(): void {
-  // Validación 1: campos básicos del proyecto
-  if (!this.isFormBasicoValid()) {
-    this.mostrarMensajeErrorTemporal("Por favor, completa correctamente la información básica antes de reasignar.");
-    return;
+    // Validación 1: campos básicos del proyecto
+    if (!this.isFormBasicoValid()) {
+      this.mostrarMensajeErrorTemporal("Por favor, completa correctamente la información básica antes de reasignar.");
+      return;
+    }
+
+    // Validación 2: selección de nuevo arquitecto
+    if (!this.nuevoArquitecto.trim()) {
+      this.mostrarMensajeErrorTemporal("Por favor, selecciona un arquitecto para reasignar.");
+      return;
+    }
+
+    // Validación 3: arquitecto diferente
+    if (this.nuevoArquitecto.trim() === this.proyecto.arq) {
+      this.mostrarMensajeErrorTemporal("El nuevo arquitecto debe ser diferente al actual.");
+      return;
+    }
+
+    // Validación 4: arquitecto existente en la lista
+    const arquitectoExiste = this.arquitectos().some(a => a.codigo === this.nuevoArquitecto.trim());
+    if (!arquitectoExiste) {
+      this.mostrarMensajeErrorTemporal("El arquitecto seleccionado no existe en la lista.");
+      return;
+    }
+
+    // --- Si todo está correcto ---
+    this.isLoading.set(true);
+    this.mensajeError = "";
+    this.mensajeExito = "";
+
+    const formData = new FormData();
+    formData.append("nombre", this.proyecto.nombre.trim());
+    formData.append("costo", this.proyecto.costo.toString());
+    formData.append("inicio", this.proyecto.inicio);
+    formData.append("cli", this.proyecto.cli.toString());
+    formData.append("arq", this.nuevoArquitecto.trim());
+    formData.append("est", this.proyecto.est.toString());
+
+    if (this.proyecto.final && this.proyecto.final.trim() !== "") {
+      formData.append("final", this.proyecto.final);
+    }
+
+    if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
+      formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
+    }
+
+    this.http.put<any>(`${this.apiUrlProyectos}/${this.proyectoId}`, formData).subscribe({
+      next: (response: any) => {
+        if (response.std === 200 || response.status === 200) {
+          this.mensajeExito = "Arquitecto reasignado correctamente.";
+          this.mostrarNotificacion(1, this.mensajeExito);
+          this.proyecto.arq = this.nuevoArquitecto;
+
+          // Limpiar selección de imagen y mensaje
+          this.imagenSeleccionada = null;
+          this.nombreArchivo = "";
+          setTimeout(() => {
+            this.mensajeExito = "";
+          }, 3000);
+        } else {
+          this.mensajeError = response?.error || response?.msg || "Error al reasignar arquitecto.";
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        let mensajeError = `Error ${err.status}: `;
+        if (err.error?.error) mensajeError += err.error.error;
+        else if (err.error?.msg) mensajeError += err.error.msg;
+        else mensajeError += err.statusText || "Error desconocido.";
+        this.mensajeError = mensajeError;
+      },
+      complete: () => {
+        this.isLoading.set(false);
+        if (this.userData.admin) {
+          this.router.navigate(["/arquitectos/"])
+        }
+        this.router.navigate(["/proyectos/"])
+
+      },
+    });
   }
-
-  // Validación 2: selección de nuevo arquitecto
-  if (!this.nuevoArquitecto.trim()) {
-    this.mostrarMensajeErrorTemporal("Por favor, selecciona un arquitecto para reasignar.");
-    return;
+  goToProjects(codigo: string | undefined) {
+    if (codigo) {
+      this.router.navigate(['arquitectos', codigo, 'proyectos']);
+    } else {
+      alert('No se puede ver proyectos: Código no disponible.');
+    }
   }
-
-  // Validación 3: arquitecto diferente
-  if (this.nuevoArquitecto.trim() === this.proyecto.arq) {
-    this.mostrarMensajeErrorTemporal("El nuevo arquitecto debe ser diferente al actual.");
-    return;
-  }
-
-  // Validación 4: arquitecto existente en la lista
-  const arquitectoExiste = this.arquitectos().some(a => a.codigo === this.nuevoArquitecto.trim());
-  if (!arquitectoExiste) {
-    this.mostrarMensajeErrorTemporal("El arquitecto seleccionado no existe en la lista.");
-    return;
-  }
-
-  // --- Si todo está correcto ---
-  this.isLoading.set(true);
-  this.mensajeError = "";
-  this.mensajeExito = "";
-
-  const formData = new FormData();
-  formData.append("nombre", this.proyecto.nombre.trim());
-  formData.append("costo", this.proyecto.costo.toString());
-  formData.append("inicio", this.proyecto.inicio);
-  formData.append("cli", this.proyecto.cli.toString());
-  formData.append("arq", this.nuevoArquitecto.trim());
-  formData.append("est", this.proyecto.est.toString());
-
-  if (this.proyecto.final && this.proyecto.final.trim() !== "") {
-    formData.append("final", this.proyecto.final);
-  }
-
-  if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
-    formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
-  }
-
-  this.http.put<any>(`${this.apiUrlProyectos}/${this.proyectoId}`, formData).subscribe({
-    next: (response: any) => {
-      if (response.std === 200 || response.status === 200) {
-        this.mensajeExito = "Arquitecto reasignado correctamente.";
-        this.proyecto.arq = this.nuevoArquitecto;
-
-        // Limpiar selección de imagen y mensaje
-        this.imagenSeleccionada = null;
-        this.nombreArchivo = "";
-        setTimeout(() => {
-          this.mensajeExito = "";
-        }, 3000);
-      } else {
-        this.mensajeError = response?.error || response?.msg || "Error al reasignar arquitecto.";
-      }
-    },
-    error: (err: HttpErrorResponse) => {
-      let mensajeError = `Error ${err.status}: `;
-      if (err.error?.error) mensajeError += err.error.error;
-      else if (err.error?.msg) mensajeError += err.error.msg;
-      else mensajeError += err.statusText || "Error desconocido.";
-      this.mensajeError = mensajeError;
-    },
-    complete: () => {
-      this.isLoading.set(false);
-    },
-  });
-}
-
   cargarDireccion(): void {
     const url = `${this.apiUrlDirecciones}?proy=${this.proyectoId}`;
 
     this.http.get<ApiResponse<DireccionProyecto[]>>(url).subscribe({
       next: (response: any) => {
         let direcciones: DireccionProyecto[] = [];
-        
+
         if (response?.data?.data && Array.isArray(response.data.data)) {
           direcciones = response.data.data;
         } else if (Array.isArray(response?.data)) {
@@ -600,14 +663,14 @@ ngOnInit(): void {
       reader.readAsDataURL(file);
     }
 
-    
+
   }
 
   private resetImagen(): void {
     this.imagenSeleccionada = null;
     this.nombreArchivo = "";
     this.previewImagen = this.imagenOriginal;
-    
+
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
     if (fileInput) {
       fileInput.value = '';
@@ -619,7 +682,7 @@ ngOnInit(): void {
     this.nombreArchivo = "";
     this.previewImagen = "";
     this.imagenOriginal = "";
-    
+
     this.mensajeExito = "Imagen eliminada. Guarda los cambios para aplicar.";
     setTimeout(() => {
       this.mensajeExito = "";
@@ -630,14 +693,14 @@ ngOnInit(): void {
   validarTextoSoloLetras(event: Event, campo: string): void {
     const input = event.target as HTMLInputElement;
     const valor = input.value;
-    
+
     // Permitir solo letras, espacios, tildes y ñ
     const regex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]*$/;
-    
+
     if (!regex.test(valor)) {
       const valorLimpio = valor.replace(/[^a-záéíóúñA-ZÁÉÍÓÚÑ\s]/g, '');
       input.value = valorLimpio;
-      
+
       if (campo === 'departamento') {
         this.direccion.departamento = valorLimpio;
       }
@@ -647,14 +710,14 @@ ngOnInit(): void {
   validarTextoConNumeros(event: Event, campo: string): void {
     const input = event.target as HTMLInputElement;
     const valor = input.value;
-    
+
     // Permitir letras, números, espacios, punto, coma y guion
     const regex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ0-9\s.,\-]*$/;
-    
+
     if (!regex.test(valor)) {
       const valorLimpio = valor.replace(/[^a-záéíóúñA-ZÁÉÍÓÚÑ0-9\s.,\-]/g, '');
       input.value = valorLimpio;
-      
+
       if (campo === 'zona') {
         this.direccion.zona = valorLimpio;
       } else if (campo === 'calle') {
@@ -666,31 +729,31 @@ ngOnInit(): void {
   validarNumeroPuerta(event: Event): void {
     const input = event.target as HTMLInputElement;
     const valor = input.value;
-    
+
     // Permitir solo números
     const soloNumeros = valor.replace(/[^0-9]/g, '');
     input.value = soloNumeros;
-    
+
     // Convertir a número
     const numero = parseInt(soloNumeros);
-    
+
     if (soloNumeros === '' || isNaN(numero)) {
       this.direccion.puerta = 0;
       this.erroresValidacion['puerta'] = 'El número de puerta es requerido';
       return;
     }
-    
+
     if (numero < 1) {
       this.erroresValidacion['puerta'] = 'El número de puerta debe ser mayor a 0';
       return;
     }
-    
+
     if (numero > 99999) {
       // En lugar de cambiar el valor, mostramos un error
       this.erroresValidacion['puerta'] = 'El número de puerta no puede ser mayor a 99999';
       return;
     }
-    
+
     this.direccion.puerta = numero;
     this.limpiarErrores('puerta');
   }
@@ -698,98 +761,98 @@ ngOnInit(): void {
   // Validaciones específicas para dirección
   validarDepartamento(): void {
     const valor = this.direccion.departamento.trim();
-    
+
     if (!valor) {
       this.erroresValidacion['departamento'] = 'El departamento es requerido';
       return;
     }
-    
+
     if (valor.length < 3) {
       this.erroresValidacion['departamento'] = 'El departamento debe tener al menos 3 caracteres';
       return;
     }
-    
+
     if (valor.length > 50) {
       this.erroresValidacion['departamento'] = 'El departamento no puede tener más de 50 caracteres';
       return;
     }
-    
+
     const regex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]+$/;
     if (!regex.test(valor)) {
       this.erroresValidacion['departamento'] = 'El departamento solo puede contener letras y espacios';
       return;
     }
-    
+
     this.limpiarErrores('departamento');
   }
 
   validarZona(): void {
     const valor = this.direccion.zona.trim();
-    
+
     if (!valor) {
       this.erroresValidacion['zona'] = 'La zona es requerida';
       return;
     }
-    
+
     if (valor.length < 2) {
       this.erroresValidacion['zona'] = 'La zona debe tener al menos 2 caracteres';
       return;
     }
-    
+
     if (valor.length > 100) {
       this.erroresValidacion['zona'] = 'La zona no puede tener más de 100 caracteres';
       return;
     }
-    
+
     const regex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ0-9\s.,\-]+$/;
     if (!regex.test(valor)) {
       this.erroresValidacion['zona'] = 'La zona solo puede contener letras, números y caracteres básicos (. , -)';
       return;
     }
-    
+
     this.limpiarErrores('zona');
   }
 
   validarCalle(): void {
     const valor = this.direccion.calle.trim();
-    
+
     if (!valor) {
       this.erroresValidacion['calle'] = 'La calle es requerida';
       return;
     }
-    
+
     if (valor.length < 3) {
       this.erroresValidacion['calle'] = 'La calle debe tener al menos 3 caracteres';
       return;
     }
-    
+
     if (valor.length > 150) {
       this.erroresValidacion['calle'] = 'La calle no puede tener más de 150 caracteres';
       return;
     }
-    
+
     const regex = /^[a-záéíóúñA-ZÁÉÍÓÚÑ0-9\s.,\-]+$/;
     if (!regex.test(valor)) {
       this.erroresValidacion['calle'] = 'La calle solo puede contener letras, números y caracteres básicos (. , -)';
       return;
     }
-    
+
     this.limpiarErrores('calle');
   }
 
   validarPuerta(): void {
     const valor = this.direccion.puerta;
-    
+
     if (!valor || valor < 1) {
       this.erroresValidacion['puerta'] = 'El número de puerta debe ser mayor a 0';
       return;
     }
-    
+
     if (valor > 99999) {
       this.erroresValidacion['puerta'] = 'El número de puerta no puede ser mayor a 99999';
       return;
     }
-    
+
     this.limpiarErrores('puerta');
   }
 
@@ -853,88 +916,89 @@ ngOnInit(): void {
     );
   }
 
-onSubmitBasico(): void {
-  if (!this.isFormBasicoValid()) {
-    this.mensajeError = "Por favor completa todos los campos correctamente";
-    return;
-  }
+  onSubmitBasico(): void {
+    if (!this.isFormBasicoValid()) {
+      this.mensajeError = "Por favor completa todos los campos correctamente";
+      return;
+    }
 
-  this.isLoading.set(true);
-  this.mensajeError = "";
-  this.mensajeExito = "";
+    this.isLoading.set(true);
+    this.mensajeError = "";
+    this.mensajeExito = "";
 
-  const formData = new FormData();
-  formData.append("nombre", this.proyecto.nombre.trim());
-  formData.append("costo", this.proyecto.costo.toString());
-  formData.append("inicio", this.proyecto.inicio);
-  formData.append("cli", this.proyecto.cli.toString());
-  formData.append("arq", this.proyecto.arq);
-  formData.append("est", this.proyecto.est.toString());
+    const formData = new FormData();
+    formData.append("nombre", this.proyecto.nombre.trim());
+    formData.append("costo", this.proyecto.costo.toString());
+    formData.append("inicio", this.proyecto.inicio);
+    formData.append("cli", this.proyecto.cli.toString());
+    formData.append("arq", this.proyecto.arq);
+    formData.append("est", this.proyecto.est.toString());
 
-  if (this.proyecto.final && this.proyecto.final.trim() !== "") {
-    formData.append("final", this.proyecto.final);
-  }
+    if (this.proyecto.final && this.proyecto.final.trim() !== "") {
+      formData.append("final", this.proyecto.final);
+    }
 
-  if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
-    formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
-  }
+    if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
+      formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
+    }
 
-  this.http
-    .put<any>(
-      `${this.apiUrlProyectos}/${this.proyectoId}`,
-      formData
-    )
-    .subscribe({
-      next: (response: any) => {
-        if (response.std === 200 || response.status === 200) {
-          this.mensajeExito = "Información básica actualizada correctamente";
-          
-          if (this.imagenSeleccionada) {
-            this.imagenOriginal = this.previewImagen;
-          }
-          
-          this.imagenSeleccionada = null;
-          this.nombreArchivo = "";
-          
-          const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-          if (fileInput) {
-            fileInput.value = '';
-          }
-          
-          if (this.imagenSeleccionada !== null) {
+    this.http
+      .put<any>(
+        `${this.apiUrlProyectos}/${this.proyectoId}`,
+        formData
+      )
+      .subscribe({
+        next: (response: any) => {
+          if (response.std === 200 || response.status === 200) {
+            this.mensajeExito = "Información básica actualizada correctamente";
+            this.mostrarNotificacion(1, this.mensajeExito);
+
+            if (this.imagenSeleccionada) {
+              this.imagenOriginal = this.previewImagen;
+            }
+
+            this.imagenSeleccionada = null;
+            this.nombreArchivo = "";
+
+            const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+            if (fileInput) {
+              fileInput.value = '';
+            }
+
+            if (this.imagenSeleccionada !== null) {
+              setTimeout(() => {
+                this.cargarProyecto();
+              }, 500);
+            }
+
             setTimeout(() => {
-              this.cargarProyecto();
-            }, 500);
+              this.mensajeExito = "";
+            }, 3000);
+          } else {
+            this.mensajeError = response?.error || response?.msg || "Error al actualizar el proyecto";
           }
-          
-          setTimeout(() => {
-            this.mensajeExito = "";
-          }, 3000);
-        } else {
-          this.mensajeError = response?.error || response?.msg || "Error al actualizar el proyecto";
-        }
-      },
-      error: (err: HttpErrorResponse) => {
-        let mensajeError = `Error ${err.status}: `;
-        if (err.error?.error) {
-          mensajeError += err.error.error;
-        } else if (err.error?.msg) {
-          mensajeError += err.error.msg;
-        } else {
-          mensajeError += err.statusText || 'Error desconocido';
-        }
-        
-        this.mensajeError = mensajeError;
-        
-        if (err.status === 400 && err.error?.error?.toLowerCase().includes('imagen')) {
-          this.mensajeError += ". Por favor, selecciona una imagen válida (JPG, PNG, WebP, máximo 5MB)";
-        }
-      },
-      complete: () => {
-        this.isLoading.set(false);
-      },
-    });
-}
+        },
+        error: (err: HttpErrorResponse) => {
+          let mensajeError = `Error ${err.status}: `;
+          if (err.error?.error) {
+            mensajeError += err.error.error;
+          } else if (err.error?.msg) {
+            mensajeError += err.error.msg;
+          } else {
+            mensajeError += err.statusText || 'Error desconocido';
+          }
+
+          this.mensajeError = mensajeError;
+
+          if (err.status === 400 && err.error?.error?.toLowerCase().includes('imagen')) {
+            this.mensajeError += ". Por favor, selecciona una imagen válida (JPG, PNG, WebP, máximo 5MB)";
+          }
+        },
+        complete: () => {
+          this.isLoading.set(false);
+        },
+      });
+  }
 
   guardarTipo(): void {
     if (!this.isTipoFormValid()) {
@@ -960,10 +1024,11 @@ onSubmitBasico(): void {
         if (response.std === 200 || response.status === 200) {
           this.tieneTipo = true;
           this.mensajeExito = "Tipo de proyecto guardado correctamente";
+          this.mostrarNotificacion(1, this.mensajeExito);
           setTimeout(() => {
             this.mensajeExito = "";
           }, 3000);
-          
+
           if (!this.tipoProyecto.id) {
             this.cargarTipo();
           }
@@ -1019,10 +1084,11 @@ onSubmitBasico(): void {
         if (response.std === 200 || response.status === 200) {
           this.tieneDireccion = true;
           this.mensajeExito = "Dirección guardada correctamente";
+          this.mostrarNotificacion(1, this.mensajeExito);
           setTimeout(() => {
             this.mensajeExito = "";
           }, 3000);
-          
+
           if (!this.direccion.id) {
             this.cargarDireccion();
           }
@@ -1047,6 +1113,21 @@ onSubmitBasico(): void {
   }
 
   goBack(): void {
-    this.router.navigate(["/proyectos/"]);
+    if (this.userData.admin == 1) {
+      this.router.navigate(['/arquitectos', this.codigoArquitecto, 'proyectos']);
+    }
+    else {
+      this.router.navigate(["/proyectos/"]);
+    }
+  }
+
+  // Método para mostrar notificaciones
+  private mostrarNotificacion(tipo: 1 | 2 | 3, mensaje: string) {
+    this.tipoNotif = tipo;
+    this.mensajeNotif = mensaje;
+    this.mostrarNotif = true;
+    setTimeout(() => {
+      this.mostrarNotif = false;
+    }, 3000); // Ocultar después de 3 segundos
   }
 }
