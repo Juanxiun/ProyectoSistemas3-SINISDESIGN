@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, Output, OnInit } from "@angular/core";
-
 import { Options } from "../../elements/options/options";
 import { CommonModule } from "@angular/common";
-import { Router } from "@angular/router";
 import { AuthService } from "../../middlewares/auth.service";
 import { CookieService } from "ngx-cookie-service";
 import { RouterModule, Router } from '@angular/router';
@@ -25,7 +23,6 @@ export class Siderbar implements OnInit {
 
   @Output()
   cambiarVista = new EventEmitter<"proyectos" | "reuniones">();
-  constructor(private router: Router) {}
   constructor(private authService: AuthService, private router: Router, private cookieService: CookieService) { }
   ngOnInit(): void {
     // verificar sesion
