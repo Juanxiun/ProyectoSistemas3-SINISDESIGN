@@ -25,71 +25,90 @@ export class CrudClientes {
   }
 
   public async create(ctx: Context) {
-    try {
-      const form = await ctx.request.body.formData();
+  try {
+    const form = await ctx.request.body.formData();
 
-      // Validar campos obligatorios
-      const ci = form.get("ci") as string;
-      const nombre = form.get("nombre") as string;
-      const apellido = form.get("apellido") as string;
-      const telefono = form.get("telefono") as string;
-      const correo = form.get("correo") as string;
-      const password = form.get("password") as string;
+    // Validar campos obligatorios
+    const ci = form.get("ci") as string;
+    const nombre = form.get("nombre") as string;
+    const apellido = form.get("apellido") as string;
+    const telefono = form.get("telefono") as string;
+    const correo = form.get("correo") as string;
+    const password = form.get("password") as string;
 
-      if (!ci || !nombre || !apellido || !telefono || !correo || !password) {
-        return ResponseOak(
-          ctx,
-          400,
-          { msg: "Faltan campos obligatorios. Todos los campos son requeridos." },
-          { content: "Content-Type", app: "application/json" }
-        );
-      }
+    console.log("Datos recibidos en backend:", { ci, nombre, apellido, telefono, correo, password });
 
-      const cliente: ClienteModel = {
-        ci: parseInt(ci),
-        nombre: nombre.trim(),
-        apellido: apellido.trim(),
-        telefono: parseInt(telefono),
-        correo: correo.trim(),
-        password: password,
-        estado: 1,
-      };
-
-      // Validar que los números sean válidos
-      if (isNaN(cliente.ci) || isNaN(cliente.telefono)) {
-        return ResponseOak(
-          ctx,
-          400,
-          { msg: "CI y teléfono deben ser números válidos." },
-          { content: "Content-Type", app: "application/json" }
-        );
-      }
-
-      const res = await CreateQuery(cliente);
-
+    if (!ci || !nombre || !apellido || !telefono || !correo || !password) {
+      console.log("ERROR: Campos faltantes detectados");
       return ResponseOak(
         ctx,
-        res.std,
-        {
-          msg: res.std === 200
-            ? "Cliente creado exitosamente."
-            : "Error al crear el cliente.",
+        400,
+        { 
+          msg: "Faltan campos obligatorios. Todos los campos son requeridos: CI, nombre, apellido, teléfono, correo, contraseña.",
+          detalles: {
+            ci: ci || "FALTANTE",
+            nombre: nombre || "FALTANTE", 
+            apellido: apellido || "FALTANTE",
+            telefono: telefono || "FALTANTE",
+            correo: correo || "FALTANTE",
+            password: password ? "PRESENTE" : "FALTANTE"
+          }
         },
-        {
-          content: "Content-Type",
-          app: "application/json",
-        },
-      );
-    } catch (error) {
-      console.error("Error en create cliente:", error);
-      return ResponseOak(
-        ctx,
-        500,
-        { msg: "Error interno del servidor al crear el cliente." },
         { content: "Content-Type", app: "application/json" }
       );
     }
+
+    const cliente: ClienteModel = {
+      ci: parseInt(ci),
+      nombre: nombre.trim(),
+      apellido: apellido.trim(),
+      telefono: parseInt(telefono),
+      correo: correo.trim(),
+      password: password,
+      estado: 1,
+    };
+
+    // Validar que los números sean válidos
+    if (isNaN(cliente.ci) || isNaN(cliente.telefono)) {
+      return ResponseOak(
+        ctx,
+        400,
+        { msg: "CI y teléfono deben ser números válidos." },
+        { content: "Content-Type", app: "application/json" }
+      );
+    }
+
+    const res = await CreateQuery(cliente);
+
+    console.log("Resultado de CreateQuery:", res);
+
+    return ResponseOak(
+      ctx,
+      res.std,
+      {
+        msg: res.std === 200
+          ? "Cliente creado exitosamente."
+          : res.msg || "Error al crear el cliente.",
+        success: res.std === 200
+      },
+      {
+        content: "Content-Type",
+        app: "application/json",
+      },
+    );
+  } catch (error) {
+    console.error("Error en create cliente:", error);
+    return ResponseOak(
+      ctx,
+      500,
+      { 
+        msg: "Error interno del servidor al crear el cliente.",
+        
+      },
+      { content: "Content-Type", app: "application/json" }
+    );
   }
+}
 
   public async update(ctx: Context, ci: string) {
   try {

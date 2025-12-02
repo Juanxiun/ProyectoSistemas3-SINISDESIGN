@@ -5,6 +5,7 @@ import * as bcrypt from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 interface res {
   data?: ClienteModel[];
   std: number;
+  msg?: string; 
 }
 
 export const SelectQuery = async (ci?: string): Promise<res> => {
@@ -35,20 +36,30 @@ export const SelectQuery = async (ci?: string): Promise<res> => {
 
 export const CreateQuery = async (data: ClienteModel): Promise<res> => {
   try {
-    // Verificar si ya existe un cliente con ese CI
     const [existingRows] = await cli.query(
       'SELECT ci FROM clientes WHERE ci = ?',
       [data.ci]
     );
     
     if (Array.isArray(existingRows) && existingRows.length > 0) {
-      console.error("Cliente con CI duplicado:", data.ci);
       return {
         std: 400,
+        msg: "El CI ya está registrado en el sistema" 
       };
     }
 
-    // Encriptar la contraseña con bcrypt
+    const [existingEmail] = await cli.query(
+      'SELECT correo FROM clientes WHERE correo = ?',
+      [data.correo]
+    );
+    
+    if (Array.isArray(existingEmail) && existingEmail.length > 0) {
+      return {
+        std: 400,
+        msg: "El correo electrónico ya está registrado" 
+      };
+    }
+
     const hashedPassword = await bcrypt.hash(data.password);
 
     const query = `
@@ -74,6 +85,7 @@ export const CreateQuery = async (data: ClienteModel): Promise<res> => {
     console.error("Error en la query: Clientes > Create >", error);
     return {
       std: 500,
+      msg: "Error interno del servidor"
     };
   }
 };
