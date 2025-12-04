@@ -280,8 +280,11 @@
             <p class="text-amber-600">Este proyecto aún no tiene fases configuradas</p>
         </div>
         }
-        <div class="mt-6">
-            <app-pagos [idproy]="idproy"></app-pagos>
+        <div class="mt-8">
+            <app-pagos
+                [idproy]="idproy"
+                [costoProyecto]="proyectoData?.costo || 0">
+            </app-pagos>
         </div>
 
 
