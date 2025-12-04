@@ -4,7 +4,7 @@ export async function ProyPago(proy: string): Promise<PagoProps[]> {
     const url = ConnectA.api;
 
     try {
-        const result = await fetch(url + "/pago/" + proy);
+        const result = await fetch(url + "/pago-proyectos/" + proy);
         const proydata = await result.json();
         if (proydata.status === 200) {
             return proydata.data.data as PagoProps[];

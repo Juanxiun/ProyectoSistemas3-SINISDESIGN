@@ -1,0 +1,33 @@
+<section class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
+    <h2 class="text-xl font-bold text-gray-700 mb-4">Pagos del Proyecto</h2>
+
+    <div *ngIf="loading" class="text-gray-500">Cargando pagos...</div>
+    <div *ngIf="error" class="text-red-500">{{ error }}</div>
+
+    <table *ngIf="!loading && pagos.length > 0" class="w-full text-left border-collapse">
+        <thead>
+            <tr class="border-b">
+                <th class="py-2 px-3 text-gray-600 font-semibold">Título</th>
+                <th class="py-2 px-3 text-gray-600 font-semibold">Monto</th>
+                <th class="py-2 px-3 text-gray-600 font-semibold">Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let p of pagos" class="border-b hover:bg-gray-50 transition">
+                <td class="py-2 px-3">{{ p.titulo }}</td>
+                <td class="py-2 px-3 font-medium text-gray-800">Bs {{ p.monto }}</td>
+                <td class="py-2 px-3">{{ formatDate(p.fecha) }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div *ngIf="!loading && pagos.length === 0" class="text-gray-500">
+        No hay pagos registrados para este proyecto.
+    </div>
+
+    <div class="mt-4 pt-4 border-t text-right">
+        <span class="text-lg font-semibold text-gray-700">
+            Total Pagado: Bs {{ totalPagado }}
+        </span>
+    </div>
+</section>

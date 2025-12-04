@@ -4,10 +4,11 @@ import { ProyData, ProyProps } from "../../../api/proyectos/poryData";
 import { ProyFase, FaseProps } from "../../../api/proyectos/proyFase";
 import { ProyTipo, TipoProps } from "../../../api/proyectos/proyTipo";
 import { Router } from "@angular/router";
+import { Pagos } from "../pagos/pagos";
 
 @Component({
   selector: "app-proy-info",
-  imports: [CommonModule],
+  imports: [CommonModule, Pagos],
   templateUrl: "./proy-info.html",
   standalone: true
 })
