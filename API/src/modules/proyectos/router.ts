@@ -11,6 +11,7 @@ const list = new ListProyecto();
 proyecto
   .get("/p/list/:user", async (ctx) => {
     const user = ctx.params.user;
+    console.log(user)
     if (user === "x") {
       await list.ListView(ctx);
     } else {
