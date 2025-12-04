@@ -1,22 +1,39 @@
 <section class="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-    <h2 class="text-xl font-bold text-gray-700 mb-4">Pagos del Proyecto</h2>
+
+    <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold text-gray-700 mb-4">Pagos del Proyecto</h2>
+
+        <button
+            (click)="openModal()"
+            class="bg-[#92443a] text-white px-4 py-2 rounded-lg shadow hover:bg-[#7a3830] transition">
+            + Añadir Pago
+        </button>
+    </div>
 
     <div *ngIf="loading" class="text-gray-500">Cargando pagos...</div>
     <div *ngIf="error" class="text-red-500">{{ error }}</div>
 
-    <table *ngIf="!loading && pagos.length > 0" class="w-full text-left border-collapse">
+    <table *ngIf="!loading && pagos.length > 0" class="w-full text-left border-collapse mt-4">
         <thead>
-            <tr class="border-b">
+            <tr class="border-b bg-gray-100">
                 <th class="py-2 px-3 text-gray-600 font-semibold">Título</th>
                 <th class="py-2 px-3 text-gray-600 font-semibold">Monto</th>
                 <th class="py-2 px-3 text-gray-600 font-semibold">Fecha</th>
+                <th class="py-2 px-3 text-center text-gray-600 font-semibold">Acciones</th>
             </tr>
         </thead>
         <tbody>
             <tr *ngFor="let p of pagos" class="border-b hover:bg-gray-50 transition">
                 <td class="py-2 px-3">{{ p.titulo }}</td>
-                <td class="py-2 px-3 font-medium text-gray-800">Bs {{ p.monto }}</td>
+                <td class="py-2 px-3 font-medium text-[#92443a]">Bs {{ p.monto }}</td>
                 <td class="py-2 px-3">{{ formatDate(p.fecha) }}</td>
+
+                <td class="py-2 px-3 text-center">
+                    <button class="text-blue-600 hover:underline mr-4"
+                            (click)="openEditModal(p)">
+                        Editar
+                    </button>                    
+                </td>
             </tr>
         </tbody>
     </table>
@@ -25,9 +42,62 @@
         No hay pagos registrados para este proyecto.
     </div>
 
-    <div class="mt-4 pt-4 border-t text-right">
-        <span class="text-lg font-semibold text-gray-700">
-            Total Pagado: Bs {{ totalPagado }}
-        </span>
+    <div class="mt-4 pt-4 border-t text-right space-y-1">
+        <div class="text-lg font-semibold text-gray-700">
+            Total Pagado: <span class="text-[#92443a]">Bs {{ totalPagado }}</span>
+        </div>
+
+        <div class="text-lg font-semibold" [class.text-red-600]="deuda > 0" [class.text-green-600]="deuda <= 0">
+            Deuda Restante: Bs {{ deuda }}
+        </div>
     </div>
 </section>
+
+<!-- MODAL -->
+<div *ngIf="showModal"
+     class="fixed inset-0 bg-[#f6efe5]/80 backdrop-blur-sm flex justify-center items-center z-50">
+
+    <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-lg animate-fade">
+
+        <h3 class="text-xl font-bold text-[#92443a] mb-4">
+            {{ editMode ? 'Editar Pago' : 'Añadir Pago' }}
+        </h3>
+
+        <div class="space-y-4">
+
+            <div>
+                <label class="font-semibold">Título</label>
+                <input type="text" [(ngModel)]="titulo"
+                       class="w-full p-2 border rounded">
+            </div>
+
+            <div>
+                <label class="font-semibold">Monto</label>
+                <input type="number" [(ngModel)]="monto"
+                    class="w-full p-2 border rounded"
+                    [class.border-red-500]="monto <= 0" />
+            </div>
+
+            <div>
+                <label class="font-semibold">Fecha</label>
+                <input type="date" [(ngModel)]="fecha"
+                    class="w-full p-2 border rounded"
+                    [class.border-red-500]="isFechaInvalida()" />
+            </div>
+
+        </div>
+
+        <div class="flex justify-end gap-3 mt-6">
+            <button class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                    (click)="closeModal()">
+                Cancelar
+            </button>
+
+            <button class="px-4 py-2 bg-[#92443a] text-white rounded hover:bg-[#7a3830]"
+                    (click)="savePago()">
+                Guardar
+            </button>
+        </div>
+
+    </div>
+</div>
