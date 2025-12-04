@@ -136,6 +136,12 @@ export class EditarProyectos implements OnInit {
   tieneDireccion = false;
   seccionActual: "basico" | "tipo" | "direccion" | "reasignar" = "basico";
 
+  // VARIABLES MODAL
+  mostrarModalJustificacion = false;
+  justificacion = '';
+  procesandoReasignacion = false;
+
+
   serviciosCatalogo: { [key: string]: string[] } = {
     'Planes y legalizaciones de construcción': [
       'Viviendas',
@@ -171,7 +177,7 @@ export class EditarProyectos implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private cookieService: CookieService,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Verificar sesión primero
@@ -197,14 +203,14 @@ export class EditarProyectos implements OnInit {
         this.mensajeError = "ID de proyecto no válido.";
         return;
       }
-      
+
       this.proyecto.id = this.proyectoId;
       this.tipoProyecto.proy = this.proyectoId;
       this.direccion.proy = this.proyectoId;
 
       this.route.queryParams.subscribe((queryParams) => {
         this.codigoArquitecto = queryParams["arq"] || "";
-        
+
         if (this.codigoArquitecto && this.proyectoId) {
           this.fetchClients();
           this.fetchArchitects();
@@ -292,7 +298,12 @@ export class EditarProyectos implements OnInit {
   }
 
   getNombreArquitectoActual(): string {
-    const arquitecto = this.arquitectos().find(a => a.codigo === this.proyecto.arq);
+    // Solo leemos la señal con los paréntesis (), no escribimos en ella
+    const listaArquitectos = this.arquitectos();
+
+    // Buscamos sin modificar nada
+    const arquitecto = listaArquitectos.find(a => a.codigo === this.proyecto.arq);
+
     return arquitecto ? `${arquitecto.nombre} ${arquitecto.apellido}` : 'No asignado';
   }
 
@@ -447,85 +458,6 @@ export class EditarProyectos implements OnInit {
         if (err.status !== 404) {
           this.mensajeError = "Error al cargar el tipo de proyecto";
         }
-      },
-    });
-  }
-
-  reasignarArquitecto(): void {
-    // Validación 1: campos básicos del proyecto
-    if (!this.isFormBasicoValid()) {
-      this.mostrarMensajeErrorTemporal("Por favor, completa correctamente la información básica antes de reasignar.");
-      return;
-    }
-
-    // Validación 2: selección de nuevo arquitecto
-    if (!this.nuevoArquitecto.trim()) {
-      this.mostrarMensajeErrorTemporal("Por favor, selecciona un arquitecto para reasignar.");
-      return;
-    }
-
-    // Validación 3: arquitecto diferente
-    if (this.nuevoArquitecto.trim() === this.proyecto.arq) {
-      this.mostrarMensajeErrorTemporal("El nuevo arquitecto debe ser diferente al actual.");
-      return;
-    }
-
-    // Validación 4: arquitecto existente en la lista
-    const arquitectoExiste = this.arquitectos().some(a => a.codigo === this.nuevoArquitecto.trim());
-    if (!arquitectoExiste) {
-      this.mostrarMensajeErrorTemporal("El arquitecto seleccionado no existe en la lista.");
-      return;
-    }
-
-    // --- Si todo está correcto ---
-    this.isLoading.set(true);
-    this.mensajeError = "";
-    this.mensajeExito = "";
-
-    const formData = new FormData();
-    formData.append("nombre", this.proyecto.nombre.trim());
-    formData.append("costo", this.proyecto.costo.toString());
-    formData.append("inicio", this.proyecto.inicio);
-    formData.append("cli", this.proyecto.cli.toString());
-    formData.append("arq", this.nuevoArquitecto.trim());
-    formData.append("est", this.proyecto.est.toString());
-
-    if (this.proyecto.final && this.proyecto.final.trim() !== "") {
-      formData.append("final", this.proyecto.final);
-    }
-
-    if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
-      formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
-    }
-
-    this.http.put<any>(`${this.apiUrlProyectos}/${this.proyectoId}`, formData).subscribe({
-      next: (response: any) => {
-        if (response.std === 200 || response.status === 200) {
-          this.mensajeExito = "Arquitecto reasignado correctamente.";
-          this.mostrarNotificacion(1, this.mensajeExito);
-          this.proyecto.arq = this.nuevoArquitecto;
-          this.codigoArquitecto = this.nuevoArquitecto;
-
-          // Limpiar selección de imagen y mensaje
-          this.imagenSeleccionada = null;
-          this.nombreArchivo = "";
-          
-          setTimeout(() => {
-            this.mensajeExito = "";
-          }, 3000);
-        } else {
-          this.mensajeError = response?.error || response?.msg || "Error al reasignar arquitecto.";
-        }
-      },
-      error: (err: HttpErrorResponse) => {
-        let mensajeError = `Error ${err.status}: `;
-        if (err.error?.error) mensajeError += err.error.error;
-        else if (err.error?.msg) mensajeError += err.error.msg;
-        else mensajeError += err.statusText || "Error desconocido.";
-        this.mensajeError = mensajeError;
-      },
-      complete: () => {
-        this.isLoading.set(false);
       },
     });
   }
@@ -1077,5 +1009,117 @@ export class EditarProyectos implements OnInit {
     setTimeout(() => {
       this.mostrarNotif = false;
     }, 3000);
+  }
+
+  //metodos para el modal
+  getNombreNuevoArquitecto(): string {
+    if (!this.nuevoArquitecto) return 'No seleccionado';
+    const arquitecto = this.arquitectos().find(a => a.codigo === this.nuevoArquitecto);
+    return arquitecto ? `${arquitecto.nombre} ${arquitecto.apellido}` : 'Desconocido';
+  }
+
+  // validar y abrir modal
+  abrirModalReasignacion(): void {
+    if (!this.isFormBasicoValid()) {
+      this.mostrarMensajeErrorTemporal("Por favor, completa correctamente la información básica antes de reasignar.");
+      return;
+    }
+
+    if (!this.nuevoArquitecto.trim()) {
+      this.mostrarMensajeErrorTemporal("Por favor, selecciona un arquitecto para reasignar.");
+      return;
+    }
+
+    if (this.nuevoArquitecto.trim() === this.proyecto.arq) {
+      this.mostrarMensajeErrorTemporal("El nuevo arquitecto debe ser diferente al actual.");
+      return;
+    }
+
+    const arquitectoExiste = this.arquitectos().some(a => a.codigo === this.nuevoArquitecto.trim());
+    if (!arquitectoExiste) {
+      this.mostrarMensajeErrorTemporal("El arquitecto seleccionado no existe en la lista.");
+      return;
+    }
+
+    this.justificacion = '';
+    this.isLoading.set(false);
+    this.mostrarModalJustificacion = true;
+  }
+
+  cancelarReasignacion() {
+    this.mostrarModalJustificacion = false;
+    this.justificacion = '';
+    this.procesandoReasignacion = false;
+  }
+
+  // confirmar
+  confirmarReasignacion(): void {
+    if (!this.justificacion || this.justificacion.length < 10) {
+      return;
+    }
+
+    this.procesandoReasignacion = true;
+
+    this.mensajeError = "";
+    this.mensajeExito = "";
+
+    const formData = new FormData();
+    formData.append("nombre", this.proyecto.nombre.trim());
+    formData.append("costo", this.proyecto.costo.toString());
+    formData.append("inicio", this.proyecto.inicio);
+    formData.append("cli", this.proyecto.cli.toString());
+    formData.append("arq", this.nuevoArquitecto.trim());
+    formData.append("est", this.proyecto.est.toString());
+
+    formData.append("justificacion", this.justificacion);
+
+    if (this.proyecto.final && this.proyecto.final.trim() !== "") {
+      formData.append("final", this.proyecto.final);
+    }
+
+    if (this.imagenSeleccionada && this.imagenSeleccionada instanceof File) {
+      formData.append("imagen", this.imagenSeleccionada, this.imagenSeleccionada.name);
+    }
+
+    this.http.put<any>(`${this.apiUrlProyectos}/${this.proyectoId}`, formData).subscribe({
+      next: (response: any) => {
+        if (response.std === 200 || response.status === 200) {
+          this.mensajeExito = "Arquitecto reasignado correctamente.";
+          this.mostrarNotificacion(1, this.mensajeExito);
+
+          // Actualizar datos locales
+          this.proyecto.arq = this.nuevoArquitecto;
+          this.codigoArquitecto = this.nuevoArquitecto;
+
+          // Limpiar selección de imagen y mensaje
+          this.imagenSeleccionada = null;
+          this.nombreArchivo = "";
+
+          // CERRAR MODAL
+          this.mostrarModalJustificacion = false;
+
+          setTimeout(() => {
+            this.mensajeExito = "";
+          }, 3000);
+        } else {
+          this.mensajeError = response?.error || response?.msg || "Error al reasignar arquitecto.";
+          this.mostrarModalJustificacion = false; // Cerramos modal si hay error para mostrarlo en pantalla
+        }
+      },
+      error: (err: HttpErrorResponse) => {
+        let mensajeError = `Error ${err.status}: `;
+        if (err.error?.error) mensajeError += err.error.error;
+        else if (err.error?.msg) mensajeError += err.error.msg;
+        else mensajeError += err.statusText || "Error desconocido.";
+        this.mensajeError = mensajeError;
+        this.mostrarModalJustificacion = false; // Cerramos modal si hay error
+      },
+      complete: () => {
+        this.procesandoReasignacion = false;
+        this.isLoading.set(false);
+        alert('EL ARQUITECTO SE REASIGNO CON EXITO');
+        this.router.navigate(['/arquitectos']);
+      },
+    });
   }
 }

@@ -1,6 +1,4 @@
-<app-navbar 
-[id]="userData.id"
-[Ubi]="'Editar Proyecto'" />
+<app-navbar [id]="userData.id" [Ubi]="'Editar Proyecto'" />
 <div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
   <app-siderbar [admin]="userData.admin" />
   <div class="bg-[#f6efe5] w-full h-full px-4 py-6 overflow-y-auto">
@@ -493,15 +491,15 @@
             </div>
 
             <div class="flex gap-4 pt-6 mt-6 border-t border-gray-100">
-              <button type="button" (click)="reasignarArquitecto()" [disabled]="isLoading() || !nuevoArquitecto"
+              <button type="button" (click)="abrirModalReasignacion()" [disabled]="isLoading() || !nuevoArquitecto"
                 class="flex-1 bg-[#92443a] hover:bg-[#b8523e] disabled:bg-gray-400 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 flex items-center justify-center gap-2">
                 <span *ngIf="!isLoading()">
                   <i class="bi bi-check-circle"></i>
-                  Confirmar Reasignación
+                  Reasignar Arquitecto
                 </span>
                 <span *ngIf="isLoading()">
                   <i class="bi bi-hourglass-split animate-spin"></i>
-                  Guardando...
+                  Procesando...
                 </span>
               </button>
             </div>
@@ -511,7 +509,127 @@
       </div>
     </div>
     <div>
-      <app-notificacion *ngIf="mostrarNotif" [type]="tipoNotif" [message]="mensajeNotif">
-      </app-notificacion>
+      @if (mostrarModalJustificacion) {
+      <div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+          <div class="bg-orange-50 border-b border-orange-200 px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="bg-orange-100 p-2 rounded-full">
+                <i class="bi bi-exclamation-triangle-fill text-orange-600 text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-orange-800">Confirmar Reasignación de Proyecto</h3>
+                <p class="text-orange-600 text-sm">Esta acción cambiará la titularidad del proyecto</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 overflow-y-auto max-h-[60vh]">
+            <div class="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <i class="bi bi-person-dash text-gray-500"></i>
+                    <h4 class="font-semibold text-gray-600 text-sm">Arquitecto Actual:</h4>
+                  </div>
+                  <p class="text-gray-800 font-bold pl-6">{{ getNombreArquitectoActual() }}</p>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <i class="bi bi-person-check text-[#92443a]"></i>
+                    <h4 class="font-semibold text-gray-600 text-sm">Nuevo Arquitecto:</h4>
+                  </div>
+                  <p class="text-[#92443a] font-bold pl-6">{{ getNombreNuevoArquitecto() }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+              <div class="flex items-start gap-3">
+                <i class="bi bi-info-circle-fill text-amber-600 text-lg mt-0.5"></i>
+                <div>
+                  <h4 class="font-semibold text-amber-800 mb-1">Advertencia Importante</h4>
+                  <p class="text-amber-700 text-sm">
+                    Está a punto de transferir este proyecto. El arquitecto anterior perderá el acceso de edición
+                    y la responsabilidad sobre el mismo.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-1">
+              <label class="block text-gray-700 font-semibold mb-3">
+                <i class="bi bi-pencil-square text-gray-600 mr-2"></i>
+                Justificación de la Reasignación
+                <span class="text-red-500">*</span>
+              </label>
+              <p class="text-gray-600 text-sm mb-3">
+                Por favor, explique los motivos para realizar este cambio de arquitecto.
+              </p>
+
+              <textarea [(ngModel)]="justificacion"
+                placeholder="Ejemplo: Cambio de personal, solicitud del cliente, reestructuración de equipo..." class="w-full h-40 p-4 border border-gray-300 rounded-lg resize-none 
+                           focus:border-orange-500 focus:ring-2 focus:ring-orange-200 
+                           transition-all duration-200 text-gray-700"
+                [class.border-red-500]="justificacion.length > 0 && justificacion.length < 10"
+                [class.bg-red-50]="justificacion.length > 0 && justificacion.length < 10">
+                </textarea>
+
+              @if (justificacion.length > 0 && justificacion.length < 10) { <div
+                class="flex items-center gap-2 mt-2 text-red-600">
+                <i class="bi bi-exclamation-circle-fill text-sm"></i>
+                <span class="text-sm font-medium">
+                  La justificación debe tener al menos 10 caracteres ({{justificacion.length}}/10)
+                </span>
+            </div>
+            }
+
+            @if (justificacion.length >= 10) {
+            <div class="flex items-center gap-2 mt-2 text-green-600">
+              <i class="bi bi-check-circle-fill text-sm"></i>
+              <span class="text-sm font-medium">
+                Justificación válida ({{justificacion.length}}/10 caracteres)
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="bg-gray-50 border-t border-gray-200 px-6 py-4">
+          <div class="flex justify-between items-center">
+            <div class="text-sm text-gray-600">
+              <i class="bi bi-shield-lock mr-1"></i>
+              Acción registrada en auditoría
+            </div>
+
+            <div class="flex gap-3">
+              <button (click)="cancelarReasignacion()" [disabled]="procesandoReasignacion" class="px-6 py-3 text-gray-700 border border-gray-300 rounded-lg 
+                               hover:bg-gray-50 disabled:opacity-50 transition-all duration-200
+                               flex items-center gap-2 font-medium">
+                <i class="bi bi-x-circle"></i>
+                Cancelar
+              </button>
+
+              <button (click)="confirmarReasignacion()" [disabled]="procesandoReasignacion || justificacion.length < 10"
+                class="px-6 py-3 bg-[#92443a] text-white rounded-lg 
+                               hover:bg-[#7a3830] disabled:opacity-50 disabled:cursor-not-allowed 
+                               transition-all duration-200 flex items-center gap-2 font-medium
+                               shadow-lg hover:shadow-xl transform hover:scale-105">
+                @if (procesandoReasignacion) {
+                <i class="bi bi-arrow-repeat animate-spin"></i>
+                Procesando...
+                } @else {
+                <i class="bi bi-check-lg"></i>
+                Confirmar Cambio
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+    }
+    <app-notificacion *ngIf="mostrarNotif" [type]="tipoNotif" [message]="mensajeNotif">
+    </app-notificacion>
   </div>
+</div>
