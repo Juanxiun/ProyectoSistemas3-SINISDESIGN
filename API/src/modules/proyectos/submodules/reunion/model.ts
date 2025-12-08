@@ -4,5 +4,6 @@ export default interface ReunionModel{
     titulo: string;
     descripcion: string;
     fecha: string;
+    fecha_final?: string;
     estado?: number;
 }

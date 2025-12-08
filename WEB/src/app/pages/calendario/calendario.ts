@@ -46,51 +46,63 @@ export class Calendario implements OnInit {
   }
 
   calcularSemanaActual() {
-    const dia = this.fechaActual.getDay();
-    const diff = this.fechaActual.getDate() - dia;
-    this.inicioSemana = new Date(this.fechaActual.setDate(diff));
-    this.finSemana = new Date(this.inicioSemana);
-    this.finSemana.setDate(this.inicioSemana.getDate() + 6);
+    const base = new Date(this.fechaActual); // COPIA para no dañar fechaActual
+    const diaSemana = base.getDay(); 
+    const inicio = new Date(base);
+    inicio.setDate(base.getDate() - diaSemana);
+
+    const fin = new Date(inicio);
+    fin.setDate(inicio.getDate() + 6);
+
+    this.inicioSemana = inicio;
+    this.finSemana = fin;
 
     this.diasSemana = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(this.inicioSemana);
-      d.setDate(this.inicioSemana.getDate() + i);
+      const d = new Date(inicio);
+      d.setDate(inicio.getDate() + i);
       return d;
     });
 
-    this.rangoSemana = `${this.inicioSemana.toLocaleDateString("es-ES", {
+    this.rangoSemana = `${inicio.toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "short",
-    })} - ${this.finSemana.toLocaleDateString("es-ES", {
+    })} - ${fin.toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "short",
     })}`;
   }
 
   semanaAnterior() {
-    this.fechaActual.setDate(this.fechaActual.getDate() - 7);
+    this.fechaActual = new Date(this.fechaActual.getFullYear(), this.fechaActual.getMonth(), this.fechaActual.getDate() - 7);
     this.calcularSemanaActual();
   }
 
   semanaSiguiente() {
-    this.fechaActual.setDate(this.fechaActual.getDate() + 7);
+    this.fechaActual = new Date(this.fechaActual.getFullYear(), this.fechaActual.getMonth(), this.fechaActual.getDate() + 7);
     this.calcularSemanaActual();
   }
+
 
   async cargarReuniones() {
     try {
       const data = await getReuniones(this.proyectoId);
 
-      this.reuniones = data.map((r: any) => ({
+      this.reuniones = data.map((r: any) => {
+      const fechaInicio = new Date(r.fecha);
+      const fechaFin = r.fecha_final ? new Date(r.fecha_final) : null;
+
+      return {
         id: r.id,
         titulo: r.titulo,
         descripcion: r.descripcion,
-        fecha: new Date(r.fecha),
-        horaInicio: r.hora_inicio || "09:00",
-        horaFin: r.hora_fin || "10:00",
+        fecha: fechaInicio,
+        fecha_final: fechaFin,
+        horaInicio: fechaInicio.toTimeString().substring(0,5), // HH:mm
+        horaFin: fechaFin ? fechaFin.toTimeString().substring(0,5) : null,
         estado: r.estado,
         proy: r.proy,
-      }));
+      };
+    });
 
       console.log("✅ Reuniones cargadas:", this.reuniones);
     } catch (err) {
@@ -101,11 +113,11 @@ export class Calendario implements OnInit {
 
   obtenerReunionesDelDiaYHora(dia: Date, hora: number) {
     return this.reuniones.filter((r) => {
-      const fecha = new Date(r.fecha);
       return (
-        fecha.getDate() === dia.getDate() &&
-        fecha.getMonth() === dia.getMonth() &&
-        parseInt(r.horaInicio.split(":")[0]) === hora
+        r.fecha.getFullYear() === dia.getFullYear() &&
+        r.fecha.getMonth() === dia.getMonth() &&
+        r.fecha.getDate() === dia.getDate() &&
+        r.fecha.getHours() === hora
       );
     });
   }
@@ -132,5 +144,10 @@ export class Calendario implements OnInit {
     this.mostrarEditor = false;
     this.reunionSeleccionada = null;
     if (refrescar) this.cargarReuniones();
+  }
+
+  private extraerHora(fechaString: string): string {
+    if (!fechaString) return "";
+    return fechaString.substring(11, 16); // HH:mm
   }
 }

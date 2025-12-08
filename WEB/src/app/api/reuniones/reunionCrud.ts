@@ -6,6 +6,7 @@ export interface Reunion {
   titulo: string;
   descripcion: string;
   fecha: string;
+  fecha_final?:string;
   estado?: number;
 }
 
@@ -66,13 +67,13 @@ export async function getReunion(proy: number, id: number): Promise<Reunion | nu
 // Crear reunión (mantengo tu formato para MySQL)
 export async function crearReunion(form: Reunion): Promise<boolean> {
   const url = `${ConnectA.api}/reunion-proyectos/`;
-  const fechaMySQL = form.fecha.replace("T", " ") + ":00";
 
   const formData = new FormData();
   formData.append("proy", form.proy.toString());
   formData.append("titulo", form.titulo);
   formData.append("descripcion", form.descripcion);
-  formData.append("fecha", fechaMySQL);
+  formData.append("fecha", form.fecha);
+  formData.append("fecha_final", form.fecha_final ?? "");
 
   try {
     const res = await fetch(url, { method: "POST", body: formData });
@@ -85,16 +86,16 @@ export async function crearReunion(form: Reunion): Promise<boolean> {
   }
 }
 
-// 🟠 Actualizar una reunión
+// Actualizar una reunión
 export async function actualizarReunion(id: number, form: Reunion): Promise<boolean> {
   const url = `${ConnectA.api}/reunion-proyectos/${id}`;
-  const fechaMySQL = form.fecha.replace("T", " ") + ":00";
 
   const formData = new FormData();
   formData.append("proy", form.proy.toString());
   formData.append("titulo", form.titulo);
   formData.append("descripcion", form.descripcion);
-  formData.append("fecha", fechaMySQL);
+  formData.append("fecha", form.fecha);
+  formData.append("fecha_final", form.fecha_final ?? "");
   if (form.estado !== undefined) formData.append("est", form.estado.toString());
 
   try {

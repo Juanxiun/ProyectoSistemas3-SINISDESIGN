@@ -5,7 +5,7 @@
 
   <div class="w-full bg-[rgb(246,239,229)] p-4 overflow-auto">
 
-    <!-- 🔹 Encabezado -->
+    <!--Encabezado -->
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold text-gray-800">Agenda Semanal</h2>
       <div class="flex items-center gap-3">
@@ -20,12 +20,12 @@
       </div>
     </div>
 
-    <!-- 🔹 Formulario NUEVA REUNIÓN -->
+    <!-- Formulario NUEVA REUNIÓN -->
     <div *ngIf="mostrarFormulario && !reunionSeleccionada">
       <app-nueva-reunion (reunionCreada)="cerrarFormulario()" />
     </div>
 
-    <!-- 🔹 Formulario EDITAR REUNIÓN -->
+    <!-- Formulario EDITAR REUNIÓN -->
     <div *ngIf="mostrarEditor && reunionSeleccionada">
       <app-editar-reunion
         [reunion]="reunionSeleccionada"
@@ -33,7 +33,7 @@
       ></app-editar-reunion>
     </div>
 
-    <!-- 🔹 Vista SEMANAL -->
+    <!-- Vista SEMANAL -->
     <ng-template [ngIf]="!mostrarFormulario && !mostrarEditor">
       <div class="overflow-x-auto border border-gray-300 rounded-lg bg-white">
         <table class="w-full border-collapse">
