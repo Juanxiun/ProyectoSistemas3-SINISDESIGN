@@ -1,7 +1,7 @@
 import cli from "../../../database/connect.ts";
 import ArquitectoModel from "../model.ts";
 import pool from '../../../database/connect.ts';
-import { hashPass } from "../../../libs/hashPass.ts";
+import { hashPassARQ } from "../../../libs/hashPass.ts";
 import { fileBlob } from "../../../libs/converFile.ts";
 
 interface InformacionData {
@@ -62,6 +62,8 @@ export const CreateQuery = async (
           INSERT INTO arquitectos (codigo, ci, nombre, apellido, telefono, correo, admin, password, estado)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
+    const hashedPassword = await hashPassARQ(arquitecto.password || "12345678");
+
     const arqParams = [
       arquitecto.codigo,
       arquitecto.ci,
@@ -70,7 +72,7 @@ export const CreateQuery = async (
       arquitecto.telefono,
       arquitecto.correo,
       arquitecto.admin,
-      arquitecto.password,
+      hashedPassword,
       arquitecto.estado,
     ];
 
