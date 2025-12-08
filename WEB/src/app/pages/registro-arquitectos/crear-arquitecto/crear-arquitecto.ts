@@ -4,16 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpErrorResponse } from '@angular/common/http';
 import { RouterModule, Router } from '@angular/router';
 
-
 import { NgZone } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
-
 
 import { Navbar } from '../../../components/navbar/navbar';
 import { Siderbar } from '../../../components/siderbar/siderbar';
 import { ConnectA } from '../../../../config/index';
 import { CookieService } from "ngx-cookie-service";
-
 
 import { InformacionProfesionalCreateComponent, InfoProfesionalOutput, Informacion } from '../../../components/arquitecto/informacion-profesional-create/informacion-profesional-create';
 import { EspecializacionesCreateComponent, Especializacion } from '../../../components/arquitecto/especializaciones-create/especializaciones-create';
@@ -36,8 +33,6 @@ export interface ApiResponse<T> {
     data?: { data?: T, msg?: string };
 }
 
-
-
 @Component({
     selector: 'app-crear-arquitecto',
     standalone: true,
@@ -49,6 +44,14 @@ export class CrearArquitecto implements OnInit {
     isLoading = false;
     isValid = false;
     userData: any = null;
+
+    // Variables para el Modal de Credenciales
+    showCredentialsModal = false;
+    createdCredentials = {
+        nombre: '',
+        codigo: '',
+        password: ''
+    };
 
     //notis
     notificationData: { type: 1 | 2 | 3, Tittle: string, message: string } | null = null;
@@ -76,6 +79,7 @@ export class CrearArquitecto implements OnInit {
     infoProfesionalFile: File | null = null;
     isInfoProfesionalValid: boolean = false;
     especializaciones: Especializacion[] = [];
+
     ngOnInit(): void {
 
         if (this.cookieService.check("sesion")) {
@@ -91,6 +95,7 @@ export class CrearArquitecto implements OnInit {
         this.validateForm();
         this.cdr.detectChanges();
     }
+
     onInfoProfesionalChange(event: InfoProfesionalOutput) {
         this.infoProfesionalData = event.info;
         this.infoProfesionalFile = event.file;
@@ -119,14 +124,10 @@ export class CrearArquitecto implements OnInit {
         this.correoError = null;
         this.codigoError = null;
 
-
-
         this.newArchitect.nombre = this.newArchitect.nombre?.trim() || '';
         this.newArchitect.apellido = this.newArchitect.apellido?.trim() || '';
         this.newArchitect.correo = this.newArchitect.correo?.trim() || '';
-        this.newArchitect.codigo = this.newArchitect.codigo?.trim() || '';
-
-
+        this.newArchitect.codigo = this.newArchitect.codigo?.trim() || ''; // Validar código manual
 
         if (!this.newArchitect.ci || isNaN(Number(this.newArchitect.ci))) {
             this.ciError = 'C.I. es obligatorio.';
@@ -136,7 +137,7 @@ export class CrearArquitecto implements OnInit {
             isValid = false;
         }
 
-
+        // --- VALIDACIÓN DE CÓDIGO MANUAL RESTAURADA ---
         if (!this.newArchitect.codigo) {
             this.codigoError = 'codigo es obligatorio.';
             isValid = false;
@@ -145,7 +146,7 @@ export class CrearArquitecto implements OnInit {
             this.codigoError = 'codigo no puede exceder 20 caracteres.';
             isValid = false;
         }
-
+        // ----------------------------------------------
 
         if (!this.newArchitect.nombre) {
             this.nombreError = 'Nombre es obligatorio.';
@@ -156,17 +157,17 @@ export class CrearArquitecto implements OnInit {
             isValid = false;
         }
         if (!this.newArchitect.apellido) {
-            this.apellidoError = 'apellido es obligatorio.';
+            this.apellidoError = 'Apellido es obligatorio.';
             isValid = false;
         }
         if (this.newArchitect.apellido && this.newArchitect.apellido.length > 20) {
-            this.apellidoError = 'apellido no puede exceder 20 caracteres.';
+            this.apellidoError = 'Apellido no puede exceder 20 caracteres.';
             isValid = false;
         }
 
 
         if (!this.newArchitect.telefono) {
-            this.telefonoError = 'telefono es obligatorio.';
+            this.telefonoError = 'Teléfono es obligatorio.';
             isValid = false;
         } else if (this.newArchitect.telefono && this.newArchitect.telefono.toString().length != 8) {
             this.telefonoError = 'Teléfono debe tener 8 digitos.';
@@ -195,12 +196,16 @@ export class CrearArquitecto implements OnInit {
         return re.test(email);
     }
 
+    private generateRandomPassword(length: number = 10): string {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+        let password = "";
+        password += "!@#$%&*".charAt(Math.floor(Math.random() * 7));
 
-
-
-
-
-
+        for (let i = 1; i < length; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return password.split('').sort(() => 0.5 - Math.random()).join('');
+    }
 
     submitNewArchitect() {
         if (!this.validateForm()) return;
@@ -208,14 +213,17 @@ export class CrearArquitecto implements OnInit {
         this.isLoading = true;
         const newArq = this.newArchitect as Arquitecto;
 
+        // GENERAR CONTRASEÑA AUTOMÁTICA
+        const passwordGen = this.generateRandomPassword(10);
+
         const formData = new FormData();
-        formData.append('codigo', String(newArq.codigo));
+        formData.append('codigo', String(newArq.codigo)); // Usamos el código manual
         formData.append('ci', String(newArq.ci));
         formData.append('nombre', newArq.nombre);
         formData.append('apellido', newArq.apellido);
         formData.append('telefono', String(newArq.telefono || 0));
         formData.append('correo', newArq.correo || '');
-        formData.append('password', "12345678");
+        formData.append('password', passwordGen); // Usamos la generada
         formData.append('admin', String(newArq.admin));
         formData.append('estado', String(newArq.estado));
 
@@ -227,23 +235,30 @@ export class CrearArquitecto implements OnInit {
             formData.append('foto', this.infoProfesionalFile);
         }
 
-
         formData.append('especializaciones', JSON.stringify(this.especializaciones.map(e => e.especialidad)));
 
 
         this.http.post<ApiResponse<any>>(this.apiUrl, formData).subscribe({
             next: (response: ApiResponse<any>) => {
+
+                // Credenciales para el modal (Código manual + Password generada)
+                this.createdCredentials = {
+                    nombre: `${newArq.nombre} ${newArq.apellido}`,
+                    codigo: String(newArq.codigo),
+                    password: passwordGen
+                };
+
                 if (response.data?.msg) {
-                    //alert(response.data.msg);
                     this.onNotification({
                         type: 2,
-                        Tittle: "información",
+                        Tittle: "Información",
                         message: response.data.msg,
                     });
-                    this.cdr.detectChanges();
-                    if (response.data.msg === 'Arquitecto creado exitosamente.') {
-                        this.router.navigate(['/arquitectos']);
+
+                    if (response.data.msg === 'Arquitecto creado exitosamente.' || response.data.msg.includes('exitosamente')) {
+                        this.showCredentialsModal = true;
                     }
+                    this.cdr.detectChanges();
                 }
             },
             error: (err: HttpErrorResponse) => {
@@ -264,22 +279,30 @@ export class CrearArquitecto implements OnInit {
                 }
                 this.onNotification({
                     type: 2,
-                    Tittle: "información",
+                    Tittle: "Información",
                     message: errorMsg,
                 });
-                this.cdr.detectChanges();
                 this.isLoading = false;
                 this.cdr.detectChanges();
-
             },
             complete: () => {
-
                 this.isLoading = false;
                 this.cdr.detectChanges();
-                this.router.navigate(['/arquitectos']);
             }
         });
     }
+
+    copyToClipboard(text: string) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Contraseña copiada al portapapeles");
+        });
+    }
+
+    closeModalAndRedirect() {
+        this.showCredentialsModal = false;
+        this.router.navigate(['/arquitectos']);
+    }
+
     //notis
     onNotification(data: { type: 1 | 2 | 3, Tittle: string, message: string }) {
         this.notificationData = data;

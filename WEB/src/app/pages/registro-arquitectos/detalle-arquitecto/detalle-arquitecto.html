@@ -73,13 +73,13 @@
 
                     <div *ngIf="!isEditing && arquitecto.estado === 1" class="flex gap-3">
                         <button type="button" (click)="toggleEdit()"
-                            class="bg-[#E0A189] hover:bg-[#C97D60] text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                            class="bg-blue-500 hover:bg-blue-800 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
                             EDITAR
                         </button>
-                        <!-- <button type="button"
-                            class="bg-[#283845] hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
-                            CONFIGURAR CONTRASEÑA
-                        </button> -->
+                        <button type="button" (click)="resetPassword()" [disabled]="isResetting"
+                            class="bg-gray-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-300 disabled:opacity-50">
+                            {{ isResetting ? 'GENERANDO...' : 'RESTABLECER CONTRASEÑA' }}
+                        </button>
                     </div>
 
                     <button *ngIf="!isEditing && arquitecto.estado === 1" type="button" (click)="deleteArquitecto()"
@@ -115,4 +115,29 @@
     <app-notificacion *ngIf="notificationData" [type]="notificationData.type" [Tittle]="notificationData.Tittle"
         [message]="notificationData.message" (close)="notificationData = null">
     </app-notificacion>
+
+    <div *ngIf="showResetModal" style="background-color: rgba(0,0,0,0.5);"
+        class="fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-96 text-center border-2 border-orange-500">
+            <h3 class="text-xl font-bold mb-4 text-gray-800">Contraseña Reestablecida</h3>
+            <p class="text-sm text-gray-600 mb-4">La contraseña ha sido cambiada exitosamente. Copie la nueva
+                contraseña:</p>
+
+            <div class="flex items-center justify-between bg-gray-100 border p-3 rounded mb-6">
+                <span class="font-mono text-lg font-bold text-black select-all">{{newGeneratedPassword}}</span>
+                <button (click)="copyPass()" class="text-gray-500 hover:text-blue-600 p-1" title="Copiar">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <button (click)="closeResetModal()"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Cerrar
+            </button>
+        </div>
+    </div>
 </div>
