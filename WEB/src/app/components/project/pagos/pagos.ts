@@ -35,7 +35,13 @@ export class Pagos implements OnInit {
     monto: number = 0;
     fecha = "";
 
-    //formEror
+    //formEror7
+    formErrors = {
+    titulo: "",
+    monto: "",
+    fecha: ""
+    };
+
 
     constructor(private cdr: ChangeDetectorRef) { }
 
@@ -104,7 +110,7 @@ export class Pagos implements OnInit {
 
         this.titulo = "";
         this.monto = 0;
-        this.fecha = "";
+        this.fecha = this.getToday();
     }
 
     // MODAL EDITAR
@@ -115,105 +121,55 @@ export class Pagos implements OnInit {
         this.editingId = p.id ?? null;
         this.titulo = p.titulo;
         this.monto = p.monto;
-        this.fecha = p.fecha;
+        this.fecha = this.getToday();
     }
 
     closeModal() {
         this.showModal = false;
     }
-
-    // =====================================
-    // GUARDAR PAGO (POST O PUT)
+    // GUARDAR PAGO
     async savePago() {
-    this.modalError = null;
-
-    // ============================
-    // VALIDACIÓN: TÍTULO VACÍO
-    // ============================
-    if (!this.titulo || this.titulo.trim().length === 0) {
-        this.modalError = "El título no puede estar vacío.";
-        return;
-    }
-
-    // ============================
-    // VALIDACIÓN: MONTO
-    // ============================
-    if (!this.monto || this.monto <= 0) {
-        this.modalError = "El monto debe ser mayor a 0.";
-        return;
-    }
-
-    // ============================
-    // VALIDACIÓN: FECHA VACÍA
-    // ============================
-    if (!this.fecha) {
-        this.modalError = "Debe seleccionar una fecha.";
-        return;
-    }
-
-    const hoy = new Date();
-    hoy.setHours(0,0,0,0);
-
-    const fechaPago = new Date(this.fecha);
-    fechaPago.setHours(0,0,0,0);
-
-    // Si es edición → permitir fechas pasadas pero NO futuras
-    if (this.editMode) {
-        if (fechaPago > hoy) {
-            this.modalError = "La fecha del pago no puede ser futura.";
+        this.formErrors = { titulo: "", monto: "", fecha: "" };
+        if (!this.titulo || this.titulo.trim().length === 0) {// VALIDACIÓN: TÍTULO VACÍO
+            this.formErrors.titulo = "El título no puede estar vacío.";
+        }
+        if (!this.monto || this.monto <= 0) {// VALIDACIÓN: MONTO
+            this.formErrors.monto = "El monto debe ser mayor a 0.";
+        }
+        const totalPrevio = this.totalPagado - (this.editMode ? this.getMontoOriginal() : 0);// VALIDACIÓN: NO SUPERAR MONTO TOTAL DEL PROYECTO
+        const totalFuturo = totalPrevio + this.monto;
+        if (totalFuturo > this.costoProyecto) {
+            this.formErrors.monto =
+                `El pago excede el monto total del proyecto. Monto máximo permitido: Bs ${this.costoProyecto - totalPrevio}.`;
+        }
+        if (!this.fecha) {// VALIDACIÓN: FECHA (Siempre auto-hoy)
+            this.formErrors.fecha = "Debe seleccionar una fecha.";
+        }
+        if (this.formErrors.titulo || this.formErrors.monto || this.formErrors.fecha) {
             return;
         }
-    } 
-    // Si es nuevo pago → NO permitir fechas pasadas ni futuras
-    else {
-        if (fechaPago < hoy) {
-            this.modalError = "La fecha no puede ser anterior a hoy.";
-            return;
-        }
-        if (fechaPago > hoy) {
-            this.modalError = "La fecha del pago no puede ser futura.";
-            return;
-        }
+        // GUARDAR (POST O PUT)
+        const form = new FormData();
+        form.append("proy", this.idproy.toString());
+        form.append("titulo", this.titulo);
+        form.append("monto", this.monto.toString());
+        form.append("fecha", this.fecha);
+
+        const isEdit = this.editMode && this.editingId;
+
+        const url = isEdit
+            ? `${ConnectA.api}/pago-proyectos/${this.editingId}`
+            : `${ConnectA.api}/pago-proyectos/`;
+
+        const method = isEdit ? "PUT" : "POST";
+
+        await fetch(url, { method, body: form });
+
+        this.closeModal();
+        await this.loadPagos();
+        await this.loadDeuda();
     }
 
-    // ============================
-    // VALIDACIÓN: NO SUPERAR MONTO TOTAL
-    // ============================
-    const montoOriginal = this.editMode ? this.getMontoOriginal() : 0;
-
-    const totalPrevio = this.totalPagado - montoOriginal; 
-    const totalFuturo = totalPrevio + this.monto;
-
-    if (totalFuturo > this.costoProyecto) {
-        this.modalError =
-            `El pago excede el monto total del proyecto.\n\n` +
-            `Monto total: Bs ${this.costoProyecto}\n` +
-            `Pagado anteriormente: Bs ${totalPrevio}\n` +
-            `Pago ingresado: Bs ${this.monto}`;
-        return;
-    }
-
-    // ============================
-    // SI TODO ES VÁLIDO, GUARDAR
-    // ============================
-    const form = new FormData();
-    form.append("proy", this.idproy.toString());
-    form.append("titulo", this.titulo);
-    form.append("monto", this.monto.toString());
-    form.append("fecha", this.fecha);
-
-    const url = this.editMode
-        ? `${ConnectA.api}/pago-proyectos/${this.editingId}`
-        : `${ConnectA.api}/pago-proyectos/`;
-
-    const method = this.editMode ? "PUT" : "POST";
-
-    await fetch(url, { method, body: form });
-
-    this.closeModal();
-    await this.loadPagos();
-    await this.loadDeuda();
-}
 
 
     getMontoOriginal(): number {
@@ -221,11 +177,7 @@ export class Pagos implements OnInit {
         return pago ? pago.monto : 0;
     }
 
-
-
-    // =====================================
-    // ELIMINAR
-    // =====================================
+    //eliminar uso
     async deletePago(id: number | undefined) {
         if (!id) return;
         if (!confirm("¿Desea eliminar este pago?")) return;
@@ -238,17 +190,43 @@ export class Pagos implements OnInit {
         await this.loadDeuda();
     }
 
-    isFechaInvalida(): boolean {
-        if (!this.fecha) return false;
-
-        const fechaPago = new Date(this.fecha);
+    private getToday(): string {
         const hoy = new Date();
-
-        // Normalizar ambas fechas a medianoche
-        fechaPago.setHours(0, 0, 0, 0);
         hoy.setHours(0, 0, 0, 0);
+        return hoy.toISOString().split("T")[0];
+    }
 
-        // La fecha es inválida SOLO si es estrictamente menor que hoy
-        return fechaPago < hoy;
+    validateForm(): boolean {
+        this.formErrors = { titulo: "", monto: "", fecha: "" }; // limpiar errores
+
+        // Título
+        if (!this.titulo || this.titulo.trim().length === 0) {
+            this.formErrors.titulo = "El título no puede estar vacío.";
+        }
+
+        // Monto
+        if (!this.monto || this.monto <= 0) {
+            this.formErrors.monto = "El monto debe ser mayor a 0.";
+        }
+
+        // Evitar superar monto total de proyecto
+        const totalPrevio = this.totalPagado - (this.editMode ? this.getMontoOriginal() : 0);
+        const totalFuturo = totalPrevio + this.monto;
+
+        if (totalFuturo > this.costoProyecto) {
+            this.formErrors.monto =
+                `El pago excede el monto restante del proyecto. Debe ser menor o igual a Bs ${this.costoProyecto - totalPrevio}.`;
+        }
+
+        // Fecha
+        if (!this.fecha) {
+            this.formErrors.fecha = "Debe seleccionar una fecha.";
+        }
+
+        return (
+            !this.formErrors.titulo &&
+            !this.formErrors.monto &&
+            !this.formErrors.fecha
+        );
     }
 }
