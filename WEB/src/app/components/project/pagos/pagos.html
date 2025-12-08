@@ -68,23 +68,34 @@
             <div>
                 <label class="font-semibold">Título</label>
                 <input type="text" [(ngModel)]="titulo"
-                       class="w-full p-2 border rounded">
-            </div>
+                    class="w-full p-2 border rounded"
+                    [class.border-red-500]="formErrors.titulo">
 
+                <p *ngIf="formErrors.titulo" class="text-red-600 text-sm mt-1">
+                    {{ formErrors.titulo }}
+                </p>
+            </div>
             <div>
                 <label class="font-semibold">Monto</label>
                 <input type="number" [(ngModel)]="monto"
                     class="w-full p-2 border rounded"
-                    [class.border-red-500]="monto <= 0" />
-            </div>
+                    [class.border-red-500]="formErrors.monto">
 
+                <p *ngIf="formErrors.monto" class="text-red-600 text-sm mt-1">
+                    {{ formErrors.monto }}
+                </p>
+            </div>
             <div>
                 <label class="font-semibold">Fecha</label>
                 <input type="date" [(ngModel)]="fecha"
-                    class="w-full p-2 border rounded"
-                    [class.border-red-500]="isFechaInvalida()" />
-            </div>
+                    class="w-full p-2 border rounded bg-gray-100 cursor-not-allowed"
+                    [readonly]="true"
+                    [class.border-red-500]="formErrors.fecha">
 
+                <p *ngIf="formErrors.fecha" class="text-red-600 text-sm mt-1">
+                    {{ formErrors.fecha }}
+                </p>
+            </div>
         </div>
 
         <div class="flex justify-end gap-3 mt-6">
@@ -94,6 +105,8 @@
             </button>
 
             <button class="px-4 py-2 bg-[#92443a] text-white rounded hover:bg-[#7a3830]"
+                    [class.opacity-50]="!validateForm()"
+                    [disabled]="!validateForm()"
                     (click)="savePago()">
                 Guardar
             </button>
