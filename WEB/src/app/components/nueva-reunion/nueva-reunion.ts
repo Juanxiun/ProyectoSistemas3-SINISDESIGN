@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { crearReunion } from '../../api/reuniones/reunionCrud'; // ✅ Importar API real
+import { crearReunion } from '../../api/reuniones/reunionCrud'; //importar API real
 
 @Component({
   selector: 'app-nueva-reunion',
@@ -11,7 +11,7 @@ import { crearReunion } from '../../api/reuniones/reunionCrud'; // ✅ Importar 
   styleUrls: ['./nueva-reunion.css']
 })
 export class NuevaReunionComponent {
-  @Output() reunionCreada = new EventEmitter<void>(); // ✅ Notifica al calendario
+  @Output() reunionCreada = new EventEmitter<void>(); // Notifica al calendario
 
   titulo: string = '';
   fecha: string = '';
@@ -24,24 +24,21 @@ export class NuevaReunionComponent {
   proyectoId: number = 1;
 
   async crearReunion() {
-    // 🧠 Validación básica
     if (!this.titulo || !this.fecha || !this.horaInicio) {
       alert('Por favor completa todos los campos obligatorios.');
       return;
     }
-
-    // 🕒 Combinar fecha + hora inicio
-    const fechaHora = `${this.fecha}T${this.horaInicio}`;
-
-    // 🧾 Crear el objeto con formato correcto
+    const fechaInicio = `${this.fecha} ${this.horaInicio}:00`;
+    const fechaFin = `${this.fecha} ${this.horaFin}:00`;
     const nueva = {
       proy: this.proyectoId,
       titulo: this.titulo,
       descripcion: this.descripcion,
-      fecha: fechaHora, // será convertido a formato MySQL en el CRUD
+      fecha: fechaInicio,
+      fecha_final: fechaFin, // será convertido a formato MySQL en el CRUD
     };
 
-    // 🚀 Llamar al endpoint
+    // Llamar al endpoint
     const ok = await crearReunion(nueva);
 
     if (ok) {

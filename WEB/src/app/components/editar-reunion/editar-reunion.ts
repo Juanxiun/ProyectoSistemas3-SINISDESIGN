@@ -1,7 +1,18 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from "@angular/core";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { FormsModule } from "@angular/forms";
-import { actualizarReunion, eliminarReunion, Reunion } from "../../api/reuniones/reunionCrud";
+import {
+  actualizarReunion,
+  eliminarReunion,
+  Reunion,
+} from "../../api/reuniones/reunionCrud";
 
 @Component({
   selector: "app-editar-reunion",
@@ -16,85 +27,95 @@ export class EditarReunion implements OnChanges {
 
   guardando: boolean = false;
 
-  // Variables locales para manejar la fecha y hora separadas
+  // Campos editables
   fecha: string = "";
   horaInicio: string = "";
   horaFin: string = "";
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes["reunion"] && this.reunion) {
-      // Asegurarnos de que usamos el campo real 'fecha' que trae la API
-      const fechaStr = (this.reunion as any).fecha ?? "";
-      if (fechaStr) {
-        // Normalizar posibles formatos (ISO con zona o sin)
-        const fechaCompleta = new Date(fechaStr);
+      // Convertir fecha original a partes separadas
+      const fechaInicioStr = this.reunion.fecha;
+
+      if (fechaInicioStr) {
+        const fechaInicio = new Date(fechaInicioStr);
+
         // yyyy-mm-dd
-        this.fecha = fechaCompleta.toISOString().split("T")[0];
-        // HH:MM
-        this.horaInicio = fechaCompleta.toTimeString().slice(0, 5);
-        // Si no manejas hora de fin, igualamos a inicio (puedes ajustarlo)
-        this.horaFin = this.horaInicio;
+        this.fecha = fechaInicio.toISOString().split("T")[0];
+
+        // HH:mm
+        this.horaInicio = fechaInicio.toISOString().substring(11, 16);
+      }
+
+      // fecha_final (puede venir vacío)
+      const fechaFinStr = (this.reunion as any).fecha_final;
+
+      if (fechaFinStr) {
+        const fechaFin = new Date(fechaFinStr);
+        this.horaFin = fechaFin.toISOString().substring(11, 16);
       } else {
-        // Si no hay fecha, limpiar valores
-        this.fecha = "";
-        this.horaInicio = "";
-        this.horaFin = "";
+        this.horaFin = this.horaInicio; // si no hay fin, igual a inicio
       }
     }
   }
 
+  // Convierte Fecha + Hora => formato MySQL correcto
+  private toMySQLDate(date: string, hour: string): string {
+    return `${date} ${hour}:00`;
+  }
+
+  // Guardar cambios
   async guardarCambios() {
-    if (!this.reunion || !this.reunion.id) {
-      alert("Reunión inválida.");
+    if (!this.fecha || !this.horaInicio) {
+      alert("Por favor ingresa una fecha y hora de inicio.");
       return;
     }
 
-    // Validación básica
-    if (!this.fecha || !this.horaInicio) {
-      alert("Por favor ingresa fecha y hora de inicio.");
-      return;
-    }
+    const fechaInicioMySQL = this.toMySQLDate(this.fecha, this.horaInicio);
+    const fechaFinMySQL = this.toMySQLDate(this.fecha, this.horaFin);
+
+    const actualizada: Reunion = {
+      ...this.reunion,
+      fecha: fechaInicioMySQL,
+      fecha_final: fechaFinMySQL,
+    };
 
     this.guardando = true;
+
     try {
-      // Construir fecha en formato que acepta tu API (ISO local -> tu CRUD lo convierte a MySQL)
-      const fechaHora = `${this.fecha}T${this.horaInicio}`;
-
-      const actualizada: Reunion = {
-        ...this.reunion,
-        fecha: fechaHora,
-      };
-
       const ok = await actualizarReunion(this.reunion.id!, actualizada);
+
       if (ok) {
         alert("✅ Reunión actualizada correctamente.");
         this.cerrar.emit(true);
       } else {
-        alert("❌ Error al actualizar la reunión.");
+        alert("❌ Ocurrió un error al actualizar.");
       }
-    } catch (err) {
-      console.error("❌ Error en guardarCambios:", err);
-      alert("Error interno al guardar los cambios.");
+    } catch (error) {
+      console.error("❌ Error en guardarCambios:", error);
+      alert("Error interno.");
     } finally {
       this.guardando = false;
     }
   }
 
   async eliminar() {
-    if (!this.reunion || !this.reunion.id) return;
+    if (!this.reunion?.id) return;
 
-    if (!confirm("¿Seguro que deseas eliminar esta reunión?")) return;
+    if (!confirm("¿Deseas eliminar esta reunión?")) return;
+
     try {
-      const ok = await eliminarReunion(this.reunion.id!);
+      const ok = await eliminarReunion(this.reunion.id);
+
       if (ok) {
         alert("🗑️ Reunión eliminada correctamente.");
         this.cerrar.emit(true);
       } else {
         alert("❌ Error al eliminar la reunión.");
       }
-    } catch (error) {
-      console.error("Error al eliminar reunión:", error);
-      alert("Error interno al eliminar la reunión.");
+    } catch (err) {
+      console.error("Error al eliminar reunión:", err);
+      alert("Error interno.");
     }
   }
 

@@ -22,6 +22,7 @@ reunion
       titulo: form.get("titulo") as string,
       descripcion: form.get("descripcion") as string,
       fecha: form.get("fecha") as string,
+      fecha_final: form.get("fecha_final") as string,
       estado: form.has("est") ? parseInt(form.get("est") as string) : undefined,
     };
     await reu.create(ctx, reunion);
@@ -35,6 +36,7 @@ reunion
       titulo: form.get("titulo") as string,
       descripcion: form.get("descripcion") as string,
       fecha: form.get("fecha") as string,
+      fecha_final: form.get("fecha_final") as string,
       estado: form.has("est") ? parseInt(form.get("est") as string) : undefined,
     };
     await reu.update(ctx, reunion);
