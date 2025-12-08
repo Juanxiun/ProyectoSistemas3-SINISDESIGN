@@ -17,6 +17,7 @@ import { EspecializacionesComponent } from '../../../components/arquitecto/espec
 import { ViewChild } from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { NotificacionComponent } from "../../../components/notificacion/notificacion";
+
 export interface Arquitecto {
     codigo?: string;
     ci: number;
@@ -57,6 +58,11 @@ export class DetalleArquitecto implements OnInit {
     isEditing = false;
     isValid = true;
     userData: any = null;
+
+    // Variables para Reestablecer Contraseña
+    isResetting = false;
+    showResetModal = false;
+    newGeneratedPassword = '';
 
     //notis
     notificationData: { type: 1 | 2 | 3, Tittle: string, message: string } | null = null;
@@ -160,13 +166,9 @@ export class DetalleArquitecto implements OnInit {
         this.codigoError = null;
     }
 
-
-
-
     saveChanges() {
         if (!this.arquitecto || !this.arquitectoCodigo) return;
         if (!this.validateForm() || !this.infoProfesionalComponent.validateForm()) {
-            //alert('Por favor, corrija los errores en la información del arquitecto y/o profesional.');
             this.onNotification({
                 type: 3,
                 Tittle: "Error de Validación",
@@ -176,12 +178,10 @@ export class DetalleArquitecto implements OnInit {
         }
         this.isSaving = true;
 
-
         this.arquitecto.nombre = String(this.arquitecto.nombre)?.trim();
         this.arquitecto.apellido = String(this.arquitecto.apellido)?.trim();
         this.arquitecto.correo = String(this.arquitecto.correo)?.trim();
         this.arquitecto.codigo = String(this.arquitecto.codigo)?.trim();
-
 
         const fd = new FormData();
         fd.append('ci', String(this.arquitecto.ci));
@@ -193,31 +193,25 @@ export class DetalleArquitecto implements OnInit {
         fd.append('admin', String(this.arquitecto.admin || 0));
         fd.append('estado', String(this.arquitecto.estado || 1));
 
-
         this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, fd).subscribe({
             next: (response) => {
-
-                //alert(response.data?.msg || 'Arquitecto actualizado exitosamente!');
                 this.onNotification({
                     type: 1,
                     Tittle: "Actualización Exitosa",
                     message: "Arquitecto actualizado exitosamente!",
                 });
 
-
                 this.infoProfesionalComponent.saveInformacion().subscribe({
                     next: () => {
-
                         this.isEditing = false;
                         this.isSaving = false;
                         this.cdr.detectChanges();
                     },
                     error: (infoErr) => {
                         console.error('Error al guardar info profesional (hijo):', infoErr);
-                        //alert('Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message));
                         this.onNotification({
                             type: 3,
-                            Tittle: "Error de atctualización",
+                            Tittle: "Error de actualización",
                             message: 'Error al actualizar info profesional: ' + (infoErr.error?.data?.msg || infoErr.message),
                         });
                         this.isSaving = false;
@@ -228,10 +222,9 @@ export class DetalleArquitecto implements OnInit {
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al guardar cambios (padre):', err);
-                //alert('Error al actualizar: ' + (err.error?.data?.msg || err.message));
                 this.onNotification({
                     type: 3,
-                    Tittle: "Error de atctualización",
+                    Tittle: "Error de actualización",
                     message: 'Error al actualizar: ' + (err.error?.data?.msg || err.message),
                 });
                 this.isSaving = false;
@@ -261,11 +254,9 @@ export class DetalleArquitecto implements OnInit {
             },
             error: (err: HttpErrorResponse) => {
                 console.error('Error al eliminar:', err);
-
-
                 this.onNotification({
                     type: 3,
-                    Tittle: "Error de atctualización",
+                    Tittle: "Error de actualización",
                     message: 'Error al eliminar: ' + (err.error?.data?.msg || err.message),
                 });
                 this.isSaving = false;
@@ -298,12 +289,11 @@ export class DetalleArquitecto implements OnInit {
                 this.router.navigate(['/arquitectos']);
             },
             error: (err: HttpErrorResponse) => {
-                console.error('Error al eliminar:', err);
-                //alert('Error al eliminar: ' + (err.error?.data?.msg || err.message));
+                console.error('Error al activar:', err);
                 this.onNotification({
                     type: 3,
-                    Tittle: "Error de atctualización",
-                    message: 'Error al eliminar: ' + (err.error?.data?.msg || err.message),
+                    Tittle: "Error de actualización",
+                    message: 'Error al activar: ' + (err.error?.data?.msg || err.message),
                 });
             },
             complete: () => {
@@ -313,6 +303,70 @@ export class DetalleArquitecto implements OnInit {
         });
     }
 
+    // --- LÓGICA DE REESTABLECER CONTRASEÑA ---
+
+    private generateRandomPassword(length: number = 10): string {
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+        let password = "";
+        // Aseguramos al menos un caracter especial
+        password += "!@#$%&*".charAt(Math.floor(Math.random() * 7));
+
+        for (let i = 1; i < length; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        // Mezclar
+        return password.split('').sort(() => 0.5 - Math.random()).join('');
+    }
+
+    resetPassword() {
+        if (!this.arquitecto || !this.arquitectoCodigo) return;
+
+        const confirmacion = confirm(`¿Está seguro de reestablecer la contraseña para ${this.arquitecto.nombre}? Se generará una nueva automáticamente.`);
+        if (!confirmacion) return;
+
+        this.isResetting = true;
+        const newPass = this.generateRandomPassword(10);
+
+        // Enviamos solo la contraseña nueva al endpoint
+        const body = { password: newPass };
+
+        this.http.put<ApiResponse<any>>(`${this.apiUrl}/${this.arquitectoCodigo}`, body).subscribe({
+            next: (response) => {
+                this.isResetting = false;
+                this.newGeneratedPassword = newPass;
+                this.showResetModal = true; // Mostrar modal con la nueva pass
+
+                this.onNotification({
+                    type: 1,
+                    Tittle: "Contraseña Reestablecida",
+                    message: "Se ha generado una nueva contraseña correctamente.",
+                });
+                this.cdr.detectChanges();
+            },
+            error: (err: HttpErrorResponse) => {
+                this.isResetting = false;
+                console.error('Error al reestablecer contraseña:', err);
+                this.onNotification({
+                    type: 3,
+                    Tittle: "Error",
+                    message: "Error al reestablecer contraseña: " + (err.error?.msg || err.message)
+                });
+                this.cdr.detectChanges();
+            }
+        });
+    }
+
+    copyPass() {
+        navigator.clipboard.writeText(this.newGeneratedPassword).then(() => {
+            alert('Contraseña copiada al portapapeles');
+        });
+    }
+
+    closeResetModal() {
+        this.showResetModal = false;
+        this.newGeneratedPassword = '';
+        this.cdr.detectChanges();
+    }
 
 
     ciError: string | null = null;
@@ -349,10 +403,6 @@ export class DetalleArquitecto implements OnInit {
         this.arquitecto.apellido = String(this.arquitecto.apellido)?.trim();
         this.arquitecto.correo = String(this.arquitecto.correo)?.trim();
         this.arquitecto.codigo = String(this.arquitecto.codigo)?.trim();
-
-
-
-
 
         if (!this.arquitecto.ci) {
             this.ciError = 'C.I. es obligatorio.';

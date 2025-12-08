@@ -9,6 +9,7 @@ import {
   checkAssignedProjects,
 } from "../query/crud.query.ts";
 
+import { hashPassARQ } from "../../../libs/hashPass.ts";
 
 export class CrudArquitectos {
 
@@ -99,7 +100,6 @@ export class CrudArquitectos {
 
 
   public async update(ctx: Context) {
-
     const codigo = ((ctx as any).params as Record<string, string> | undefined)?.codigo;
     if (!codigo) {
       return ResponseOak(
@@ -111,8 +111,7 @@ export class CrudArquitectos {
     }
 
     const updateBody = async (data: Record<string, string | number>) => {
-
-      if (!data.ci || !data.nombre) {
+      if ((data.hasOwnProperty('ci') && !data.ci) || (data.hasOwnProperty('nombre') && !data.nombre)) {
         return ResponseOak(
           ctx,
           400,
@@ -124,30 +123,45 @@ export class CrudArquitectos {
       const res = await UpdateQuery(codigo, data);
 
       if (res.std !== 200) {
-
         return ResponseOak(ctx, res.std, { msg: res.error || "Error al actualizar el arquitecto." }, { content: "Content-Type", app: "application/json" });
       }
 
       return ResponseOak(ctx, 200, { msg: "Arquitecto actualizado exitosamente.", data: res.data }, { content: "Content-Type", app: "application/json" });
     }
 
-
-
     try {
-      const form = await ctx.request.body.formData();
+      let sourceData: Record<string, any> = {};
+      const contentType = ctx.request.headers.get("content-type") || "";
 
-      const estadoRaw = form.get("estado");
+      // 1. Detectar y Parsear según el Content-Type
+      if (contentType.includes("application/json")) {
+        // Para JSON usamos .json()
+        sourceData = await (ctx.request.body as any).json();
+      } else if (contentType.includes("multipart/form-data")) {
+        // Para FormData usamos .formData() y convertimos a objeto simple
+        const form = await ctx.request.body.formData();
+        form.forEach((value, key) => {
+          sourceData[key] = value;
+        });
+      } else {
+        // Intento fallback genérico si no hay header específico
+        try {
+          sourceData = await (ctx.request.body as any).json();
+        } catch {
+          return ResponseOak(ctx, 400, { msg: "Formato de cuerpo no soportado (use JSON o FormData)." }, { content: "Content-Type", app: "application/json" });
+        }
+      }
 
-      if (estadoRaw !== null && !form.get("ci") && !form.get("nombre") && !form.get("codigo") && !form.get("telefono")) {
-        const estNum = Number(estadoRaw);
+      // 2. Lógica de validación de estado (Desactivación segura)
+      if (sourceData.estado !== undefined && sourceData.estado !== null) {
+        const estNum = Number(sourceData.estado);
 
-        if (estNum === 0) {
+        // Si intenta desactivar (0) y NO está enviando datos de identificación (es solo un toggle de estado)
+        if (estNum === 0 && !sourceData.ci && !sourceData.nombre && !sourceData.codigo) {
           const checkRes = await checkAssignedProjects(codigo);
-
           if (checkRes.std !== 200) {
             return ResponseOak(ctx, 500, { msg: "Error de servidor al verificar proyectos." }, { content: "Content-Type", app: "application/json" });
           }
-
           if (checkRes.count > 0) {
             return ResponseOak(
               ctx,
@@ -157,70 +171,39 @@ export class CrudArquitectos {
             );
           }
         }
-
-        if (!Number.isNaN(estNum)) {
-          const res = await UpdateQuery(codigo, { estado: estNum });
-          return ResponseOak(ctx, 200, { msg: "Estado de arquitecto actualizado.", data: res }, { content: "Content-Type", app: "application/json" });
-        }
       }
 
-
+      // 3. Construir objeto de actualización final
       const updateData: Record<string, string | number> = {};
 
-      const ci = form.get("ci");
-      if (ci) updateData.ci = parseInt(ci as string);
+      if (sourceData.ci) updateData.ci = parseInt(String(sourceData.ci));
+      if (sourceData.nombre) updateData.nombre = String(sourceData.nombre);
+      if (sourceData.apellido) updateData.apellido = String(sourceData.apellido);
+      if (sourceData.telefono) updateData.telefono = parseInt(String(sourceData.telefono));
+      if (sourceData.correo) updateData.correo = String(sourceData.correo);
+      if (sourceData.admin !== undefined) updateData.admin = parseInt(String(sourceData.admin));
+      if (sourceData.estado !== undefined) updateData.estado = parseInt(String(sourceData.estado));
 
-      const nombre = form.get("nombre");
-      if (nombre) updateData.nombre = nombre as string;
+      const newCodigo = String(sourceData.codigo || "");
+      if (newCodigo && newCodigo !== "undefined" && newCodigo !== codigo) {
+        updateData.codigo = newCodigo;
+      }
 
-      const apellido = form.get("apellido");
-      if (apellido) updateData.apellido = apellido as string;
+      // LÓGICA DE CONTRASEÑA
+      if (sourceData.password && String(sourceData.password).trim() !== "") {
+        updateData.password = await hashPassARQ(String(sourceData.password));
+      }
 
-      const telefono = form.get("telefono");
-      if (telefono) updateData.telefono = parseInt(telefono as string);
-
-      const correo = form.get("correo");
-      if (correo) updateData.correo = correo as string;
-
-      const admin = form.get("admin");
-      if (admin) updateData.admin = parseInt(admin as string);
-
-      const estado = form.get("estado");
-      if (estado) updateData.estado = parseInt(estado as string);
-
-      const newCodigo = form.get("codigo");
-      if (newCodigo && newCodigo !== codigo) updateData.codigo = newCodigo as string;
-
+      if (Object.keys(updateData).length === 0) {
+        return ResponseOak(ctx, 400, { msg: "No se enviaron datos para actualizar." }, { content: "Content-Type", app: "application/json" });
+      }
 
       return await updateBody(updateData);
 
-
     } catch (e) {
-      console.error("Error leyendo form-data en update:", e);
+      console.error("Error en update:", e);
+      return ResponseOak(ctx, 500, { msg: "Error interno al procesar la solicitud." }, { content: "Content-Type", app: "application/json" });
     }
-
-    try {
-      const bodyAny = ctx.request.body as any;
-      const jsonBody = await bodyAny.value as Record<string, any> | undefined;
-      if (jsonBody) {
-        const updateData: Record<string, string | number> = {};
-
-        if (jsonBody.ci !== undefined) updateData.ci = Number(jsonBody.ci);
-        if (jsonBody.nombre !== undefined) updateData.nombre = String(jsonBody.nombre);
-        if (jsonBody.apellido !== undefined) updateData.apellido = String(jsonBody.apellido);
-        if (jsonBody.telefono !== undefined) updateData.telefono = Number(jsonBody.telefono);
-        if (jsonBody.correo !== undefined) updateData.correo = String(jsonBody.correo);
-        if (jsonBody.admin !== undefined) updateData.admin = Number(jsonBody.admin);
-        if (jsonBody.estado !== undefined) updateData.estado = Number(jsonBody.estado);
-
-        return await updateBody(updateData);
-
-      }
-    } catch (e) {
-      console.error("Error parseando JSON en update:", e);
-    }
-
-    return ResponseOak(ctx, 400, { msg: "Envíe los campos necesarios para actualizar." }, { content: "Content-Type", app: "application/json" });
   }
 
 

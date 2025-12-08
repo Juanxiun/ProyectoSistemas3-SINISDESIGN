@@ -23,10 +23,15 @@
                 </h2>
                 <p class="text-gray-600 mb-4">Utilice este apartado para gestionar su información profesional y
                     especializaciones.</p>
-                <div class="flex gap-3">
+                <div class="flex flex-wrap gap-3">
                     <button *ngIf="!isEditing" type="button" (click)="toggleEdit()"
                         class="bg-[#722C23] hover:bg-[#5a231c] text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
                         MODIFICAR MI PERFIL
+                    </button>
+
+                    <button *ngIf="!isEditing" type="button" (click)="openPassModal()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-300">
+                        CAMBIAR CONTRASEÑA
                     </button>
 
                     <button *ngIf="isEditing" type="button" (click)="saveChanges()"
@@ -49,6 +54,34 @@
             <app-especializaciones [arquitectoCodigo]="arquitecto.codigo!" [isEditing]="isEditing"
                 [isLoading]="isLoading" (notification)="onNotification($event)">
             </app-especializaciones>
+
+            <div *ngIf="showPassModal" style="background-color: rgba(0,0,0,0.5);"
+                class="fixed inset-0 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+                <div class="relative p-5 border w-96 shadow-lg rounded-md bg-white">
+                    <div class="mt-3 text-center">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Cambiar Contraseña</h3>
+                        <div class="mt-2 px-7 py-3">
+                            <input type="password" [(ngModel)]="newPassword" placeholder="Nueva Contraseña"
+                                class="mb-3 px-3 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-[#722C23]">
+
+                            <input type="password" [(ngModel)]="confirmPassword" placeholder="Confirmar Contraseña"
+                                class="px-3 py-2 border rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-[#722C23]">
+                        </div>
+                        <div class="items-center px-4 py-3">
+                            <button (click)="updatePassword()"
+                                [disabled]="!newPassword || !confirmPassword || isSavingPass"
+                                class="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 mb-2 disabled:opacity-50">
+                                {{ isSavingPass ? 'Guardando...' : 'Confirmar Cambio' }}
+                            </button>
+                            <button (click)="closePassModal()"
+                                class="px-4 py-2 bg-gray-300 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <app-notificacion *ngIf="notificationData" [type]="notificationData.type" [Tittle]="notificationData.Tittle"
                 [message]="notificationData.message" (close)="notificationData = null">
             </app-notificacion>

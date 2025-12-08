@@ -58,6 +58,13 @@ export class PerfilArquitectoComponent implements OnInit {
   //notis
   notificationData: { type: 1 | 2 | 3, Tittle: string, message: string } | null = null;
 
+  //kambio contraseña
+  showPassModal = false;
+  newPassword = '';
+  confirmPassword = '';
+  isSavingPass = false;
+
+
   private apiUrl = `${ConnectA.api}/arquitectos`;
 
   constructor(
@@ -184,6 +191,74 @@ export class PerfilArquitectoComponent implements OnInit {
       }
     });
   }
+  // password modal logica
+  openPassModal() {
+    this.newPassword = '';
+    this.confirmPassword = '';
+    this.showPassModal = true;
+  }
+
+  closePassModal() {
+    this.showPassModal = false;
+  }
+
+  updatePassword() {
+
+    const passLimpia = this.newPassword.trim();
+    const confirmLimpia = this.confirmPassword.trim();
+
+    if (passLimpia.length < 8) {
+      this.onNotification({ type: 3, Tittle: "Error", message: "La contraseña debe tener al menos 8 caracteres." });
+      return;
+    }
+    if (passLimpia !== confirmLimpia) {
+      this.onNotification({ type: 3, Tittle: "Error", message: "Las contraseñas no coinciden." });
+      return;
+    }
+    if (passLimpia.split(" ")[1]) {
+      this.onNotification({ type: 3, Tittle: "Error", message: "La contraseña no debe tener espacios" });
+      return;
+    }
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>_+\-=]/;
+    if (!specialCharRegex.test(passLimpia)) {
+      this.onNotification({ type: 3, Tittle: "Error", message: "La contraseña debe incluir al menos un carácter especial (ej: @, #, $)." });
+      return;
+    }
+
+    if (!this.arquitectoCodigo) return;
+
+    this.isSavingPass = true;
+
+    this.cdr.detectChanges();
+
+    const url = `${this.apiUrl}/${this.arquitectoCodigo}`;
+    const body = { password: passLimpia };
+
+    this.http.put<ApiResponse<any>>(url, body).subscribe({
+      next: (resp) => {
+        this.onNotification({
+          type: 1,
+          Tittle: "Éxito",
+          message: "Contraseña actualizada correctamente."
+        });
+        this.isSavingPass = false;
+        this.closePassModal();
+        this.cdr.detectChanges();
+      },
+      error: (err: HttpErrorResponse) => {
+        console.error('Error al cambiar password:', err);
+        const msg = err.error?.msg || err.error?.data?.msg || "Error al actualizar la contraseña.";
+        this.onNotification({
+          type: 3,
+          Tittle: "Error",
+          message: msg
+        });
+        this.isSavingPass = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   //notis
   onNotification(data: { type: 1 | 2 | 3, Tittle: string, message: string }) {
     this.notificationData = data;
