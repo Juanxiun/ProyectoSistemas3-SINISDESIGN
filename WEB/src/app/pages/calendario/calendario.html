@@ -5,36 +5,31 @@
 
   <div class="w-full bg-[rgb(246,239,229)] p-4 overflow-auto">
 
-    <!--Encabezado -->
-    <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-gray-800">Agenda Semanal</h2>
-      <div class="flex items-center gap-3">
-        <button class="bg-gray-300 px-3 py-1 rounded-lg hover:bg-gray-400" (click)="semanaAnterior()">‹</button>
-        <span class="font-semibold text-gray-800">{{ rangoSemana }}</span>
-        <button class="bg-gray-300 px-3 py-1 rounded-lg hover:bg-gray-400" (click)="semanaSiguiente()">›</button>
-        <button
-          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition"
-          (click)="abrirFormulario()">
-          + Nueva Reunión
-        </button>
+    <!-- SOLO SE MUESTRA EL ENCABEZADO Y EL CALENDARIO 
+         CUANDO NO SE ESTÁ CREANDO NI EDITANDO -->
+    <ng-container *ngIf="!mostrarFormulario && !mostrarEditor">
+
+      <!-- Encabezado -->
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold text-gray-800">Agenda Semanal</h2>
+
+        <div class="flex items-center gap-3">
+          <button class="bg-gray-300 px-3 py-1 rounded-lg hover:bg-gray-400"
+                  (click)="semanaAnterior()">‹</button>
+
+          <span class="font-semibold text-gray-800">{{ rangoSemana }}</span>
+
+          <button class="bg-gray-300 px-3 py-1 rounded-lg hover:bg-gray-400"
+                  (click)="semanaSiguiente()">›</button>
+
+          <button class="bg-[#E0A189] hover:bg-[#C97D60] text-white px-4 py-2 rounded-xl transition"
+                  (click)="abrirFormulario()">
+            + Nueva Reunión
+          </button>
+        </div>
       </div>
-    </div>
 
-    <!-- Formulario NUEVA REUNIÓN -->
-    <div *ngIf="mostrarFormulario && !reunionSeleccionada">
-      <app-nueva-reunion (reunionCreada)="cerrarFormulario()" />
-    </div>
-
-    <!-- Formulario EDITAR REUNIÓN -->
-    <div *ngIf="mostrarEditor && reunionSeleccionada">
-      <app-editar-reunion
-        [reunion]="reunionSeleccionada"
-        (cerrar)="cerrarEditor($event)"
-      ></app-editar-reunion>
-    </div>
-
-    <!-- Vista SEMANAL -->
-    <ng-template [ngIf]="!mostrarFormulario && !mostrarEditor">
+      <!-- Vista SEMANAL -->
       <div class="overflow-x-auto border border-gray-300 rounded-lg bg-white">
         <table class="w-full border-collapse">
           <thead>
@@ -45,16 +40,21 @@
               </th>
             </tr>
           </thead>
+
           <tbody>
             <tr *ngFor="let hora of horas" class="border-t border-gray-200 align-top">
-              <td class="text-right pr-2 text-sm text-gray-500 w-16">
-                {{ hora }}:00
-              </td>
+
+              <td class="text-right pr-2 text-sm text-gray-500 w-16">{{ hora }}:00</td>
+
               <td *ngFor="let dia of diasSemana" class="h-16 border border-gray-200 relative">
+
                 <ng-container *ngFor="let reunion of obtenerReunionesDelDiaYHora(dia, hora)">
                   <div
-                    class="absolute left-1 right-1 bg-blue-500 text-white rounded-md px-2 py-1 text-xs cursor-pointer hover:bg-blue-600"
-                    (click)="abrirEditor(reunion)">
+                    class="absolute left-1 right-1 bg-[#283845] text-white rounded-md px-4 text-xs cursor-pointer hover:bg-[#43586B]"
+                    [style.top.px]="0"
+                    [style.height.px]="calcularDuracionPx(reunion)"
+                    (click)="abrirEditor(reunion)"
+                  >
                     {{ reunion.titulo }}
                     <br />
                     <span class="text-[10px] opacity-80">
@@ -62,11 +62,31 @@
                     </span>
                   </div>
                 </ng-container>
+
               </td>
+
             </tr>
           </tbody>
         </table>
       </div>
-    </ng-template>
+
+    </ng-container>
+    <!-- Formulario NUEVA REUNIÓN -->
+    <div *ngIf="mostrarFormulario && !reunionSeleccionada">
+      <app-nueva-reunion
+        [reuniones]="reuniones"
+        (reunionCreada)="cerrarFormulario()"
+        (cerrar)="cerrarFormulario()"
+      />
+    </div>
+    <!-- Formulario EDITAR REUNIÓN -->
+    <div *ngIf="mostrarEditor && reunionSeleccionada">
+      <app-editar-reunion
+        [reunion]="reunionSeleccionada"
+        [reuniones]="reuniones"
+        (cerrar)="cerrarEditor($event)"
+      ></app-editar-reunion>
+    </div>
+
   </div>
 </div>
