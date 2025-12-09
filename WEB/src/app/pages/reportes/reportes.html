@@ -1,7 +1,203 @@
-<app-navbar 
-  [Ubi]="'Reportes'"/>
+<app-navbar
+    [id]="userData?.id"
+    [Ubi]="'Reportes'" />
+<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-[#283845] flex flex-row">
+    <app-siderbar [admin]="userData?.admin" />
+    <div class="bg-[#F6EFE5] w-full h-full overflow-auto p-6 relative">
+  
+  <div class="flex-1 overflow-y-auto p-6">
+    <div class="max-w-7xl mx-auto">
+      
+      <!-- Filtros -->
+      <div class="bg-white rounded-xl p-6 mb-6 border border-[#E0A189] shadow-lg">
+        <h2 class="text-xl font-semibold text-[#722C23] mb-4">Filtros de Búsqueda</h2>
+        
+        <form [formGroup]="filterForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Fecha Inicio -->
+            <div>
+              <label class="block text-sm font-medium text-[#722C23] mb-2">Fecha Inicio</label>
+              <input
+                type="date"
+                formControlName="startDate"
+                class="w-full px-4 py-2 bg-white border-2 border-[#E0A189] rounded-lg text-[#283845] focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60] transition-all"
+              />
+            </div>
 
-<div class="lg:h-[85%] md:h-[83%] h-[80%] w-full bg-black flex flex-row">
-  <app-siderbar />
+            <!-- Fecha Fin -->
+            <div>
+              <label class="block text-sm font-medium text-[#722C23] mb-2">Fecha Fin</label>
+              <input
+                type="date"
+                formControlName="endDate"
+                class="w-full px-4 py-2 bg-white border-2 border-[#E0A189] rounded-lg text-[#283845] focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60] transition-all"
+              />
+            </div>
 
+            <!-- País -->
+            <div>
+              <label class="block text-sm font-medium text-[#722C23] mb-2">País</label>
+              <input
+                type="text"
+                formControlName="pais"
+                placeholder="Ej: Bolivia"
+                class="w-full px-4 py-2 bg-white border-2 border-[#E0A189] rounded-lg text-[#283845] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#C97D60] focus:border-[#C97D60] transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex gap-4">
+            <button
+              type="button"
+              (click)="generarReportes()"
+              [disabled]="loading || !filterForm.valid"
+              class="px-6 py-2 bg-gradient-to-r from-[#722C23] to-[#C97D60] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-300 shadow-md"
+            >
+              {{ loading ? 'Cargando...' : 'Generar Reportes' }}
+            </button>
+
+            <button
+              type="button"
+              (click)="exportarPDF()"
+              [disabled]="!hasData || generatingPDF"
+              class="px-6 py-2 bg-gradient-to-r from-[#E0A189] to-[#F4C8B0] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-[#722C23] rounded-lg font-medium transition-all duration-300 shadow-md"
+            >
+              {{ generatingPDF ? 'Generando PDF...' : 'Exportar PDF' }}
+            </button>
+          </div>
+
+          <!-- Error -->
+          <div *ngIf="error" class="p-4 bg-red-50 border border-red-300 rounded-lg text-red-700">
+            {{ error }}
+          </div>
+        </form>
+      </div>
+
+      <!-- Contenido de Reportes -->
+      <div *ngIf="hasData" id="reportContent" class="space-y-6">
+        
+        <!-- Métricas Principales -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-gradient-to-br from-[#722C23] to-[#C97D60] rounded-xl p-6 border border-[#722C23] shadow-lg transform hover:scale-105 transition-all">
+            <div class="text-[rgba(246,239,229,0.8)] text-sm font-medium mb-1">Tasa de Cobro</div>
+            <div class="text-3xl font-bold text-[#F6EFE5]">{{ tasaCobro }}%</div>
+          </div>
+          <div class="bg-gradient-to-br from-[#E0A189] to-[#F4C8B0] rounded-xl p-6 border border-[#E0A189] shadow-lg transform hover:scale-105 transition-all">
+            <div class="text-[#181A18] text-opacity-70 text-sm font-medium mb-1">Tasa de Completitud</div>
+            <div class="text-3xl font-bold text-[#181A18]">{{ tasaCompletitud }}%</div>
+          </div>
+          <div class="bg-gradient-to-br from-[#283845] to-[#3a4d5e] rounded-xl p-6 border border-[#283845] shadow-lg transform hover:scale-105 transition-all">
+            <div class="text-[rgba(246,239,229,0.8)] text-sm font-medium mb-1">Promedio Proy/Depto</div>
+            <div class="text-3xl font-bold text-[#F6EFE5]">{{ promedioProyectoPorDepartamento }}</div>
+          </div>
+          <div class="bg-gradient-to-br from-[#C97D60] to-[#E0A189] rounded-xl p-6 border border-[#C97D60] shadow-lg transform hover:scale-105 transition-all">
+            <div class="text-[#181A18] text-opacity-70 text-sm font-medium mb-1">Fase con Más Proyectos</div>
+            <div class="text-lg font-bold text-[#181A18] truncate">{{ faseConMasProyectos }}</div>
+          </div>
+        </div>
+
+        <!-- Ganancias y Deuda -->
+        <div class="bg-white rounded-xl p-6 border border-[#E0A189] shadow-lg">
+          <h3 class="text-xl font-semibold text-[#722C23] mb-4">Resumen Financiero</h3>
+          <div *ngIf="gananciaData" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Proyectos</div>
+              <div class="text-2xl font-bold text-[#722C23]">{{ gananciaData.proy }}</div>
+            </div>
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Total Facturado</div>
+              <div class="text-2xl font-bold text-[#E0A189]">${{ gananciaData.total | number:'1.0' }}</div>
+            </div>
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Total Cobrado</div>
+              <div class="text-2xl font-bold text-[#C97D60]">${{ gananciaData.pago | number:'1.0' }}</div>
+            </div>
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Deuda Pendiente</div>
+              <div class="text-2xl font-bold text-[#722C23]">${{ gananciaData.deuda | number:'1.0' }}</div>
+            </div>
+          </div>
+          <div class="h-80 bg-[#F6EFE5] bg-opacity-50 rounded-lg p-4 border border-[#E0A189]">
+            <canvas id="gananciaChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Proyectos Terminados vs Pendientes -->
+        <div class="bg-white rounded-xl p-6 border border-[#E0A189] shadow-lg">
+          <h3 class="text-xl font-semibold text-[#722C23] mb-4">Estado de Proyectos</h3>
+          <div *ngIf="terminadosData" class="grid grid-cols-3 gap-4 mb-6">
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Total</div>
+              <div class="text-2xl font-bold text-[#722C23]">{{ terminadosData.proy }}</div>
+            </div>
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Terminados</div>
+              <div class="text-2xl font-bold text-[#E0A189]">{{ terminadosData.terminado }}</div>
+            </div>
+            <div class="text-center p-4 bg-[#F6EFE5] rounded-lg border border-[#E0A189]">
+              <div class="text-[#722C23] text-opacity-70 text-sm mb-1">Pendientes</div>
+              <div class="text-2xl font-bold text-[#C97D60]">{{ terminadosData.pendiente }}</div>
+            </div>
+          </div>
+          <div class="h-80 bg-[#F6EFE5] bg-opacity-50 rounded-lg p-4 border border-[#E0A189]">
+            <canvas id="terminadosChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Departamentos -->
+        <div class="bg-white rounded-xl p-6 border border-[#E0A189] shadow-lg">
+          <h3 class="text-xl font-semibold text-[#722C23] mb-4">Proyectos por Departamento</h3>
+          <div class="h-96 bg-[#F6EFE5] bg-opacity-50 rounded-lg p-4 border border-[#E0A189]">
+            <canvas id="departamentosChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Avance por Fases -->
+        <div class="bg-white rounded-xl p-6 border border-[#E0A189] shadow-lg">
+          <h3 class="text-xl font-semibold text-[#722C23] mb-4">Proyectos por Fase</h3>
+          <div class="h-80 bg-[#F6EFE5] bg-opacity-50 rounded-lg p-4 border border-[#E0A189]">
+            <canvas id="avanceChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Tipos de Proyectos -->
+        <div class="bg-white rounded-xl p-6 border border-[#E0A189] shadow-lg">
+          <h3 class="text-xl font-semibold text-[#722C23] mb-4">Tipos de Proyectos</h3>
+          <div class="overflow-x-auto mb-6 bg-[#F6EFE5] bg-opacity-50 rounded-lg border border-[#E0A189]">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="border-b-2 border-[#C97D60]">
+                  <th class="p-3 text-[#722C23] font-medium">Tipo</th>
+                  <th class="p-3 text-[#722C23] font-medium">Subtipo</th>
+                  <th class="p-3 text-[#722C23] font-medium text-right">Cantidad</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tipo of tiposData" class="border-b border-[#E0A189] hover:bg-[#F6EFE5] transition-colors">
+                  <td class="py-3 px-3 text-[#722C23]">{{ tipo.tipo }}</td>
+                  <td class="py-3 px-3 text-[#283845]">{{ tipo.subtipo }}</td>
+                  <td class="py-3 px-3 text-[#C97D60] text-right font-semibold">{{ tipo.cantidad_proyectos }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="h-96 bg-[#F6EFE5] bg-opacity-50 rounded-lg p-4 border border-[#E0A189]">
+            <canvas id="tiposChart" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Mensaje cuando no hay datos -->
+      <div *ngIf="!hasData && !loading" class="bg-white rounded-xl p-12 border border-[#E0A189] text-center shadow-lg">
+        <svg class="mx-auto h-12 w-12 text-[#C97D60] mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="text-lg font-medium text-[#722C23] mb-2">No hay reportes generados</h3>
+        <p class="text-[#283845]">Selecciona un rango de fechas y país para generar los reportes</p>
+      </div>
+
+    </div>
+  </div>
 </div>

@@ -375,6 +375,10 @@ body {
   margin-bottom: 5rem;
   text-align: center;
 }
+.section-header-projects {
+  margin-bottom: 2rem;
+  text-align: center;
+}
 
 .section-header.center {
   text-align: center;
@@ -699,7 +703,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
   gap: 2rem;
 }

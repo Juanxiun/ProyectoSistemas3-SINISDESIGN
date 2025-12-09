@@ -5,8 +5,7 @@ export async function Departamentos(data: props): Promise<DepartamentoProp[]> {
     const url = ConnectA.api;
     try {
         const result = await fetch(
-            url + "reporte/departamentos" +
-                `?arq=${data.id}&pais=${data.pais}`,
+            `${url}/reporte/departamentos?arq=${data.id}&pais=${data.pais}`,
         );
 
         const departamento = await result.json();

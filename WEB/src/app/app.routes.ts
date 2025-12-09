@@ -19,14 +19,14 @@ import { DetalleProyectos } from "./pages/proyectos/detalle-proyectos/detalle-pr
 import { Calendario } from "./pages/calendario/calendario";
 import { Clientes } from "./pages/clientes/clientes";
 import { CrearClientes } from "./pages/clientes/crear-clientes/crear-clientes";
-import { ReportesPage } from "./pages/reportes/reportes";
+import { Reportes } from "./pages/reportes/reportes";
 import { ErrorPage } from "./pages/error-page/error-page";
 
 
 
 export const routes: Routes = [
     { path: "", title: "SINISDESIGN", component: Presentation },
-    { path: "equipo/:tamProy", title: "Equipo", component: PerfilArquitectos },
+    { path: "equipo", title: "Equipo", component: PerfilArquitectos },
     { path: "proyectos", title: "Proyectos", component: Proyectos },
 
     // RUTAS DE REGISTRO DE ARQUITECTOS
@@ -55,10 +55,6 @@ export const routes: Routes = [
         title: "Proyectos de Arquitecto",
         component: ListaProyectosArquitecto,
     },
-    {
-        path: "reportes", title: "Reportes", component: ReportesPage
-    },
-
     // RUTA DE LOGIN
     { path: "login", component: Login },
     { path: "", redirectTo: "login", pathMatch: "full" },
@@ -87,6 +83,8 @@ export const routes: Routes = [
     { path: "clientes", title: "Clientes", component: Clientes },
     { path: "crear-clientes", title: "Gestión de Clientes", component: CrearClientes },
     
+    // Ruta de error - siempre al final
+    { path: "reportes", title: "Reportes", component: Reportes }, 
     // Ruta de error - siempre al final
     { path: "**", title: "Error Page", component: ErrorPage }, 
 

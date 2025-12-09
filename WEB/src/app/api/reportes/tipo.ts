@@ -5,8 +5,7 @@ export async function Tipos(data: props): Promise<TipoProp[]> {
     const url = ConnectA.api;
     try {
         const result = await fetch(
-            url + "reporte/tipo-proyecto" +
-                `?arq=${data.id}&startDate=${data.start}&endDate=${data.end}`,
+            `${url}/reporte/tipo-proyecto?arq=${data.id}&startDate=${data.start}&endDate=${data.end}`,
         );
 
         const tipo = await result.json();
