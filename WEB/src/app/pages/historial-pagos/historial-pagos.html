@@ -1,0 +1,73 @@
+<app-navbar></app-navbar>
+
+<div class="flex w-full h-full">
+
+  <!-- Siderbar -->
+  <app-siderbar></app-siderbar>
+
+  <!-- Contenido principal -->
+  <div class="flex-1 p-8">
+
+    <h1 class="text-2xl font-bold mb-4">Historial de Pagos</h1>
+
+    <!-- Mensaje si no hay datos -->
+    <div *ngIf="historial.length === 0" class="text-gray-600 text-center py-6">
+      No hay movimientos registrados en el historial.
+    </div>
+
+    <!-- Tabla si hay datos -->
+    <table *ngIf="historial.length > 0"
+           class="w-full border-collapse border border-gray-400 text-sm">
+
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="border p-2">Fecha Movimiento</th>
+          <th class="border p-2">Acción</th>
+          <th class="border p-2">Proyecto</th>
+          <th class="border p-2">ID Pago</th>
+          <th class="border p-2">Título (old → new)</th>
+          <th class="border p-2">Monto (old → new)</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let h of historial">
+          
+          <td class="border p-2">
+            {{ h.fecha_movimiento | date:'yyyy-MM-dd HH:mm:ss' }}
+          </td>
+
+          <td class="border p-2">{{ h.accion }}</td>
+
+          <td class="border p-2">{{ h.proy }}</td>
+
+          <td class="border p-2">{{ h.id_pago }}</td>
+
+          <td class="border p-2">
+            <span *ngIf="h.titulo_old; else noOldTitle">{{ h.titulo_old }}</span>
+            →
+            <span>{{ h.titulo_new }}</span>
+
+            <ng-template #noOldTitle>
+              <span class="text-gray-400 italic">—</span>
+            </ng-template>
+          </td>
+
+          <td class="border p-2">
+            <span *ngIf="h.monto_old !== null; else noOldMonto">{{ h.monto_old }}</span>
+            →
+            <span>{{ h.monto_new }}</span>
+
+            <ng-template #noOldMonto>
+              <span class="text-gray-400 italic">—</span>
+            </ng-template>
+          </td>
+
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>

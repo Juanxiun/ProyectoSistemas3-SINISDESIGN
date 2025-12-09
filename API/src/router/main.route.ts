@@ -12,6 +12,7 @@ import { notificaciones } from "../modules/notificaciones/router.ts";
 import sesion from "../modules/sesion/router.ts";
 import reportes from "../modules/reportes/router.ts";
 import prediccion from "../modules/prediccion/router.ts";
+import historialRouter from "../modules/historialPagos/router.ts"
 
 const route = new Router();
 
@@ -42,5 +43,8 @@ route.use("/notificaciones", notificaciones.routes(), notificaciones.allowedMeth
 
 //aporte academico
 route.use("/prediccion", prediccion.routes(), prediccion.allowedMethods());
+
+//historial pagos
+route.use(historialRouter.routes())
 
 export default route;
