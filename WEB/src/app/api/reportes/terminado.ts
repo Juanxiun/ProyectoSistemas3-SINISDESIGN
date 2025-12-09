@@ -5,8 +5,7 @@ export async function Terminados(data: props): Promise<TerminadoProp[]> {
     const url = ConnectA.api;
     try {
         const result = await fetch(
-            url + "reporte/proy-terminado" +
-                `?arq=${data.id}&startDate=${data.start}&endDate=${data.end}`,
+            `${url}/reporte/proy-terminado?arq=${data.id}&startDate=${data.start}&endDate=${data.end}`,
         );
 
         const terminado = await result.json();

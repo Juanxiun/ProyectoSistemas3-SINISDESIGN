@@ -5,8 +5,7 @@ export async function Ganancias(data: props): Promise<GananciaProp[]> {
     const url = ConnectA.api;
     try {
         const result = await fetch(
-            url + "reporte/ganancia" +
-                `?arq=${data.id}&startDate=${data.start}&endDate=${data.end}`,
+            `${url}/reporte/ganancia?arq=${data.id}&startDate=${data.start}&endDate=${data.end}`,
         );
 
         const ganacia = await result.json();

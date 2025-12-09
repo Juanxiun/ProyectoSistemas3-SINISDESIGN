@@ -30,12 +30,14 @@ export const GananciaQuery = async (arq: string, startDate: string, endDate: str
             ) p ON p.proy = pr.id
             WHERE 
                 pr.arq = ?
-                AND (DATE(pr.inicio) >= ? AND DATE(pr.inicio) <= ?)
-                OR (DATE(pr.final) >= ? AND DATE(pr.final) <= ?)
+                AND (
+                    (DATE(pr.inicio) BETWEEN ? AND ?)
+                    OR (DATE(pr.final) BETWEEN ? AND ?)
+                )
             GROUP BY pr.arq;
         `;
         const params = [arq, startDate, endDate, startDate, endDate];
-        const [rows] = await cli.query(query, params);
+        const [rows] = await cli.query(query, params);        
         const data: GananciaModel[] = Array.isArray(rows) ? (rows as GananciaModel[]) : [];
         return { data, std: 200 };
     } catch (error) {
@@ -52,14 +54,15 @@ export const DepartamentosQuery = async (arq: string, pais: string): Promise<Que
                 d.departamento, 
                 COUNT(DISTINCT d.proy) AS cantidad
             FROM direccion_proyectos d 
-            LEFT JOIN proyectos pr ON pr.id = d.proy 
+            INNER JOIN proyectos pr ON pr.id = d.proy 
             WHERE 
-                d.pais = ? AND pr.arq = ?
+                d.pais = ? 
+                AND pr.arq = ?
             GROUP BY d.departamento 
             ORDER BY cantidad DESC;
         `;
         const params = [pais, arq];
-        const [rows] = await cli.query(query, params);
+        const [rows] = await cli.query(query, params);        
         const data: SolicitadoModel[] = Array.isArray(rows) ? (rows as SolicitadoModel[]) : [];
         return { data, std: 200 };
     } catch (error) {
@@ -80,8 +83,10 @@ export const ProyTerminadoQuery = async (arq: string, startDate: string, endDate
                 proyectos pr 
             WHERE
                 pr.arq = ?
-                AND ((DATE(pr.inicio) BETWEEN ? AND ?)
-                OR (DATE(pr.final) BETWEEN ? AND ?));
+                AND (
+                    (DATE(pr.inicio) BETWEEN ? AND ?)
+                    OR (DATE(pr.final) BETWEEN ? AND ?)
+                );
         `;
         const params = [arq, startDate, endDate, startDate, endDate];
         const [rows] = await cli.query(query, params);
@@ -106,8 +111,10 @@ export const AvanceProyectoQuery = async (arq: string, startDate: string, endDat
                 fases f ON pr.id = f.proy
             WHERE
                 pr.arq = ?
-                AND ((DATE(pr.inicio) BETWEEN ? AND ?)
-                OR (DATE(pr.final) BETWEEN ? AND ?))
+                AND (
+                    (DATE(pr.inicio) BETWEEN ? AND ?)
+                    OR (DATE(pr.final) BETWEEN ? AND ?)
+                )
             GROUP BY
                 f.fase 
             ORDER BY
@@ -148,8 +155,8 @@ export const TipoProyectoQuery = async (arq: string, startDate: string, endDate:
                 tp.tipo,
                 cantidad_proyectos DESC;
         `;
-        const params = [arq, startDate, endDate, startDate, endDate];
-        const [rows] = await cli.query(query, params);
+        const params = [arq, startDate, endDate, startDate, endDate];        
+        const [rows] = await cli.query(query, params);        
         const data: TipoProyectoModel[] = Array.isArray(rows) ? (rows as TipoProyectoModel[]) : [];
         return { data, std: 200 };
     } catch (error) {
