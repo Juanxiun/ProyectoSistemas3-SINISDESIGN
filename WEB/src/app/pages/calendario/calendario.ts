@@ -22,7 +22,7 @@ export class Calendario implements OnInit {
   rangoSemana: string = "";
 
   diasSemana: Date[] = [];
-  horas: number[] = Array.from({ length: 13 }, (_, i) => i + 6); // 06:00–18:00
+  horas: number[] = Array.from({ length: 13 }, (_, i) => i + 6); 
 
   reuniones: any[] = [];
   userData: any = null;
@@ -46,7 +46,7 @@ export class Calendario implements OnInit {
   }
 
   calcularSemanaActual() {
-    const base = new Date(this.fechaActual); // COPIA para no dañar fechaActual
+    const base = new Date(this.fechaActual);
     const diaSemana = base.getDay(); 
     const inicio = new Date(base);
     inicio.setDate(base.getDate() - diaSemana);
@@ -97,7 +97,7 @@ export class Calendario implements OnInit {
         descripcion: r.descripcion,
         fecha: fechaInicio,
         fecha_final: fechaFin,
-        horaInicio: fechaInicio.toTimeString().substring(0,5), // HH:mm
+        horaInicio: fechaInicio.toTimeString().substring(0,5),
         horaFin: fechaFin ? fechaFin.toTimeString().substring(0,5) : null,
         estado: r.estado,
         proy: r.proy,
@@ -148,6 +148,15 @@ export class Calendario implements OnInit {
 
   private extraerHora(fechaString: string): string {
     if (!fechaString) return "";
-    return fechaString.substring(11, 16); // HH:mm
+    return fechaString.substring(11, 16); 
+  }
+
+  calcularDuracionPx(reunion: any): number {
+    const inicio = new Date(reunion.fecha);
+    const fin = new Date(reunion.fecha_final);
+
+    const horas = (fin.getTime() - inicio.getTime()) / (1000 * 60 * 60);
+
+    return horas * 64;
   }
 }
