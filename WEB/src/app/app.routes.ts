@@ -21,6 +21,7 @@ import { Clientes } from "./pages/clientes/clientes";
 import { CrearClientes } from "./pages/clientes/crear-clientes/crear-clientes";
 import { Reportes } from "./pages/reportes/reportes";
 import { ErrorPage } from "./pages/error-page/error-page";
+import { AuthGuard } from "./middlewares/auth.guard";
 
 
 
@@ -83,9 +84,18 @@ export const routes: Routes = [
     { path: "clientes", title: "Clientes", component: Clientes },
     { path: "crear-clientes", title: "Gestión de Clientes", component: CrearClientes },
     
+    // Ruta para el historial de pagos
+    { 
+        path: "auditoria/historial-pagos",
+        loadComponent: () =>
+            import("./pages/historial-pagos/historial-pagos")
+            .then(m => m.HistorialPagosPage),
+            runGuardsAndResolvers: "always",
+        canActivate: [AuthGuard]
+    },
+
     // Ruta de error - siempre al final
     { path: "reportes", title: "Reportes", component: Reportes }, 
     // Ruta de error - siempre al final
     { path: "**", title: "Error Page", component: ErrorPage }, 
-
-];
+];  
